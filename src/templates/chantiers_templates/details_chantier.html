@@ -1,0 +1,31 @@
+{% extends 'base.html' %}
+
+{% block title %}
+    Détails du Chantier
+{% endblock title %}
+
+{% block content %}
+<h1>Détails du Chantier: {{ chantier.nom_chantier }}</h1>
+<p>Référence: {{ chantier.reference }}</p>
+<p>Client: <a href="{% url 'client_app:detail-client' chantier.client.id %}">{{ chantier.client.nom }} {{ chantier.client.prenom }}</a></p>
+<p>Status: {{ chantier.status_chantier }}</p>
+<p>Adresse: {{ chantier.adresse_chantier }}, {{ chantier.quartier_chantier }}, {{ chantier.ville_chantier }}, {{ chantier.pays_chantier }}</p>
+<p>GPS: Latitude {{ chantier.gps_latitude }}, Longitude {{ chantier.gps_longitude }}</p>
+<p>Date de début prévue: {{ chantier.date_debut_prevue }}</p>
+<p>Date de fin prévue: {{ chantier.date_fin_prevue }}</p>
+<p>Date de début réelle: {{ chantier.date_debut_reelle }}</p>
+<p>Date de fin réelle: {{ chantier.date_fin_reelle }}</p>
+
+   <p>Équipe affectée: 
+    {% for membre in chantier.equipe_affectee.all %}
+        <span class="badge">{{ membre.username }} </span>
+    {% empty %}
+        <span class="text-muted">Aucune équipe affectée</span>
+    {% endfor %}
+</p>
+    <p>Budget: {{ chantier.budget_total }}</p>
+
+    <a href="{% url 'chantier_app:modifier-chantier' chantier.id %}">Modifier le chantier</a>
+    <a href="{% url 'chantier_app:supprimer-chantier' chantier.id %}">Supprimer le chantier</a>
+</p>
+{% endblock content %}

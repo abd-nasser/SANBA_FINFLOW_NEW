@@ -1,0 +1,24 @@
+<!--{% load tailwind_tags %}-->
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="{% static 'css/base_style.css' %}">
+    <link rel="stylesheet" href="{% static 'css/auth_css/login_style.css' %}">
+    <script src="{% static 'js/htmx.min.js' %}"></script>
+    <!--{% tailwind_css %}-->
+    <title>
+    {% block title %} {% endblock title %}</title>
+</head>
+    <nav class="text-red-500">SANBA FINFLOW GESTION </nav>
+<body>
+
+{% block content %}
+    
+{% endblock content %}
+    
+   
+</body>
+</html>

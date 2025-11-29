@@ -1,0 +1,173 @@
+
+{% extends 'base.html' %}
+
+{% block content %}
+<div>
+    <h2>Ajouter un Nouveau Client</h2>
+    
+    <form method="post" novalidate>
+
+        {% csrf_token %}
+        
+        <!-- Messages d'erreur globaux -->
+        {% if form.non_field_errors %}
+        <div>
+            {% for error in form.non_field_errors %}
+            <p>{{ error }}</p>
+            {% endfor %}
+        </div>
+        {% endif %}
+        
+        <!-- Type de client -->
+        <div>
+            <label>Type de client *</label>
+            {{ form.type_client }}
+            {% if form.type_client.errors %}
+            <div>
+                {% for error in form.type_client.errors %}
+                <p>{{ error }}</p>
+                {% endfor %}
+            </div>
+            {% endif %}
+        </div>
+        
+        <!-- Identité -->
+        <fieldset>
+            <legend>Identité</legend>
+            
+            <!-- Raison sociale (conditionnelle) -->
+            <div id="raison-sociale-field">
+                <label>Raison sociale</label>
+                {{ form.raison_sociale }}
+                {% if form.raison_sociale.errors %}
+                <div>
+                    {% for error in form.raison_sociale.errors %}
+                    <p>{{ error }}</p>
+                    {% endfor %}
+                </div>
+                {% endif %}
+            </div>
+            
+            <div>
+                <label>Nom *</label>
+                {{ form.nom }}
+                {% if form.nom.errors %}
+                <div>
+                    {% for error in form.nom.errors %}
+                    <p>{{ error }}</p>
+                    {% endfor %}
+                </div>
+                {% endif %}
+            </div>
+            
+            <div>
+                <label>Prénom</label>
+                {{ form.prenom }}
+            </div>
+        </fieldset>
+        
+        <!-- Coordonnées -->
+        <fieldset>
+            <legend>Coordonnées</legend>
+            
+            <div>
+                <label>Téléphone principal *</label>
+                {{ form.telephone }}
+                {% if form.telephone.errors %}
+                <div>
+                    {% for error in form.telephone.errors %}
+                    <p>{{ error }}</p>
+                    {% endfor %}
+                </div>
+                {% endif %}
+            </div>
+            
+            <div>
+                <label>Téléphone secondaire</label>
+                {{ form.telephone_secondaire }}
+            </div>
+            
+            <div>
+                <label>Email</label>
+                {{ form.email }}
+            </div>
+        </fieldset>
+        
+        <!-- Adresse -->
+        <fieldset>
+            <legend>Adresse</legend>
+            
+            <div>
+                <label>Adresse complète *</label>
+                {{ form.adresse }}
+            </div>
+            
+            <div>
+                <label>Ville *</label>
+                {{ form.ville }}
+            </div>
+            
+            <div>
+                <label>Quartier</label>
+                {{ form.quartier }}
+            </div>
+        </fieldset>
+        
+        <!-- Informations métier -->
+        <fieldset>
+            <legend>Informations métier</legend>
+            
+            <div>
+                <label>Secteur d'activité</label>
+                {{ form.secteur_activite }}
+            </div>
+            
+            <div>
+                <label>Comment nous a-t-il connu ? *</label>
+                {{ form.source_client }}
+            </div>
+            
+            <div>
+                <label>Potentiel du client</label>
+                {{ form.potentiel_client }}
+            </div>
+        </fieldset>
+        
+        <!-- Notes -->
+        <div>
+            <label>Notes internes</label>
+            {{ form.notes_internes }}
+            <small>Informations confidentielles sur le client</small>
+        </div>
+        
+        <!-- Boutons -->
+        <div>
+            <a href="{% url 'client_app:liste-client' %}">Retour à la liste</a>
+            <button type="submit">Créer le client</button>
+        </div>
+    </form>
+</div>
+
+<!-- JavaScript pour la raison sociale conditionnelle -->
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const typeClientSelect = document.getElementById('{{ form.type_client.id_for_label }}');
+    const raisonSocialeField = document.getElementById('raison-sociale-field');
+    
+    function toggleRaisonSociale() {
+        if (typeClientSelect.value === 'entreprise') {
+            raisonSocialeField.style.display = 'block';
+        } else {
+            raisonSocialeField.style.display = 'none';
+        }
+    }
+    
+    // Au chargement
+    toggleRaisonSociale();
+    
+    // Quand le type change
+    typeClientSelect.addEventListener('change', toggleRaisonSociale);
+});
+</script>
+
+{% endblock %}

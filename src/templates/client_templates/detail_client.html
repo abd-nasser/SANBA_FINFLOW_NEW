@@ -1,0 +1,30 @@
+{% extends 'base.html' %}
+
+
+{% block title %}
+    Detail client
+{% endblock title %}
+    
+
+{% block content %}
+
+
+    <p> Nom: {{ client.nom }} </p>
+    <p> Prenom: {{ client.prenom }}</p>
+
+    <p>Email: {{ client.email }}</p>
+    <p>Téléphone: {{ client.telephone }}</p>
+    <p>Adresse: {{ client.adresse }}</p>
+    <p>Chantiers associés:</p>
+    <ul>
+    {% for chantier in client_all_chantiers %}
+        <li> <a href="{% url 'chantier_app:detail-chantier' chantier.id %}">{{ chantier.nom_chantier }}</a></li>
+    {% empty %}
+        <li>Aucun chantier associé.</li>
+    {% endfor %}
+    </ul>
+    <a href="{% url 'client_app:modifier-client' client.id %}">Modifier le client</a>
+    <a href="{% url 'client_app:supprimer-client' client.id %}">Supprimer le client</a>
+ 
+{% endblock content %}
+    

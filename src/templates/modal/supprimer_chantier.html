@@ -1,0 +1,15 @@
+
+
+{% extends 'base.html' %}
+
+{% block content %}
+<div>
+    <h2>Supprimer le Chantier</h2>
+    <p>Êtes-vous sûr de vouloir supprimer le chantier "{{ chantier.nom_chantier }}" ?</p>
+    <form method="post">
+        {% csrf_token %}
+        <button type="submit">Confirmer la suppression</button>
+        <a href="{% url 'chantier_app:detail-chantier' chantier.id %}">Annuler</a>
+    </form>
+</div>
+{% endblock %}

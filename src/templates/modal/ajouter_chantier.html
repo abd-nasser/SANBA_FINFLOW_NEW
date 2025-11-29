@@ -1,0 +1,64 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div>
+    <!-- 🎯 TITRE DYNAMIQUE -->
+    <h2>Nouveau Chantier - Étape {{ wizard.steps.step1 }} sur {{ wizard.steps.count }}</h2>
+    <!-- wizard.steps.step1 = étape actuelle (1, 2, 3...) -->
+    <!-- wizard.steps.count = nombre total d'étapes (5) -->
+    
+    <!-- 🎯 BARRE DE PROGRESSION -->
+    <div>
+        <progress value="{{ wizard.steps.step1 }}" max="{{ wizard.steps.count }}">
+            {{ wizard.steps.step1 }}/{{ wizard.steps.count }}
+        </progress>
+    </div>
+    
+    <!-- 🎯 FORMULAIRE PRINCIPAL -->
+    <form method="post" novalidate>
+        {% csrf_token %}
+        
+        <!-- 🎯 FORMULAIRE DE GESTION (OBLIGATOIRE) -->
+        {{ wizard.management_form }}
+        <!-- Ce formulaire invisible garde la mémoire des étapes -->
+        
+        <!-- 🎯 BOUCLE SUR LES CHAMPS DU FORMULAIRE ACTUEL -->
+        {% for field in wizard.form %}
+        <div>
+            <label>{{ field.label }}</label>
+            {{ field }}  <!-- 🎯 Affiche le champ (input, select, etc.) -->
+            
+            <!-- 🎯 AFFICHE LES ERREURS -->
+            {% if field.errors %}
+            <div>
+                {% for error in field.errors %}
+                <p>{{ error }}</p>
+                {% endfor %}
+            </div>
+            {% endif %}
+        </div>
+        {% endfor %}
+        
+        <!-- 🎯 BOUTONS DE NAVIGATION INTELLIGENTS -->
+        <div>
+            <!-- 🎯 BOUTON "PRÉCÉDENT" (seulement si pas à la 1ère étape) -->
+            {% if wizard.steps.prev %}
+            <button name="wizard_goto_step" type="submit" value="{{ wizard.steps.prev }}">
+                ← Précédent
+            </button>
+            <!-- name="wizard_goto_step" = dit au wizard d'aller à une étape spécifique -->
+            <!-- value="{{ wizard.steps.prev }}" = l'étape précédente -->
+            {% endif %}
+            
+            <!-- 🎯 BOUTON PRINCIPAL -->
+            {% if wizard.steps.next %}
+            <!-- 🎯 Si ce n'est pas la dernière étape -->
+            <button type="submit">Suivant →</button>
+            {% else %}
+            <!-- 🎯 Si c'est la dernière étape -->
+            <button type="submit">✅ Créer le chantier</button>
+            {% endif %}
+        </div>
+    </form>
+</div>
+{% endblock %}

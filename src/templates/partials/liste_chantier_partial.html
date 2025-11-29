@@ -1,0 +1,12 @@
+<!-- partials/liste_chantiers_partial.html -->
+
+{% for chantier in chaniers %}
+<div class="chantier-card">
+    <h3>{{ chantier.nom_chantier }}</h3>
+    <p>Status: {{ chantier.get_status_display }} </p>
+    <p>Client {{ chantier.client.nom }}</p>
+</div>    
+{% empty %}
+<p>Aucun chantier trouvé</p>
+{% endfor %}
+    

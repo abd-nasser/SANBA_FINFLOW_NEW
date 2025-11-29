@@ -1,0 +1,5 @@
+Django
+django-tailwind
+pillow
+django-htmx
+python-dotenv
