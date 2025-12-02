@@ -57,6 +57,7 @@ INSTALLED_APPS = [
     'client_app',
     'chantier_app',
     'comptable_app',
+    'dashboard_app',
 ]
 
 MIDDLEWARE = [

@@ -13,6 +13,7 @@ urlpatterns = [
     path("comptable/", include("comptable_app.urls")),
     path("client/", include("client_app.urls")),
     path("chantier/", include("chantier_app.urls")),
+    path("dashboard/", include("dashboard_app.urls"))
     
 ]
 

@@ -55,6 +55,9 @@ class Client(models.Model):
     ville = models.CharField(max_length=100)
     quartier = models.CharField(max_length=100, null=True, blank=True)
     pays = models.CharField(max_length=100)
+    date_de_naissance = models.DateField(null=True, blank=True)
+    
+    
     
     #INFOS BUSINESS 
     #sectreur d'activité du client
@@ -74,7 +77,7 @@ class Client(models.Model):
     
     #Suivi de la RElation 
     #date_premier_contact
-    date_premier_contact = models.DateField(null=True, blank=True)
+    date_premier_contact = models.DateField(auto_now_add=True)
     
     #commercial_attache = le commercial qui suit le client
     commercial_attache = models.ForeignKey(Personnel, on_delete=models.SET_NULL, null=True, blank=True)
@@ -117,7 +120,7 @@ class Contrat(models.Model):
     
     #LIEN AVEC LE CHANTIER
     #chantier= à quel chantier ce contrat est lié
-    chantier = models.OneToOneField(Chantier,related_name="chantiers", on_delete=models.CASCADE)
+    chantier = models.OneToOneField(Chantier,related_name="contrats", on_delete=models.CASCADE)
     
     #numéro unique pour contrat 
     referenre_contrat = models.CharField(max_length=50, unique=True)
