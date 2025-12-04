@@ -1,8 +1,181 @@
 {% extends 'dashboard_templates/dash_base.html' %}
 
 
-{% block content %}
+{% block title %}
+    Dashbord SSM
+{% endblock title %}
     
+
+{% block content %}
+    <div class="stat">
+            <h1> Dashbord Sanba structure Metallique</h1>
+            <p>Date: {{ "now"|date:"d/m/Y"}}</p>
+
+            
+            <!-- SECTION ALERTES-->
+            
+            {% if alerts %}
+                <div>
+                    <h2>Alertes</h2>
+                    
+                    {% for alert  in alerts %}
+                       <p> aletre : {{ alert.type }}</p>
+                       <strong> ring ring {{ alert.message}}</strong> 
+                       <a href="{{ alert.lien }}">Voir</a>
+                    {% endfor %}
+                        
+                </div>
+            {% endif %}
+
+            <!--  SECTION KPI CARDS (les chiffres importants)-->
+            <div>
+                <h2>Indicateur clé</h2>
+
+                <div class="kpi-client">
+                    <div>
+                        <h3> Clients</h3>
+
+                        <p> Nombres de  clients au total:<strong>{{ total_client }}</strong></p>
+                        <p> Nombre de nouveaux clients de ce mois :<strong>{{ nouveaux_clients_mois }}</strong> </p>
+                        <p> Nombre de client fidèle <strong>{{ clients_fideles }}</strong> N</p>
+                    </div>
+
+                </div>
+<br>
+                <div class="kpi-chantier">
+                    <div>
+                        <h3>Chantier</h3>
+
+                        <p> Nombre total de chantier:<strong>{{total_chantiers}}</strong></p>
+                        <p>Chantier actifs : <strong> {{chantiers_actifs}}</strong></p>
+                        <p>chantiers terminé de ce mois: <strong>{{ chantiers_termine_mois }}</strong></p>
+                        <p>nombre_chantier_en_retard: <strong>{{ nombre_chantier_en_retard }}</strong></p>
+                    </div>
+                  
+                </div>
+<br>
+
+                <div class="kpi-finance">
+                    <div>
+                        <h3>Finance</h3>
+                        <p><strong>{{ chiffre_affaire_total|floatformat:0 }}</strong>Chiffre d'affaire total</p>
+                        <p><strong>{{ montant_encaisse_total|floatformat:0 }}</strong>FCFA encaissé</p>
+                        <p><strong>{{ taux_encaisse_moyen }}%</strong> taux d'encaissement</p>
+                    </div>
+                </div>
+                
+
+    </div>
+
+    <!--SECTION GRAPH-->
+    <div class='grah-ca_par_mois'>
+        <h2> Evolution du chiffre d'affaire</h2>
+
+        <div style="height:400px;">
+            <canvas id="caChart"></canvas>
+        </div>
+
+    </div>
+
+    <!--SECTION Tableau: top Clients par argent-->
+    <div class='top_Clients'>
+        <h3> Top 5 Clients par Chiffre d'affaire</h3>
+        <table border="1" style="width: 100%;">
+            <thead>
+                <tr>
+                    <th>Client</th>
+                    <th>Type</th>
+                    <th>Ville</th>
+                    <th>Chiffre d'affaire Total</th>
+                </tr>
+            </thead>
+            <tbody>
+                {%for client in top_Clients_ca %}
+                <tr>
+                    <td>
+                        
+                        {% if client.type_client == 'entreprise' %}
+                            {{client.raison_sociale}}
+                            {% else %}
+                            {{client.nom}} {{client.prenom}}
+                        {% endif %}
+                            
+                    </td>
+                    <td>{{ client.get_type_client_display }}</td>
+                    <td>{{ client.total_ca|default:0|floatformat:0 }} FCFA</td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="4">Aucun client avec Chantier</td>
+                    </tr>
+                 {% endfor %} 
+            </tbody>
+
+        </table>
+    </div>
+        <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+        <script>    
+            //Donnée CA(chiffre d'affaire) par mois
+            const chiffre_daff_data = {
+                labels:[{% for item in ca_par_mois%} '{{ item.mois }}' {% if not forloop.last %}, {%endif%}{% endfor %}],
+                // labels = les noms sous le graphique (les mois)
+            
+            
+                values:[{% for item in ca_par_mois%} '{{ item.ca }}' {% if not forloop.last %}, {%endif%}{%endfor%}]
+                // values = les chiffre (l'argent)
+            };
+            document.addEventListener("DOMContentLoaded", function(){
+                const caCtx = document.getElementById('caChart').getContext('2d');
+                new Chart(caCtx,{
+                    type: 'line', //type de graphique = ligne
+                    data:{
+                        labels: chiffre_daff_data.labels, // les mois
+                        datasets:[{ // une seule serie de données
+                            
+                            label:'Chiffre d\'affaire(FCFA)', //nom de la courbe
+                            data: chiffre_daff_data.values, // Les chiffres
+                            borderColor: 'rgb(75, 192, 192)',// Couleur de la ligne
+                            tension: 0.2,
+                            fill: true,
+                            backgroundColor: 'rgb(75, 192, 192, 0.2)' 
+                        }]
+                    },
+                    options:{
+                        responsive: true,
+                        scales: {
+                            y: {
+                                beginAtZero: true,
+                                ticks: {
+                                    callback: function(value){
+                                        // montre "1,000,000" au lieu de "1000000"
+                                        return value.toLocaleString() + 'FCFA'
+                                    }
+                                }
+                            }
+                        }
+
+                    }
+
+                }
+
+                )
+            });
+
+        </script>
+
+        <!--Bouton D'ACTION-->
+        <div style="margin-top: 40px; padding: 20px; border-top: 2px solid #ccc">
+            <h3> Actions rapides</h3>
+            <div>
+                <a href="{% url 'client_app:ajouter-client' %}">➕ Ajouter un client</a>
+                <a href="{% url 'chantier_app:ajouter-chantier' %}">🏗️ Nouveau chantier</a>
+                <a href="/admin/">⚙️ Administration</a>
+
+                <button onclick="window.print()"> 🖨️ Imprimer le dashboard</button>
+            </div>
+        </div>
+
+
 {% endblock content %}
     
 

@@ -1,14 +1,17 @@
 from django.shortcuts import render
 from django.views.generic import TemplateView #pour les vues basées sur template
 from django.contrib.auth.mixins import LoginRequiredMixin #Sécurité : Oblige la connexion
-from django.db.models import Count, Sum, Avg, Q #Magie des requetes Django
+from django.db.models import F, Count, Sum, Avg, Q, Max#Magie des requetes Django
 from django.utils import timezone # Gestion du temps dans Django
+from django.db.models.functions import TruncMonth
 from datetime import timedelta #calcul des dates
 
 from client_app.models import Client #Modèles
 from chantier_app.models import Chantier
 from client_app.models import Contrat
 from directeur_app.models import FondDisponible
+from employee_app.models import TypeDepense, RapportDepense, Fournisseur
+from auth_app.models import Personnel
 
 
 
@@ -44,8 +47,13 @@ class DashboardView(LoginRequiredMixin, TemplateView):
         # 4. ANALYTICS CHANTIERS(Performance des projets)
         context.update(self.get_chantier_analytics())
         
-        # 5. ALERTE & NOTIFICATIONS (ce qui nécessite attention)
+        # 5 ANALYTICS_DEPENSE(suivis des sdepense)
+        context.update(self.get_depense_analytics())
+        
+        # 6 ALERTE & NOTIFICATIONS (ce qui nécessite attention)
         context.update(self.get_alerts())
+        
+        
         
         return context #Retourne tout au template
     
@@ -77,7 +85,7 @@ class DashboardView(LoginRequiredMixin, TemplateView):
         """
         
         #CA par mois  (6 derniers mois)
-        ca_par_mois = [] #Liste lide à remplire
+        ca_par_mois = [] #Liste vide à remplire
         for i in range(5, -1, -1): #range(5,-1, -1) = [5, 4, 3, 2, 1, 0]
             #calcul  de  la date : aujourd'hui -i mois 
             mois = timezone.now() - timedelta(days=30*i) # timedelta =  difference de temps
@@ -155,6 +163,67 @@ class DashboardView(LoginRequiredMixin, TemplateView):
             "performance_type_travaux":performance_travaux
         }
 
+    def get_depense_analytics(self):
+        """🎯 Version corrigée avec calcul SQL correct"""
+        
+        # 1. Dépenses par catégorie
+        depenses_par_categorie = TypeDepense.objects.filter(
+            est_actif=True
+        ).values('categorie').annotate(
+            # ✅ Calcul SQL direct, pas la méthode Python
+            total=Sum(F('rapports__prix_unitaire') * F('rapports__quantité')),
+            couleur=Max('couleur')
+        ).order_by('-total')
+        
+        # 2. Dépenses par type détaillé
+        depense_par_type = TypeDepense.objects.filter(
+            est_actif=True
+        ).annotate(
+            total_depenses=Sum(F('rapports__prix_unitaire') * F('rapports__quantité')),
+            nombre_utilisations=Count('rapports')
+        ).order_by('-total_depenses')
+        
+        # 3. Total dépenses ce mois
+        mois_courant = timezone.now().month
+        total_depenses_mois = RapportDepense.objects.filter(
+            statut='valide',
+            date_depense__month=mois_courant
+        ).aggregate(
+            total=Sum(F('prix_unitaire') * F('quantité'))
+        )['total'] or 0
+        
+        # 4. Depense par mois pour graph barres
+        depense_par_mois = RapportDepense.objects.filter(
+            status = 'valide',
+            date_depense__gte=timezone.now()-timedelta(days=180)
+        ).annotate(
+            mois=TruncMonth('date_depense')
+        ).values('mois').annotate(
+            total=Sum(F('prix_unitaire')*F('quantité'))
+        ).order_by('mois')
+        
+        # 5. Top employéz dépensiers
+        top_employes_depense = Personnel.objects.annotate(
+            total_depense=Sum(F('rapports_depense__prix_unitaire')*F("rapports_depense__quantité")),
+        ).exclude(total_depense=None).order_by('-total_depense')[:5]
+        
+        
+        # 6. Top fournisseurs
+        top_fournisseur = Fournisseur.objects.annotate(
+            total_achats = Sum(F("achats__prix_unitaire")*F('quantité'))
+        ).exclude(total_achats=None).order_by('-total_achats')[:5]
+        
+        
+        return {
+            'depenses_par_categorie': list(depenses_par_categorie),
+            'depense_par_mois':list(depense_par_mois),
+            'total_depenses_mois':total_depenses_mois, 
+            'depense_par_type': depense_par_type,
+            'top_employes_depense':top_employes_depense,
+            'top_fournisseur':top_fournisseur,
+            'couleurs_categories': self.get_couleurs_categories(),
+        }
+    
     def get_alerts(self):
         """ALERTES INTELLIGENTES
         Attire l'attention sur les problèmes importants
@@ -212,7 +281,7 @@ class DashboardView(LoginRequiredMixin, TemplateView):
                     'message':f"Anniversaire client{nom_aniv.nom}"
                 })
         return {
-            "alerte":alerts,
+            "alerts":alerts,
             "chantiers_en_retard":chantiers_retard,
             "contrats_non_signes":contrats_non_signes,
             "client_sans_chantiers":client_sans_chantiers,
@@ -220,7 +289,9 @@ class DashboardView(LoginRequiredMixin, TemplateView):
             "clients_anniversaire":clients_anniversaire,
             
         }
-    
+
+
+#Methode complement 
     def calculate_taux_encaisse(self):
         """Calcule le taux d'encaissement moyen"""
         contrats = Contrat.objects.all()
@@ -229,4 +300,32 @@ class DashboardView(LoginRequiredMixin, TemplateView):
         total_montant = sum(c.montant_total for c in contrats)
         total_encaisse = sum(c.montant_encaisse for c in contrats)
         
-        return (total_encaisse/total_montant*100) if total_montant>0 else 0
+        return (total_encaisse/total_montant*100) if total_montant>0 else 0 
+     
+    def get_couleurs_categories(self):
+        """ Récupère un mapping catégorie --> couleur pour les graphiques """
+        couleurs = {}
+        #Récupère la couleur dominante pour chaque catégorie
+        categories = TypeDepense.objects.filter(
+            est_actif=True
+        ).values('categorie', 'couleur').distinct()
+        
+        for cat in categories:
+            if cat['categorie'] not in couleurs:
+                couleurs[cat['categorie']]=cat['couleur']
+                
+         # Couleurs par défaut si jamais
+        couleurs_par_defaut = {
+         ('#FF6384', 'Rouge'),     # Matériaux
+        ('#36A2EB', 'Bleu'),       # Transport  
+        ('#FFCE56', 'Jaune'),      # Main d'œuvre
+        ('#4BC0C0', 'Turquoise'),  # Frais divers
+        ('#9966FF', 'Violet'),     # Administration
+        ('#FF9F40', 'Orange'),     # Autre
+        }
+        
+        for categorie, couleur in couleurs_par_defaut.items():
+            if categorie not in couleur:
+                couleur[categorie]=couleur
+                
+        return couleurs
