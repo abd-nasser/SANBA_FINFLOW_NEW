@@ -13,7 +13,7 @@ class AdminFournisseur(admin.ModelAdmin):
 
 @admin.register(RapportDepense)
 class AdminRapportDepense(admin.ModelAdmin):
-    list_display = ["employee", "type_depense","materiau_article","chantier", "prix_unitaire","quantité","fournisseur","date","total"]
-    search_fields=["employee", "materiau_article"]
+    #list_display = ["employee", "type_depense","materiau_article","chantier", "prix_unitaire","quantité","fournisseur","date","total"]
+    #search_fields=["employee", "materiau_article"]
     list_filter=["type_depense"]
  

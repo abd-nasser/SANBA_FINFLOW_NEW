@@ -67,7 +67,7 @@ class TypeDepense(models.Model):
         verbose_name_plural = "Type de dépense"
     
     def __str__(self):
-        return f"{self.nom}({self.get_categorie_display()})"
+        return f"{self.get_categorie_display()}"
     
     @property
     def total_depenses(self):
@@ -136,6 +136,7 @@ class Fournisseur(models.Model):
         )["total"] or 0
         return total
 
+
 class RapportDepense(models.Model):
     employee = models.ForeignKey(Personnel, on_delete=models.CASCADE, related_name="rapports_depense")
     type_depense = models.ForeignKey(TypeDepense, on_delete=models.CASCADE, related_name='rapports')
@@ -150,6 +151,8 @@ class RapportDepense(models.Model):
     quantité = models.IntegerField(default=1,
                                    validators=[MinValueValidator(1)] #quantité minimum 1
                                    )
+    fournisseur_not_db = models.CharField(max_length=75, null=True, blank=True)
+    
     fournisseur = models.ForeignKey(Fournisseur, 
                                     on_delete=models.SET_NULL, 
                                     null=True, blank=True, 

@@ -1,4 +1,4 @@
-from django.shortcuts import render
+from django.shortcuts import render, get_object_or_404
 from django.views.generic import TemplateView #pour les vues basées sur template
 from django.contrib.auth.mixins import LoginRequiredMixin #Sécurité : Oblige la connexion
 from django.db.models import F, Count, Sum, Avg, Q, Max#Magie des requetes Django
@@ -8,11 +8,10 @@ from datetime import timedelta #calcul des dates
 
 from client_app.models import Client #Modèles
 from chantier_app.models import Chantier
-from client_app.models import Contrat
+from contrat_app.models import Contrat
 from directeur_app.models import FondDisponible
 from employee_app.models import TypeDepense, RapportDepense, Fournisseur
 from auth_app.models import Personnel
-
 
 
 class DashboardView(LoginRequiredMixin, TemplateView):
@@ -110,7 +109,7 @@ class DashboardView(LoginRequiredMixin, TemplateView):
         
         return {
             'ca_par_mois': ca_par_mois, #Données pour le grahique
-            'top-clients_ca': top_clients_ca, # meilleurs clients
+            'top_clients_ca': top_clients_ca, # meilleurs clients
             'taux_encaisse_moyen': self.calculate_taux_encaisse(), #Méthode séparée
             
         } 
@@ -165,15 +164,16 @@ class DashboardView(LoginRequiredMixin, TemplateView):
 
     def get_depense_analytics(self):
         """🎯 Version corrigée avec calcul SQL correct"""
-        
+        #Fond disponible
+        fond_disponible = get_object_or_404(FondDisponible, id=1)
         # 1. Dépenses par catégorie
         depenses_par_categorie = TypeDepense.objects.filter(
             est_actif=True
         ).values('categorie').annotate(
             # ✅ Calcul SQL direct, pas la méthode Python
-            total=Sum(F('rapports__prix_unitaire') * F('rapports__quantité')),
+            total_pourcentage=Sum(F('rapports__prix_unitaire') *F('rapports__quantité')*100/fond_disponible),
             couleur=Max('couleur')
-        ).order_by('-total')
+        ).order_by('-total_pourcentage')
         
         # 2. Dépenses par type détaillé
         depense_par_type = TypeDepense.objects.filter(
@@ -186,7 +186,7 @@ class DashboardView(LoginRequiredMixin, TemplateView):
         # 3. Total dépenses ce mois
         mois_courant = timezone.now().month
         total_depenses_mois = RapportDepense.objects.filter(
-            statut='valide',
+            status='valide',
             date_depense__month=mois_courant
         ).aggregate(
             total=Sum(F('prix_unitaire') * F('quantité'))
@@ -194,7 +194,7 @@ class DashboardView(LoginRequiredMixin, TemplateView):
         
         # 4. Depense par mois pour graph barres
         depense_par_mois = RapportDepense.objects.filter(
-            status = 'valide',
+            status='valide',
             date_depense__gte=timezone.now()-timedelta(days=180)
         ).annotate(
             mois=TruncMonth('date_depense')
@@ -210,12 +210,12 @@ class DashboardView(LoginRequiredMixin, TemplateView):
         
         # 6. Top fournisseurs
         top_fournisseur = Fournisseur.objects.annotate(
-            total_achats = Sum(F("achats__prix_unitaire")*F('quantité'))
+            total_achats = Sum(F("achats__prix_unitaire")*F('achats__quantité'))
         ).exclude(total_achats=None).order_by('-total_achats')[:5]
         
         
         return {
-            'depenses_par_categorie': list(depenses_par_categorie),
+            'depenses_par_categorie': (depenses_par_categorie),
             'depense_par_mois':list(depense_par_mois),
             'total_depenses_mois':total_depenses_mois, 
             'depense_par_type': depense_par_type,
@@ -314,18 +314,5 @@ class DashboardView(LoginRequiredMixin, TemplateView):
             if cat['categorie'] not in couleurs:
                 couleurs[cat['categorie']]=cat['couleur']
                 
-         # Couleurs par défaut si jamais
-        couleurs_par_defaut = {
-         ('#FF6384', 'Rouge'),     # Matériaux
-        ('#36A2EB', 'Bleu'),       # Transport  
-        ('#FFCE56', 'Jaune'),      # Main d'œuvre
-        ('#4BC0C0', 'Turquoise'),  # Frais divers
-        ('#9966FF', 'Violet'),     # Administration
-        ('#FF9F40', 'Orange'),     # Autre
-        }
-        
-        for categorie, couleur in couleurs_par_defaut.items():
-            if categorie not in couleur:
-                couleur[categorie]=couleur
                 
         return couleurs

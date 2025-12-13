@@ -1,0 +1,12 @@
+{% extends 'base.html' %}
+
+{% block title%}
+    Acceuil
+{% endblock title  %}
+    
+    {% block content %}
+        <h1>SANBA FINFLOW HOME PAGE</h1>
+
+    <a href="{% url 'auth_app:login' %}">Se Connecter</a>
+    {% endblock content %}
+        

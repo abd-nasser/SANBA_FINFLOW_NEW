@@ -1,0 +1,33 @@
+{% extends 'base.html' %}
+
+
+{% block title %}
+    Soumettre un Rapport
+{% endblock title %}
+    
+
+{% block content %}
+
+<div style="border: 1px, solid, black;">
+<a href="{% url 'employee_app:employee-du-mois' %}">🏆</a>
+</div>
+
+{% if user.is_authenticated %}
+    <h3>Bonjour Mr {{ user.username }} Veillez saisir votre rapport</h3>
+{% endif %}
+
+<div>
+    <h3>Formulaire</h3>
+<form method='post' action="{% url 'employee_app:employee-view' %}">
+     {% csrf_token %}
+     {{form.as_p}}
+     <input type="submit" value="Soumettre">
+</form>
+</div>
+
+
+<a href="{% url 'employee_app:mes-rapports' %}">Mes Rapports</a>
+    
+
+{% endblock content %}
+    

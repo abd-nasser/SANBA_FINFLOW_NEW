@@ -1,0 +1,46 @@
+{% extends 'base.html' %}
+
+
+{% block title %}
+    Details contrats
+{% endblock title %}
+    
+
+{% block content %}
+<h1> Tout sur le contrat du chantier :  <strong>"{{ contrat.chantier.nom_chantier}}"</strong></h1>
+
+<div class='liens_chantier'>
+    <h3>Liens avec Chantier</h3>
+    <p>Réference unique : <strong>{{ contrat.reference_contrat }}</strong></p>
+    <p>Date de signature : <strong>{{contrat.date_signature}}</strong></p>
+    <p>Mode de paiement : <strong>{{contrat.mode_paiement}}</strong></p>
+    <p>Montant total du contrat :<strong>{{contrat.montant_total}} <em>FCFA</em></strong></p>
+    <p>Acompte pourcentage :<strong>{{contrat.acompte_pourcentage}}%</strong></p>
+     <p>Acompte payer par le client: <strong>{{ contrat.montant_acompte }} <em>FCFA</em></strong></p>
+    <p>Nombre de tranche restant :<strong>{{contrat.nombre_tranches}}</strong></p>
+
+</div>
+    
+<div class="suivi_paiement">
+    <h3>Suivis de paiements</h3>
+    <p>Montant encaissé :<strong>{{contrat.montant_encaisse}} <em>FCFA</em></strong></p>
+    <p>Date du dernier paiement : <strong>{{contrat.date_du_dernier_paiement}}</strong></p>
+    <p>Pourcentage du contrat encaisseé actuellement: <strong>{{contrat.pourcentage_encaisse}}</strong></p>
+    <p>reste à payer: <strong>{{ contrat.solde_restant }} <em>FCFA</em></strong></p>
+</div>
+
+<a href="{% url 'contrat_app:nouveau-paiement' contrat.id %}">Mettre à jour nouveau paiement</a>
+
+
+{% if contrat.contrat_pdf %}
+<div class='clause_special'>
+    <h3>Clause speciales</h3>
+    <p>Fichier PDF :<strong>{{ contrat.contrat_pdf }}</strong></p>
+    {% elif contrat.devis_initial%}
+    <p>Devis initial : <strong>{{ contrat.devis_initial }}</strong> </p>
+</div>
+    
+{% endif %}
+        
+{% endblock content %}
+    

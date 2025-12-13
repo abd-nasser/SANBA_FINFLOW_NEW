@@ -1,0 +1,67 @@
+{% extends 'base.html' %}
+
+
+{% block title %}
+    Historique des demande de decaissement
+{% endblock title %}
+
+
+
+{% block content %}
+
+    <label for="st">filtre les demande par status</label>
+<select 
+            hx-get="{% url 'secretaire_app:filter-demande-decaisse' %}"
+            hx-target="#dmd_list"
+            hx-trigger="change"
+            name="status" 
+            id="st">
+    
+    <option value="en_attente">En attente</option>
+    <option value="approuvee_directeur">Approuvé par directeur</option>
+    <option value="approuvee_comptable">Apporouvé par comptable</option>
+    <option value="refusee_directeur">Refusée par directeur</option>
+    <option value="refusee_comptable">Refusée par comtable</option>
+    <option value="decaisse">Décaissé</option>
+    
+</select>
+
+
+<br>
+<br>
+<br>
+<div id="dmd_list">
+{% include 'partials/filter_demande.html' %}
+</div>
+<br>
+<br>
+<br>
+
+
+<h3>Liste des employés avec le total de somme décaissé</h3>
+<table border=1>
+    <thead>
+        <tr>
+            <th>Nom</th>
+            <th>Somme Total décaisse</th>
+            <th>nombre total de demande</th>
+            <th>Total de demande approuvée</th>
+            <th>Total de demande refusée</th>
+        </tr>
+    </thead>
+    <tbody>
+        
+        {% for decaisse in total_decaisse %}
+            <tr>
+                <td>{{decaisse.nom__username}}</td>
+                <td>{{ decaisse.total_decaisse }}</td>
+                <td>{{decaisse.nombre_total}}</td>
+                <td>{{decaisse.total_approuve}}</td>
+                <td>{{ decaisse.total_refuse }}</td>
+            </tr>
+        {% endfor %}
+            
+    </tbody>
+</table>
+
+{% endblock content %}

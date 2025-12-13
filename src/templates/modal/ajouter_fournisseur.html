@@ -1,0 +1,7 @@
+<h1>Ajouter nouveau fournisseur</h1>
+
+<form method="post"action="{% url 'directeur_app:ajouter-fournisseur' %}">
+{% csrf_token %}
+{{form.as_p}}
+<input type="submit" value="Ajouter">
+</form>

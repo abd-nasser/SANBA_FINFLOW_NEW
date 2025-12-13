@@ -1,0 +1,27 @@
+{% extends 'base.html' %}
+
+
+{% block title %}
+    Contrats
+{% endblock title %}
+    
+
+
+{% block content %}
+<div class='all_contrats'>
+
+    <a href="{% url 'contrat_app:ajouter-contrat' %}">➕Ajouter nouveau contrat</a>
+    <h3>Liste des Contrats</h3>
+    
+    {% for contrat in contrats  %}
+    <p><strong>Contrat du Chantier:</strong> {{ contrat.chantier }}</p>
+    <p><strong>Référence du contrat:</strong> {{ contrat.reference_contrat}}</p>  
+    <a href="{% url 'contrat_app:detail-contrat' contrat.id %}">Détails du contrat</a>
+    {% endfor %}
+        
+</div>
+
+    
+
+{% endblock content %}
+    

@@ -52,12 +52,15 @@ INSTALLED_APPS = [
     #other_app
     'auth_app',
     'directeur_app',
+    'comptable_app',
     'secretaire_app',
     'employee_app',
     'client_app',
     'chantier_app',
-    'comptable_app',
+    'contrat_app',
     'dashboard_app',
+    'home_app'
+    
 ]
 
 MIDDLEWARE = [

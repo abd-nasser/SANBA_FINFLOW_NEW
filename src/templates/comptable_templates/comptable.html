@@ -43,14 +43,14 @@
     
    
   {% if demande.status == 'approuvee_directeur' or demande.status == 'approuvee_comptable' %}
-   <h3 style='color:green;'>{{ demande.status }}</h3>
-   {% elif demande.status == 'decaisse' %}
-    <h3 style='color:skyblue;'>{{ demande.status }}</h3>
+   <h3 style='color:green;'>{{ demande.get_status_display }}</h3>
+   {% elif demande.decaisse %}
+    <h3 style='color:skyblue;'>Décaissé</h3>
 
    {% elif demande.status == 'refusee_directeur' or demande.status == 'refusee_comptable' %}
-    <h3 style='color:red;'>{{ demande.status }}</h3>
+    <h3 style='color:red;'>{{demande.get_status_display }}</h3>
     {% else %}
-    <h3 style='color:orange;'>{{ demande.status }}</h3>
+    <h3 style='color:orange;'>{{ demande.get_status_display}}</h3>
 
       <a href="{% url 'comptable_app:comptable-approuver-demande' demande.id %}" style='color: green;'>Approuver</a>
          <a href="{% url 'comptable_app:comptable-refuser-demande' demande.id %}"style='color: red;'>Refusé</a>

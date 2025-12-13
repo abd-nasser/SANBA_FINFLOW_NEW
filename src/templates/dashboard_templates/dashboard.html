@@ -90,7 +90,7 @@
                 </tr>
             </thead>
             <tbody>
-                {%for client in top_Clients_ca %}
+                {%for client in top_clients_ca %}
                 <tr>
                     <td>
                         
@@ -102,6 +102,7 @@
                             
                     </td>
                     <td>{{ client.get_type_client_display }}</td>
+                    <td>{{ client.ville }}</td>
                     <td>{{ client.total_ca|default:0|floatformat:0 }} FCFA</td>
                     </tr>
                     {% empty %}

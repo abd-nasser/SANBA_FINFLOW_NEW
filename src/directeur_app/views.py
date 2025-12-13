@@ -1,10 +1,19 @@
 from django.utils import timezone
 from django.shortcuts import render, get_object_or_404, redirect
-from .models import FondDisponible, Historique_dajout_fond
-from secretaire_app.models import DemandeDecaissement
-from employee_app.models import RapportDepense
+from django.views.generic import CreateView, UpdateView
+
+from django.contrib.auth.mixins import LoginRequiredMixin
+from django.urls import reverse_lazy
+
 from django.contrib import messages
 import logging
+
+from .models import FondDisponible, Historique_dajout_fond
+from secretaire_app.models import DemandeDecaissement
+from employee_app.models import RapportDepense, Fournisseur
+from employee_app.form import ValidationRapportForm, FournisseurForm, RapportDepenseForm, updateRapportFournisseurForm
+
+
 
 logger = logging.getLogger(__name__)
 
@@ -18,7 +27,6 @@ def directeur_view(request):
             "fond":fond.montant,
            }
     return render(request, "directeur_templates/directeur.html", ctx)
-
 
 
 def ajouter_fond(request):
@@ -81,6 +89,41 @@ def directeur_refuse_demande_view(request, demande_id):
 
 
 def list_rapport_depense_view(request):
-    list_rapport_depense = RapportDepense.objects.all().order_by("-date")
+    list_rapport_depense = RapportDepense.objects.all().order_by("-date_creation")
     ctx = {"list_rapport_depense":list_rapport_depense}
     return render(request, "directeur_templates/rapport_employee.html", ctx)
+
+
+class ValidationRapportView(LoginRequiredMixin, UpdateView):
+    model = RapportDepense
+    template_name = 'directeur_templates/rapport_employee.html'
+    form_class = ValidationRapportForm
+    success_url = reverse_lazy("directeur_app:rapport-depense-employee")
+    
+    def form_valid(self, form):
+        return super().form_valid(form)
+   
+
+class CreateFournisseurView(LoginRequiredMixin, CreateView):
+    model = Fournisseur
+    form_class= FournisseurForm
+    template_name="modal/ajouter_fournisseur.html"
+    success_url = reverse_lazy('directeur_app:rapport-depense-employee')
+    
+    def form_valid(self, form):
+        return super().form_valid(form)
+    
+class UpdateRapportFournisseurView(LoginRequiredMixin, UpdateView):
+    model = RapportDepense
+    form_class= updateRapportFournisseurForm
+    template_name = "modal/modifier_rapport_fournisseur.html"
+    success_url = reverse_lazy('directeur_app:rapport-depense-employee')
+    
+    def form_valid(self, form):
+        print('fait')
+        return super().form_valid(form)
+    def form_invalid(self, form):
+        print('infait')
+        return super().form_invalid(form)
+    
+    

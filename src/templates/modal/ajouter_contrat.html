@@ -1,0 +1,144 @@
+<h3> Enregistrer Nouveau contrat</h3>
+
+<form method="post">
+    {% csrf_token %}
+
+     <!-- Messages d'erreur globaux -->
+        {% if form.non_field_errors %}
+        <div>
+            {% for error in form.non_field_errors %}
+            <p>{{ error }}</p>
+            {% endfor %}
+        </div>
+        {% endif %}
+        
+
+
+
+    <fieldset>
+        <legend>LIENS AVEC CHANTIER</legend>
+
+        <div class="cont_chantier">
+        <label>Chantier:</label>
+        {{form.chantier}}
+        {% if form.chantier.errors %}
+            <p>{{error}}</p>
+        {% endif %}
+
+        </div>
+       
+        <div class="cont_refer_contrat">
+        <label>Réference du contrat:</label>
+        {{form.reference_contrat}}
+        {% if form.reference_contrat.errors %}
+            <p>{{error}}</p>
+        {% endif %}
+
+        </div>
+        
+        <div class="cont_date_sign">
+        <label>Date de signature:</label>
+        {{form.date_signature}}
+        {% if form.date_signature.errors %}
+        <p>{{error}}</p>
+        {% endif %}
+        </div>
+
+        <div class="cont_mode_paiement">
+            <label>Mode de paiements:</label>
+            {{form.mode_paiement}}
+            {% if form.mode_paiement.errors %}
+                <p>{{error}}</p>
+            {% endif %}
+                
+        </div>     
+        
+        <div class="cont_montant_total">
+            <label>montant total du contrat:</label>
+            {{form.montant_total}}
+            {% if form.montant_total.errors  %}
+                <p>{{ errors }}</p>
+            {% endif %}   
+        </div>
+
+        <div class="cont_acompte_pourcentage">
+            <label>Pourcentage du contrat déja payé:</label>
+            {{form.acompte_pourcentage}}
+            {% if form.acompte_pourcentage.errors %}
+            <p>{{ error }}</p>
+            {% endif %}
+                
+        </div>
+
+        <div class="cont_nombre_tranches">
+            <label>Tranche restant:</label>
+            {{form.nombre_tranches}}
+            {% if form.nombre_tranches.errors%}
+            <p>{{ error }}</p>
+            {% endif %}
+                
+        </div>
+    </fieldset>
+    <br>
+    <fieldset>
+        <legend>SUIVIS DES PAIEMENTS</legend>
+
+        <div class="cont_montant_encaisse">
+            <label>Montant encaissé:</label>
+            {{form.montant_encaisse}}
+            {% if form.montant_encaisse.errors %}
+            <p>{{ error }}</p>
+            {% endif %} 
+        </div>
+
+        <div class='cont_date_du_dernier_paiement'>
+            <label>Date du dernier paiement: </label>
+            {{form.date_du_dernier_paiement}}
+            {% if form.date_du_dernier_paiement.errors %}
+            <p>{{ error }}</p>
+            {% endif %}   
+        </div>
+    </fieldset>
+    <br>
+    <fieldset>
+        <legend>DOCUMENTS IMPORTANTS</legend>
+        <div class="cont_contrat_pdf">
+            <label>Fichier PDF du contrat:</label>
+            {{form.contrat_pdf}}
+            {% if form.contrat_pdf.errors %}
+            <p>{{ error }}</p>
+            {% endif %}       
+        </div>
+
+        <div class="cont_devis_initial">
+            <label>Devis Initial:</label>
+            {{form.devis_initial}}
+            {% if form.devis_initial.errors %}
+            <p>{{ error }}</p>
+            {% endif %}
+                
+        </div>
+    </fieldset>
+
+    <fieldset>
+        <legend>CLAUSE SPECIALES</legend>
+
+        <div class="cont_garantie_mois">
+        <label>Mois de garantie du travail</label>
+        {{form.garantie_mois}}
+        {% if form.garantie_mois.errors %}
+        <p>{{ error }}</p>
+        {% endif %}
+        </div>  
+
+        <div class="cont_notes_contact">
+            <label>Notes contractuelles</label>
+            {{form.notes_contractuelles}}
+            
+            {% if form.notes_contractuelles.errors %}
+            <p>{{ error }}</p>
+            {% endif %}
+                <input type="submit" value="Enregistrer le contrat">
+        </div>
+    </fieldset>
+</form>

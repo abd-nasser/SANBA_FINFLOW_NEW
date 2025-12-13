@@ -20,21 +20,29 @@
     {% endfor %}
 </div>
 {% endif %}
+
 <h1>Rapport des dépenses des employés</h1>
-    <table>
+<a href="{% url 'directeur_app:ajouter-fournisseur' %}">Enregister nouveau fournissuer</a>
+    <table border='1' style="max-width: 100%;">
         <thead>
-            <tr>Nom</tr>
-            <tr>Type depense</tr>
-            <tr>Matériaux/Articles</tr>
-            <tr>Prix unitaire</tr>
-            <tr>Chantier</tr>
-            <tr>Quantité</tr>
-            <tr>Fournisseur</tr>
-            <tr>Facture</tr>
+            <tr>
+            <th>Nom</th>
+            <th>Type depense </th>
+            <th>Matériaux/Articles</th>
+            <th>Prix unitaire</th>
+            <th>Chantier</th>
+            <th>Quantité</th>
+            <th>Fournisseur</th>
+            <th>Facture</th>
+            <th>Actions</th>
+            </tr>
+            
         </thead>
-         {% for rapport_depense in list_rapport_depense  %}
+         
    
         <tbody>
+            {% for rapport_depense in list_rapport_depense  %}
+<tr>
 
             <td>{{rapport_depense.employee}}</td>
             <td>{{rapport_depense.type_depense}}</td>
@@ -42,15 +50,37 @@
             <td>{{rapport_depense.prix_unitaire}}</td>
             <td>{{rapport_depense.chantier}}</td>
             <td>{{rapport_depense.quantité}}</td>
-            <td>{{rapport_depense.fournisseur}}</td>
-            <td>{{rapport_depense.fature}}</td>
+            
+            {% if rapport_depense.fournisseur %}
+            <td>{{ rapport_depense.fournisseur.nom }}</td>
+            {% elif rapport_depense.fournisseur_not_db %}
+            <td>{{ rapport_depense.fournisseur_not_db }} <br><a href="{% url 'directeur_app:modifier-rapport-fournisseur' rapport_depense.id %}"><em style='color:green'>Ajouter dans DB✏️</em></a></td>
+            {% else %}
+            <td>Unknow</td>
+            {% endif %}
 
-   
+            
+            {% if rapport_depense.fature %}
+            <td>{{ rapport_depense.fature }}</td>
+            {% else %}
+            <td><em style='color:red'>"Pas de facture"</em></td>
+            {% endif %}
+
+            <td><a href="#">Modifier</a></td>
+                
+                
+           
+
+</tr>
+           
+   {% endfor %}
         </tbody>
-        {% endfor %}
          </table>
-       
-        
+
+         <form action="#">
+            {% csrf_token %}
+            {{ form.as_p }}
+         </form>
         
 {% endblock content %}
     

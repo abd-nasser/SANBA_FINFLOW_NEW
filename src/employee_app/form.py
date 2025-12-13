@@ -8,32 +8,45 @@ from employee_app.models import TypeDepense, Fournisseur
 
 class RapportDepenseForm(forms.ModelForm):
     """Formulaire pour soumettre un rapport depense"""
+    
     class Meta:
         model = RapportDepense
         fields =[
                 "type_depense", "materiau_article",
-                 "prix_unitaire", "quantité", "fournisseur ", "facture",
-                 "note"
+                 "prix_unitaire", "quantité","fournisseur_not_db", "fournisseur", "facture",
+                 "note", "chantier","date_depense",
                  ]
         
-        widget= {
-            'materiau_article0':forms.TextInput(attrs={
+        widgets= {
+            'materiau_article':forms.TextInput(attrs={
                 'placeholder': 'EX: Tole galvanisée 3mm',
                 'class':'form-controle'
             }),
             
             "prix_unitaire":forms.NumberInput(attrs={
                 'placeholder': 'Ex: 15000',
-                'class':'form-controle'
+                'min': '0',
+                'step': '100',
+                'class': 'form-control'
             }),
             
             "quantité":forms.NumberInput(attrs={
                 'placeholder':'Ex: 10',
                 'class': 'forms-controle'
             }),
+            
+            "fournisseur_not_db":forms.TextInput(attrs={
+                'placeholder':" Seulement Si founisseur n'est pas dans liste des fournisseur",
+                'class': 'forms-controle'
+            }),
+            
             "note":forms.Textarea(attrs={
                 'rows':3,
                 'placeholder': 'Ex: Details suplementaire'
+            }),
+            "date_depense":forms.DateInput(attrs={
+                'placeholder':'EX: jj/mm/An',
+                'class':'forms-controle'
             })
         }
         
@@ -83,7 +96,10 @@ class RapportDepenseForm(forms.ModelForm):
                 
         return cleaned_data
     
-
+class updateRapportFournisseurForm(forms.ModelForm):
+    class Meta:
+        model = RapportDepense
+        fields = ["fournisseur"]
 
 class ValidationRapportForm(forms.ModelForm):
     """Formulaire pour Valider/rejeter un rapport"""
@@ -115,7 +131,7 @@ class ValidationRapportForm(forms.ModelForm):
         model= RapportDepense
         fields = [] #pas de champs du modèle, juste l'action
         
-    def save(self, commit = True):
+    def save(self, commit=True):
         """ Met à jour le status selon l'action"""    
         rapport = super().save(commit=False)
         action = self.cleaned_data.get('action')
@@ -175,3 +191,9 @@ class FiltreRapportForm(forms.Form):
                                         label='Chantier'
     
     )                                      
+    
+
+class FournisseurForm(forms.ModelForm):
+    class Meta:
+        model = Fournisseur
+        fields = ['nom', 'telephone', 'email', "specialite"]

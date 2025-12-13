@@ -4,5 +4,7 @@ from . import views
 app_name = "employee_app"
 
 urlpatterns = [
-    path("interface-employee", views.rapport_depense_view, name="employee-view" )
+    path("interface-employee", views.CreerRapportDepenseView.as_view(), name="employee-view" ),
+    path('Mes-rapports', views.MesRapportsView.as_view(), name='mes-rapports'),
+    path('employee/du/mois', views.BestEmployeeView.as_view(), name='employee-du-mois')
 ]

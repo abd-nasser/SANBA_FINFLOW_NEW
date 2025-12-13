@@ -55,7 +55,7 @@ def login_view(request):
             
             else:
                 # Poste non reconnu - dashboard par défaut
-                return redirect("dashboard:default")
+                return redirect("auth_app:login")
         
         else:
             # Formulaire invalide

@@ -1,0 +1,80 @@
+<h3> Enregistrer Nouveau contrat</h3>
+
+<form method="post">
+    {% csrf_token %}
+
+     <!-- Messages d'erreur globaux -->
+        {% if form.non_field_errors %}
+        <div>
+            {% for error in form.non_field_errors %}
+            <p>{{ error }}</p>
+            {% endfor %}
+        </div>
+        {% endif %}
+        
+
+
+
+    <fieldset>
+        <legend>LIENS AVEC CHANTIER</legend>
+        <div class="cont_chantier">
+        {{form.chantier}}
+        {% if form.chantier.errors %}
+            <p>{{error}}</p>
+        {% endif %}
+
+        </div>
+       
+        <div class="cont_refer_contrat">
+        {{form.reference_contrat}}
+        {% if form.reference_contrat.errors %}
+            <p>{{error}}</p>
+        {% endif %}
+
+        </div>
+        
+        <div class="cont_date_sign">
+        {{form.date_signature}}
+        {% if form.form.date_signature.errors %}
+        <p>{{error}}</p>
+        {% endif %}
+        </div>
+
+        <div class="cont_mode_paiement">
+            {{form.mode_paiement}}
+            
+            {% if form.mode_paiement.errors %}
+                <p>{{error}}</p>
+            {% endif %}
+                
+        </div>     
+        
+        <div class="cont_montant_total">
+            {{form.montant_total}}
+            {% if form.montant_total.errors  %}
+                <p>{{ errors }}</p>
+            {% endif %}   
+        </div>
+
+        <div class="cont_acompte_pourcentage">
+            {{form.acompte_pourcentage}}
+            
+            {% if form.acompte_pourcentage.errors %}
+            <p>{{ error }}</p>
+            {% endif %}
+                
+        </div>
+
+        <div class="cont_nombre_tranches">
+            {{form.nombre_tranches}}
+            
+            {% if form.nombre_tranches.errors%}
+            <p>{{ error }}</p>
+            {% endif %}
+                
+        </div>
+    </fieldset>
+    <fieldset>
+        <legend>SUIVIS DES PAIEMENTS</legend>
+    </fieldset>
+</form>

@@ -1,0 +1,45 @@
+ 
+<div class="dmd_list">
+
+    <table border=1>
+    <thead>
+        <tr>
+            <th>Nom</th>
+            <th>Montant</th>
+            <th>Chantier</th>
+            <th>Motif</th>
+            <th>Status</th>
+            <th>Approuvée par</th>
+            <th>Décaissé</th>
+            <th>date_demande</th>
+            <th>date_approbation</th>
+            <th>date_decaissement</th>
+        </tr>
+    </thead>
+    <tbody id="table_dody">
+        
+        {% for hist in dmd_decaissmt_hist %}
+       <tr id="table">
+            <td>{{hist.nom}}</td>
+            <td>{{hist.montant}} </td>
+            <td>{{hist.chantier}}</td>
+            <td>{{hist.motif}} </td>
+            <td>{{hist.status}} </td>
+            <td>{{hist.approuve_par}} </td>
+            <td>{{hist.decaisse}} </td>
+            <td>{{hist.date_demande}} </td>
+            <td>{{hist.date_approbation}} </td>
+            <td>{{hist.date_decaissement}}</td>
+</tr>
+
+        {% endfor %}
+            
+    </tbody>
+</table>
+
+</div>
+
+
+
+    
+

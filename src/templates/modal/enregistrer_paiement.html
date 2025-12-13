@@ -1,0 +1,6 @@
+<form action="{% url 'contrat_app:nouveau-paiement' contrat.id %}" method="post">
+    {% csrf_token %}
+    <label for="nouveau-paiement">Entrer nouveau montant</label>
+    <input type="number" name="nouveau-paiement" id="nouveau-paiement">
+    <input type="submit" value="Enregistrer">
+</form>

@@ -9,7 +9,6 @@ class DemandeDecaissement(models.Model):
         ('refusee_directeur', 'Refusée par Directeur'),
         ('approuvee_comptable', 'Approuvée par Comptable'), 
         ('refusee_comptable', 'Refusée par Comptable'),
-        ('decaisse', 'Décaissé')
     ]
     
     nom = models.ForeignKey(Personnel, on_delete=models.PROTECT)
@@ -24,6 +23,7 @@ class DemandeDecaissement(models.Model):
         null=True, 
         blank=True
     )
+    decaisse = models.BooleanField(default=False)
     date_demande = models.DateTimeField(auto_now=True)
     date_approbation = models.DateTimeField(null=True, blank=True)
     date_decaissement = models.DateTimeField(null=True, blank=True)

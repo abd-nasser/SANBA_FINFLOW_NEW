@@ -6,9 +6,9 @@ from django.http import JsonResponse
 from django.contrib import messages
 
 
-from .models import Chantier
+from chantier_app.models import Chantier
 from .models import Client  # Import the Client model
-from .forms import ClientForm# Import the ClientForm
+from .forms import ClientForm # Import the ClientForm
 
 
 
@@ -31,7 +31,6 @@ class ClientListView(LoginRequiredMixin, ListView):
         return Client.objects.all().order_by("nom")
     
     
-
 class ClientCreateView(LoginRequiredMixin, CreateView):
     
     """Affichage automatique d'un formulaire vide
@@ -60,7 +59,6 @@ class ClientCreateView(LoginRequiredMixin, CreateView):
         return super().form_valid(form)
         
     
-
 class ClientDetailView(LoginRequiredMixin, DetailView):
     """
     Cette vue  affiche les details d'un seul client

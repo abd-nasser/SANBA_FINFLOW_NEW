@@ -1,0 +1,54 @@
+<div style="border: 1px, solid, black;">
+<a href="{% url 'employee_app:employee-du-mois' %}">🏆</a>
+</div>
+
+
+<table border=1 style="max-width: 100%;" >
+    <thead>
+        <tr>
+            <th>Nom</th>
+            <th>Type de depense</th>
+            <th>Chantier</th>
+            <th>Materiaux_article</th>
+            <th>Quantité</th>
+            <th>Prix Unitaire</th>
+            <th>Date depense effectuée</th>
+            <th>Fournisseur</th>
+            <th>Factute</th>
+            <th>date rapport_soumis</th>
+        </tr>
+    </thead>
+    <tbody>
+        
+        {% for rapport in rapports  %}
+            
+        <tr>
+            <td>{{ rapport.employee.username }}</td>
+            <td>{{ rapport.type_depense.categorie }}</td>
+            <td>{{ rapport.chantier.nom_chantier }}</td>
+            <td>{{ rapport.materiau_article }}</td>
+            <td>{{ rapport.quantité }}</td>
+            <td>{{ rapport.prix_unitaire }}</td>
+            <td>{{ rapport.date_depense }}</td>
+            
+            {% if rapport.fournisseur %}
+                <td>{{ rapport.fournisseur }}</td>
+                {% else %}
+                <td>important pour l'analyse</td>
+            {% endif %}
+
+            
+            {% if rapport.facture %}
+            <td>{{ rapport.facture }}</td>
+            {% else %}
+            <td>important pour l'entreprise</td>
+            {% endif %}
+             <td>{{ rapport.date_creation }}</td>
+        </tr>
+            {% empty %}
+                    <tr>
+                        <td colspan="4">Aucun Rapport soumis</td>
+                    </tr>
+                 {% endfor %} 
+    </tbody>
+</table>
