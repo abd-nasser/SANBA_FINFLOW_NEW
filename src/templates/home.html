@@ -7,6 +7,8 @@
     {% block content %}
         <h1>SANBA FINFLOW HOME PAGE</h1>
 
-    <a href="{% url 'auth_app:login' %}">Se Connecter</a>
+{% include 'auth_templates/login.html' %}
+  <button class="btn" onclick="my_modal_1.showModal()">Se Connecter</button>
     {% endblock content %}
+
         

@@ -12,6 +12,7 @@ class RapportDepenseForm(forms.ModelForm):
     class Meta:
         model = RapportDepense
         fields =[
+                "demande_decaissement",
                 "type_depense", "materiau_article",
                  "prix_unitaire", "quantité","fournisseur_not_db", "fournisseur", "facture",
                  "note", "chantier","date_depense",
@@ -36,7 +37,7 @@ class RapportDepenseForm(forms.ModelForm):
             }),
             
             "fournisseur_not_db":forms.TextInput(attrs={
-                'placeholder':" Seulement Si founisseur n'est pas dans liste des fournisseur",
+                'placeholder':"  Si nouveau founisseur ",
                 'class': 'forms-controle'
             }),
             
@@ -45,7 +46,7 @@ class RapportDepenseForm(forms.ModelForm):
                 'placeholder': 'Ex: Details suplementaire'
             }),
             "date_depense":forms.DateInput(attrs={
-                'placeholder':'EX: jj/mm/An',
+                'type': 'date',
                 'class':'forms-controle'
             })
         }
@@ -54,6 +55,31 @@ class RapportDepenseForm(forms.ModelForm):
         #Récupère l'employee connecté 
         self.employee = kwargs.pop('employee', None)
         super().__init__(*args, **kwargs)
+        self.fields['type_depense'].required=True
+        self.fields['prix_unitaire'].required=True
+        self.fields['quantité'].required=True
+        self.fields['note'].required=True
+        self.fields['chantier'].required=False
+        self.fields['demande_decaissement'].required=True
+        
+        
+        
+        # AJOUTE CE FILTRE POUR LES DEMANDES :
+        if self.employee:
+            # Récupère les demandes approuvées de cet employé des dernières 48h
+            from datetime import timedelta
+            from django.utils import timezone
+            from secretaire_app.models import DemandeDecaissement
+            
+            date_limite = timezone.now() - timedelta(hours=48)
+            
+            self.fields['demande_decaissement'].queryset = DemandeDecaissement.objects.filter(
+                demandeur=self.employee,# ou le champ qui lie à l'employé
+                decaisse = True,
+                status__in=['approuvee_directeur', 'approuvee_comptable'],
+                date_approbation__gte=date_limite
+            ).order_by('-date_demande')
+            
         
         #Filtre les chantier ou cet employee travaille
         if self.employee:
@@ -96,10 +122,7 @@ class RapportDepenseForm(forms.ModelForm):
                 
         return cleaned_data
     
-class updateRapportFournisseurForm(forms.ModelForm):
-    class Meta:
-        model = RapportDepense
-        fields = ["fournisseur"]
+
 
 class ValidationRapportForm(forms.ModelForm):
     """Formulaire pour Valider/rejeter un rapport"""
@@ -197,3 +220,8 @@ class FournisseurForm(forms.ModelForm):
     class Meta:
         model = Fournisseur
         fields = ['nom', 'telephone', 'email', "specialite"]
+        
+class updateRapportFournisseurForm(forms.ModelForm):
+    class Meta:
+        model = RapportDepense
+        fields = ["fournisseur"]

@@ -2,7 +2,7 @@ from django.views.generic import CreateView, ListView, TemplateView
 from django.utils import timezone
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.contrib import messages
-from django.db.models import Sum, F, Count
+from django.db.models import Sum, F, Count, Q
 from django.urls import reverse_lazy
 
 from .form import RapportDepenseForm, FiltreRapportForm, FournisseurForm
@@ -22,13 +22,21 @@ class CreerRapportDepenseView(LoginRequiredMixin, CreateView):
         kwargs['employee'] = self.request.user
         return kwargs
     
+    
     def form_valid(self, form):
         """Associe l'employé automatiquement"""
         form.instance.employee = self.request.user
-        form.instance.status = 'soumis' #Auto_soumission
+        form.instance.status = 'soumis'
         
-        # Message de succès
-        messages.success(self.request,f'Rapport de {form.instance.total_affichage} soumis avec avec succès par {form.instance.employee.username}')
+        # Message amélioré avec le lien
+        if form.instance.demande_decaissement:
+            messages.success(self.request,
+                f'Rapport de {form.instance.total_affichage} soumis '
+                f'pour la demande "{form.instance.demande_decaissement.motif}"')
+        else:
+            messages.success(self.request,
+                f'Rapport de {form.instance.total_affichage} soumis '
+                f'(sans lien avec une demande)')
         
         return super().form_valid(form)
             
@@ -89,34 +97,39 @@ class BestEmployeeView(LoginRequiredMixin,TemplateView):
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
 
-        context.update(self.get_most_rapport())
-        context.update(self.get_total_depense_employee())        
+        context.update(self.get_employe_performant())        
         return context
         
         
-    def get_most_rapport(self):
-        """L'employé ayant remis le plus de rapport"""
+       
+    def get_employe_performant(self):
+        employee_depense = RapportDepense.objects.filter(
+             date_creation__year=timezone.now().year,
+            date_creation__month=timezone.now().month,
+            status="valide"
+        ).values("employee__username").annotate(
+            total_depense =Sum(F("prix_unitaire")*F("quantité"))
+            ).order_by("-total_depense")[:1]
+        
+        top_commerciaux = Personnel.objects.values("username").annotate(
+            clients_amenes= Count('clients_attaches'),
+            chantier_status_en_cours= Count('clients_attaches__chantiers', filter=Q(clients_attaches__chantiers__status_chantier='en_cours')),
+            chantier_status_termine= Count('clients_attaches__chantiers', filter=Q(clients_attaches__chantiers__status_chantier='termine')),
+            contrats_signes= Count('clients_attaches__chantiers__contrats'),
+            ca_genere= Sum('clients_attaches__chantiers__contrats__montant_total')
+        ).exclude(ca_genere=None).order_by('-ca_genere')[:1]
+    
+
         most_rapport_by_employee = RapportDepense.objects.filter(
             date_creation__year=timezone.now().year,
             date_creation__month=timezone.now().month
             ).values('employee__username').annotate(total_rapports=Count('id')).order_by('-total_rapports')[:1] 
         
-        print(most_rapport_by_employee)
-          
-            
+             
         return {
-            'best_employee':most_rapport_by_employee
-        }
-        
-    def get_total_depense_employee(self):
-        employee_depense = RapportDepense.objects.filter(
-             date_creation__year=timezone.now().year,
-            date_creation__month=timezone.now().month
-        ).values("employee__username").annotate(
-            total_depense =Sum(F("prix_unitaire")*F("quantité"))
-            ).order_by("-total_depense")[:1]
-        return {
-            "total_depense_employee":employee_depense
-        }
+            "total_depense_employee":employee_depense,
+            "rapports_employee":most_rapport_by_employee,
+            'top_commerciaux':top_commerciaux
+        }   
 
 

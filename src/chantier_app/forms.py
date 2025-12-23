@@ -27,8 +27,12 @@ class ChantierInfoForm(forms.ModelForm):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         
-        # 🎯 MAGIE : self.instance nous dit si on est en création ou modification
-        if self.instance == self.instance.pk:
+        #rend tous les champs obligatoires
+        for field in self.fields:
+            self.fields[field].required = True #Tous les champs requis 
+        
+        # 🎯 Verifie si c'est une modification
+        if self.instance and self.instance.pk:
             # 🎯 MODIFICATION : référence en lecture seule
             self.fields['reference'].widget.attrs.update({
                 'readonly': True,
@@ -44,7 +48,7 @@ class ChantierInfoForm(forms.ModelForm):
         reference = self.cleaned_data.get('reference')
         
         # 🎯 Si modification, on garde l'ancienne valeur
-        if self.instance == self.instance.pk:
+        if self.instance and self.instance.pk:
             return self.instance.reference  # ← Ignore la nouvelle valeur
         else:
             # 🎯 Si création, on vérifie l'unicité
@@ -58,15 +62,6 @@ class ChantierInfoForm(forms.ModelForm):
     
     #################################
         
-    def __init__(self, *args, **kwargs):
-        """Méthode spéciale qui s'exécute à la création du formulaire"""
-        #Appelle la versiobn parent
-        super().__init__(*args, **kwargs)
-
-        #rend tous les champs obligatoires
-        for field in self.fields:
-            self.fields[field].required = True #Tous les champs requis 
-                
 
 class ChantierLocalisationForm(forms.ModelForm):
     """Position Géographique du chantier"""
@@ -97,8 +92,11 @@ class ChantierLocalisationForm(forms.ModelForm):
         super().__init__(*args, **kwargs)
             
             # Ici, certains champs son optionnels
-        for field in ["ville_chantier","quartier_chantier","gps_latitude", "gps_longitude"]:
+        for field in ["gps_latitude", "gps_longitude"]:
             self.fields[field].required = False # pas obligatyoire
+            
+        for field in ["adresse_chantier","pays_chantier","ville_chantier","quartier_chantier"]:
+            self.fields[field].required= True #Obligatoite   
 
 
 class ChantierCaracteristiquesForm(forms.ModelForm):

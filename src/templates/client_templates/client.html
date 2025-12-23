@@ -8,7 +8,7 @@
 
 {% block content %}
     
-<a href="{% url 'client_app:ajouter-client' %}">Ajouter un client</a>
+<a href="{% url 'client_app:ajouter-client' %}"> ➕Ajouter un client</a>
 
     {% for client in clients %}
     <p> <a href="{% url 'client_app:detail-client' client.id %}">{{ client.nom }} {{ client.prenom }}</a></p>

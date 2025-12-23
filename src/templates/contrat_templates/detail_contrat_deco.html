@@ -1,0 +1,64 @@
+{% comment %}
+Template: detail_contrat_deco.html
+Vue: ContratDetaiView (DetailView)
+Type de travaux: 'decoration' uniquement
+Contexte: objet "contrat" avec accès au chantier et client
+{% endcomment %}
+
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <title>Contrat Décoration {{ contrat.reference_contrat }}</title>
+</head>
+<body>
+    <header>
+        <h1>CONTRAT DE DÉCORATION INTÉRIEURE</h1>
+        <h2>Réf. : {{ contrat.reference_contrat }}</h2>
+    </header>
+    
+    <section>
+        <h3>DESCRIPTIF DES TRAVAUX DE DÉCORATION</h3>
+        <p><strong>Nature des travaux :</strong> {{ contrat.chantier.description_detaille|default:"Décoration non détaillée" }}</p>
+        <p><strong>Surface à décorer :</strong> {{ contrat.chantier.surface_totale|default:"Non spécifiée" }} m²</p>
+        <p><strong>Type de bâtiment :</strong> {{ contrat.chantier.get_type_batiment_display }}</p>
+    </section>
+    
+    <section>
+        <h3>MATÉRIAUX DE DÉCORATION (À TITRE INDICATIF)</h3>
+        <p>Les matériaux utilisés seront de qualité conforme aux normes en vigueur.</p>
+        <p>Les échantillons et coloris sont à valider par le client avant réalisation.</p>
+    </section>
+    
+    <section>
+        <h3>CONDITIONS SPÉCIFIQUES DÉCORATION</h3>
+        <p>1. Le client devra libérer les pièces avant intervention.</p>
+        <p>2. Les travaux de préparation (rebouchage, lissage) sont inclus.</p>
+        <p>3. Les finitions (peinture, papiers peints, etc.) sont garanties contre les défauts d'application.</p>
+        <p><strong>Garantie spécifique :</strong> 24 mois sur les travaux de décoration</p>
+    </section>
+
+    <section>
+        <h3>GARANTIE ET CLAUSES</h3>
+        <p><strong>Garantie :</strong> {{ contrat.garantie_mois }} mois</p>
+        {% if contrat.notes_contractuelles %}
+        <p><strong>Notes :</strong> {{ contrat.notes_contractuelles }}</p>
+        {% endif %}
+    </section>
+    
+    {% comment %} Section financière standard {% endcomment %}
+    <section>
+        <h3>CONDITIONS FINANCIÈRES</h3>
+        <p><strong>Montant total :</strong> {{ contrat.montant_total }} FCFA</p>
+        <p><strong>Acompte :</strong> {{ contrat.acompte_pourcentage }}% à la signature</p>
+        <p><strong>Solde :</strong> À la réception des travaux</p>
+    </section>
+    
+    <section>
+        <h3>LIEU DE SIGNATURE</h3>
+        <p>Fait à {{ contrat.chantier.ville_chantier|default:"Ouagadougou" }}, le {{ contrat.date_signature|default:"__________" }}</p>
+    </section>
+    
+    <button onclick="window.print()">Imprimer ce contrat</button>
+</body>
+</html>

@@ -22,13 +22,31 @@
 
 
 <h2>Fond disponible: {{ fond }}</h2>
-<!--<a href="{% url 'auth_app:register' %}">Ajouter un employée</a>-->
 
+
+<!--<a href="{% url 'auth_app:register' %}">Ajouter un employée</a>-->
 <a href="{% url 'directeur_app:ajouter-fond' %}">Ajouter des fonds</a>
+
 <a href="{% url 'directeur_app:rapport-depense-employee' %}">Rapport des dépenses </a>
+
+<a href="{% url 'secretaire_app:hist-demande-decaisse' %}">Historique des demandes</a>
+
+<a href="{% url 'client_app:liste-client' %}">Voir tout les clients</a>
+
+<a href="{% url 'chantier_app:liste-chantier' %}">Voir tout les chantier</a>
+
+<a href="{% url 'contrat_app:liste-contrats' %}"> Voir les contrats</a>
+
+<a href="{% url 'employee_app:employee-du-mois' %}">🏆 Employé du mois</a>
+
+<a href="{%url 'dashboard_app:dashboard-view'%}"> Dashbord</a>
+
+<a href="{% url 'auth_app:changer-identifiants' %}" class="btn">🔐 Changer identifiants</a>
+
 
 
 <a href="{% url 'auth_app:logout' %}">Deconnexion</a>
+
 <div class='list_demande'>
     <hr>
     <hr>
@@ -36,19 +54,25 @@
 <h1>List et status de demande en cours</h1>
 
 {% for demande in list_demande %}
-    <h3>{{ demande.nom  }}</h3>
-    <h4><em>{{ demande.montant }}</em></h4>
-    <h4>{{ demande.chantier}}</h4>
-    <p>{{ demande.motif }}</p>
+    <h4>Nom: <strong>{{ demande.nom  }}</strong></h4>
+    <h4>Montant: <strong>{{ demande.montant }}</strong></h4>
     
-   
-  {% if demande.status == 'approuvee_directeur' or demande.status == 'approuvee_comptable' %}
-   <h3 style='color:green;'>{{ demande.get_status_display }}</h3>
-   {% elif demande.decaisse %}
+    {% if  demande.chantier %}
+    <h4>Chantier: <strong>{{ demande.chantier }}</strong></h4>
+    {% endif %}
+    
+    <h4>Motif: <em>{{ demande.motif }}</em></h4>
+    
+
+    {% if demande.decaisse %}
     <h3 style='color:skyblue;'>Décaissé</h3>
 
-   {% elif demande.status == 'refusee_directeur' or demande.status == 'refusee_comptable' %}
+    {% elif demande.status == 'approuvee_directeur' or demande.status == 'approuvee_comptable' %}
+    <h3 style='color:green;'>{{ demande.get_status_display }}</h3>
+  
+    {% elif demande.status == 'refusee_directeur' or demande.status == 'refusee_comptable' %}
     <h3 style='color:red;'>{{demande.get_status_display }}</h3>
+    
     {% else %}
     <h3 style='color:orange;'>{{ demande.get_status_display}}</h3>
 

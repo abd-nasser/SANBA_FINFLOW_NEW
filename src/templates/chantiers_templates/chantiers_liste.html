@@ -1,12 +1,11 @@
+
+<!-- chantiers_templates/chantiers_liste.html -->
 {% extends 'base.html' %}
 
-
-{% block title %}
-Chantiers
-{% endblock title %}
-    
+{% block title %}📋 Chantiers - Sanba{% endblock %}
 
 {% block content %}
+
 
 {% if messages %}
 <div class="messages">
@@ -19,18 +18,128 @@ Chantiers
 {% endif %}
 
 
-<h1>Liste des Chantiers</h1>
-<a href="{% url 'chantier_app:ajouter-chantier' %}">Ajouter nouveau Chantier</a>
+<div class="container-fluid mt-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1>🏗️ Liste des Chantiers</h1>
+        <a href="{% url 'chantier_app:ajouter-chantier' %}" class="btn btn-success">
+            ➕ Nouveau chantier
+        </a>
+    </div>
+    
+    <!-- 🎯 SECTION FILTRES HTMX -->
+    <div class="card shadow-sm mb-4">
+        <div class="card-header bg-light">
+            <h5 class="mb-0">🔍 Filtres rapides</h5>
+        </div>
+        <div class="card-body">
+            <div class="row g-3" 
+                 hx-target="#chantiers-table-container"
+                 hx-swap="innerHTML"
+                 hx-indicator="#spinner">
+                
+                <!-- 1️⃣ FILTRE STATUT -->
+                <div class="col-md-3">
+                    <label class="form-label">📋 Statut</label>
+                    <select name="status" 
+                            class="form-select"
+                            hx-get="{% url 'chantier_app:liste-chantier' %}"
+                            hx-trigger="change">
+                        <option value="">Tous les statuts</option>
+                        <option value="en_cours">🏗️ En cours</option>
+                        <option value="planification">📅 Planification</option>
+                        <option value="termine">✅ Terminé</option>
+                        <option value="facturee">🧾 Facturé</option>
+                        <option value="paye">💰 Payé</option>
+                        <option value="retard">🚨 En retard</option>
+                    </select>
+                </div>
+                
+                <!-- 2️⃣ FILTRE TYPE TRAVAUX -->
+                <div class="col-md-3">
+                    <label class="form-label">🔧 Type de travaux</label>
+                    <select name="type_travaux"
+                            class="form-select"
+                            hx-get="{% url 'chantier_app:liste-chantier' %}"
+                            hx-trigger="change">
+                        <option value="">Tous les types</option>
+                        {% for value, label in type_travaux_choices %}
+                        <option value="{{ value }}">{{ label }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                
+                <!-- 3️⃣ RECHERCHE TEXTE -->
+                <div class="col-md-4">
+                    <label class="form-label">🔍 Recherche</label>
+                    <input type="search"
+                           name="q"
+                           class="form-control"
+                           placeholder="Nom chantier, client..."
+                           hx-get="{% url 'chantier_app:liste-chantier' %}"
+                           hx-trigger="keyup changed delay:400ms"
+                           hx-indicator="#search-spinner">
+                    <div id="search-spinner" class="htmx-indicator mt-1">
+                        <small class="text-muted">Recherche en cours...</small>
+                    </div>
+                </div>
+                
+                <!-- 4️⃣ BOUTON RESET -->
+                <div class="col-md-2 d-flex align-items-end">
+                    <button class="btn btn-outline-secondary w-100"
+                            hx-get="{% url 'chantier_app:liste-chantier' %}"
+                            hx-trigger="click">
+                        🗑️ Effacer
+                    </button>
+                </div>
+            </div>
+            
+            <!-- INDICATEUR CHARGEMENT -->
+            <div id="spinner" class="htmx-indicator text-center mt-3">
+                <div class="spinner-border text-primary" role="status">
+                    <span class="visually-hidden">Chargement...</span>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- 📊 STATS RAPIDES -->
+    <div class="row mb-4">
+        <div class="col-md-3">
+            <div class="card bg-primary text-white">
+                <div class="card-body text-center">
+                    <h4 class="mb-0">{{ total_chantiers }}</h4>
+                    <small>Total chantiers</small>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card bg-warning text-white">
+                <div class="card-body text-center">
+                    <h4 class="mb-0">{{ chantiers_en_retard }}</h4>
+                    <small>En retard</small>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- 🎯 TABLE DES CHANTIERS (cible HTMX) -->
+    <div id="chantiers-table-container">
+        {% include 'partials/liste_chantier_partial.html' %}
+    </div>
+</div>
 
-{% for chantier in chantiers %}
-    <p>Nom du chantier : {{ chantier.nom_chantier }} </p>- 
-    <p> Client: <a href="{% url 'client_app:detail-client' chantier.client.id %}">{{ chantier.client.nom }} {{ chantier.client.prenom }}</a></p>
-    <p> Status actuelle : {{ chantier.status_chantier }}</p>
-    <p>Reference: {{chantier.reference}}</p>
-    
-    
-{% endfor %}
-    
-
-{% endblock content %}
-    
+<!-- SCRIPT HTMX -->
+<script src="https://unpkg.com/htmx.org@1.9.6"></script>
+<style>
+.htmx-indicator {
+    opacity: 0;
+    transition: opacity 200ms ease-in;
+}
+.htmx-request .htmx-indicator {
+    opacity: 1;
+}
+.htmx-request.htmx-indicator {
+    opacity: 1;
+}
+</style>
+{% endblock %}

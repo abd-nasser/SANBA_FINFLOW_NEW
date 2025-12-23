@@ -34,7 +34,7 @@ class Client(models.Model):
         ('ancien_client', 'Ancien Client'),
         ('autre', 'Autre'),
         ('salon', 'Salon Professionnel'),
-        ("autre", "Autre")
+
     ]
     
     #info principales du client
@@ -77,7 +77,7 @@ class Client(models.Model):
     date_premier_contact = models.DateField(auto_now_add=True)
     
     #commercial_attache = le commercial qui suit le client
-    commercial_attache = models.ForeignKey(Personnel, on_delete=models.SET_NULL, null=True, blank=True)
+    commercial_attache = models.ForeignKey(Personnel, on_delete=models.SET_NULL,related_name="clients_attaches", null=True, blank=True)
     
     #est fidel = un client qui revient souvent
     est_fidel = models.BooleanField(default=False)
@@ -102,7 +102,10 @@ class Client(models.Model):
             return f"{self.nom} -{self.prenom} - {self.telephone} -{self.ville} "
 
 
-
+    @property
+    def nom_complet(self):
+        """Retourne le nom complet du client"""
+        return f"{self.nom} {self.prenom}"
     
 
 

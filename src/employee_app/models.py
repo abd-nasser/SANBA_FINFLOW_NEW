@@ -17,10 +17,10 @@ class TypeDepense(models.Model):
     
     COULEUR_CHOICES = [
         ('#FF6384', 'Rouge'),      # Matériaux
-        ('#36A2EB', 'Bleu'),       # Transport  
-        ('#FFCE56', 'Jaune'),      # Main d'œuvre
-        ('#4BC0C0', 'Turquoise'),  # Frais divers
-        ('#9966FF', 'Violet'),     # Administration
+        ('#36A2EB', 'Bleu'),       # Transport 
+        ('#9966FF', 'Violet'),     # Main d'oeuvre 
+        ('#FFCE56', 'Jaune'),      # Frais divers
+        ('#4BC0C0', 'Turquoise'),  # Administration 
         ('#FF9F40', 'Orange'),     # Autre
     ]
     
@@ -139,8 +139,19 @@ class Fournisseur(models.Model):
 
 class RapportDepense(models.Model):
     employee = models.ForeignKey(Personnel, on_delete=models.CASCADE, related_name="rapports_depense")
+    
+    demande_decaissement = models.ForeignKey(
+        'secretaire_app.DemandeDecaissement',  # Assure-toi que c'est le bon chemin
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name='rapports_depense',
+        verbose_name="Demande de décaissement liée",
+        help_text="Lien avec la demande d'argent préalable"
+    )
+    
     type_depense = models.ForeignKey(TypeDepense, on_delete=models.CASCADE, related_name='rapports')
-    chantier = models.ForeignKey(Chantier, on_delete=models.CASCADE, related_name="depenses")
+    chantier = models.ForeignKey(Chantier, on_delete=models.CASCADE, related_name="depenses", null=True, blank=True)
     materiau_article = models.CharField(max_length=200, null=True, blank=True)
     
     prix_unitaire = models.DecimalField(max_digits=10, 

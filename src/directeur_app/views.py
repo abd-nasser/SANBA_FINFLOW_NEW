@@ -1,6 +1,7 @@
 from django.utils import timezone
 from django.shortcuts import render, get_object_or_404, redirect
-from django.views.generic import CreateView, UpdateView
+from django.views.generic import CreateView, UpdateView, ListView
+from django.db.models import Sum, Count
 
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.urls import reverse_lazy
@@ -47,6 +48,31 @@ def ajouter_fond(request):
             logger.error(f"error{e}")
             
     return render(request, "modal/ajouter_fond.html")
+
+def historique_ajout_fonf(request):
+    hist_fond = Historique_dajout_fond.objects.all().order_by('-date_ajout')
+    
+    # Calcul des stats
+    total_ajoutes = hist_fond.aggregate(total=Sum('montant'))['total'] or 0
+    moyenne_ajout = total_ajoutes / hist_fond.count() if hist_fond.count() > 0 else 0
+    
+    # Top contributeurs
+   
+    top_contributeurs = Historique_dajout_fond.objects.values(
+        'nom__username'
+    ).annotate(
+        total_ajoute=Sum('montant'),
+        nb_ajouts=Count('id')
+    ).order_by('-total_ajoute')[:3]
+    
+    context = {
+        'hist_fond': hist_fond,
+        'total_ajoutes': total_ajoutes,
+        'moyenne_ajout': moyenne_ajout,
+        'top_contributeurs': top_contributeurs,
+    }
+    
+    return render(request, "historique/hist_fond.html", context)
 
             
 def directeur_approuve_demande_view(request, demande_id):
@@ -96,7 +122,8 @@ def list_rapport_depense_view(request):
 
 class ValidationRapportView(LoginRequiredMixin, UpdateView):
     model = RapportDepense
-    template_name = 'directeur_templates/rapport_employee.html'
+    template_name = 'modal/valider_rapport.html'
+    context_object_name="rapport"
     form_class = ValidationRapportForm
     success_url = reverse_lazy("directeur_app:rapport-depense-employee")
     
@@ -120,10 +147,11 @@ class UpdateRapportFournisseurView(LoginRequiredMixin, UpdateView):
     success_url = reverse_lazy('directeur_app:rapport-depense-employee')
     
     def form_valid(self, form):
-        print('fait')
+        print("Post valide")
         return super().form_valid(form)
+    
     def form_invalid(self, form):
-        print('infait')
+        print('Post mais invalide')
         return super().form_invalid(form)
     
     

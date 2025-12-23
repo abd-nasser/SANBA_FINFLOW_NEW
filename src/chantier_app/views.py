@@ -4,7 +4,9 @@ from django.urls import reverse_lazy
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.views.generic import ListView, CreateView , DetailView, UpdateView, DeleteView
 from django.contrib import messages
+from django.utils import timezone
 from chantier_app import models
+from django.db.models import Q
 
 from chantier_app.models import Chantier
 from .forms import ChantierInfoForm, ChantierLocalisationForm, ChantierCaracteristiquesForm, ChantierPlanningForm, ChantierBudgetForm
@@ -24,14 +26,92 @@ class ChantierListeView(LoginRequiredMixin, ListView):
     context_object_name = "chantiers" #comment on l'appel dans le templates
     paginate_by = 20 # 20 clients par page 
     
-    def get_queryset(self):
-        """Personnalise quel client on souhaite afficher
-           par defaut = Client.objects.all()
-        """
+    def get_template_names(self):
+        """retourne le template partial si requete HTMX"""
+        if self.request.headers.get('HX-request'):
+            #si requet HTMX ->  retourne slmt te tableau (pas toute la page)
+            return["partials/liste_chantier_partial.html"]
         
-        return Chantier.objects.all().order_by("-date_creation")
-    
-
+        #requet normale -> retourne la page complète
+        return [self.template_name]
+        
+    def get_queryset(self):
+       """FILTRAGE INTELLIGENT AVEC OPTIMISATION DB"""
+       #OPTIMISATION CRITIQUE: select_related
+       queryset = Chantier.objects.all().select_related(
+           'client',
+           'chef_de_chantier'
+           
+        # ⚡ AVANT : 1 requête par chantier pour client + 1 par chef
+        # ⚡ APRÈS : 1 seule requête avec JOIN pour TOUS les chantiers
+           
+       ).prefetch_related('equipe_affectee')
+       # ⬅️ ManyToMany : Charge TOUTE l'équipe en 2 requêtes max
+       # 1. Tous les chantiers
+       # 2. Tous les équipes de ces chantiers
+       # ❌ SANS ça : 1 requête par chantier pour l'équipe !
+        
+       ########################__ 1️⃣ FILTRE STATUT (le plus important) __############################
+       status = self.request.GET.get('status') #recupère depuid URL ? status=en_cours
+       if status:
+           if status == 'retard':
+               #Cas spécial : chantiers "en_cours" + date dépassée
+               queryset = queryset.filter(
+                   status_chantier="en_cours",
+                   date_fin_prevue=timezone.now().date()
+                   
+               )
+           else:
+               queryset= queryset.filter(status_chantier=status)
+        
+       #########################__ # 2️⃣ FILTRE TYPE TRAVAUX __############################
+       type_travaux = self.request.GET.get("type_travaux") 
+       if type_travaux:
+           queryset = Chantier.objects.filter(type_travaux=type_travaux)
+           
+       ########################__ # 3️⃣ RECHERCHE TEXTE (nom chantier Ou client) __############################
+       search_query =  self.request.GET.get('q') #q pour query standars
+       if search_query:
+           #Q()= OR condition (cherche dans plusieurs champs)
+           queryset = queryset.filter(
+               Q(nom_chantier__icontains=search_query)|
+               Q(client__nom__icontains=search_query)|
+               Q(client__prenom__icontains=search_query)|
+               Q(client__raison_sociale__icontains=search_query)
+           )
+           
+       ########################__ #  4️⃣ FILTRE AUTO PAR RÔLE (SÉCURITÉ + UX) __############################
+       user = self.request.user
+       if user.post and user.post.nom != "Directeur":
+           queryset = queryset.filter(
+               Q(chef_de_chantier=user)|
+               Q(equipe_affectee=user)
+           ).distinct()
+        
+       return queryset.order_by('-date_creation')
+   
+    def get_context_data(self, **kwargs):
+        """AJOUTE DES Données UTILES au Template"""
+        context = super().get_context_data(**kwargs) #Récupère le contexte de base
+        
+        #STATS pour affichage(en-tete, badges)
+        context['total_chantiers'] = self.get_queryset().count()
+        #compte tous les chantiers filtres
+        
+        context['chantiers_en_retard']=self.get_queryset().filter(
+            status_chantier='en_cours',
+            date_fin_prevue__lt=timezone.now().date()
+        ).count()
+        #compte slmt ceux en retard
+        
+        #OPTIONS pour les selects html
+        context['status_choices']=Chantier.STATUS_CHANTIER_CHOICES
+        #EX: [('en_cours', 'En cours'), ('termine', 'Terminé')...]
+        
+        context['type_travaux_choices']=Chantier.TYPE_TRAVAUX_CHOICES
+        
+        return context # Retourne tout au template
+          
 class ChantierCreateView(LoginRequiredMixin, SessionWizardView):
     
     form_list = [
@@ -237,6 +317,7 @@ class ChantierDeleteView(LoginRequiredMixin, DeleteView):
         return super().delete(request, *args, **kwargs)
     
     
+
 #FILTRER_CHANTIERS_HTMX-Filtre en temps réel avec htmx
 def filter_chantiers_htmx(request):
     """Cette vue est appelée par HTMX quand on change un filtre

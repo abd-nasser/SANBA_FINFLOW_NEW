@@ -27,6 +27,21 @@
 </select>
 
 
+
+<!-- 3️⃣ RECHERCHE TEXTE -->
+                <div class="col-md-4">
+                    <label class="form-label">🔍 Recherche</label>
+                    <input type="search"
+                           name="q"
+                           class="form-control"
+                           placeholder="Nom demandeur, Approuvee/refuser..."
+                           hx-get="{% url 'chantier_app:liste-chantier' %}"
+                           hx-trigger="keyup changed delay:400ms"
+                    >
+                        
+                </div>
+
+
 <br>
 <br>
 <br>
@@ -63,5 +78,5 @@
             
     </tbody>
 </table>
-
+<script src="https://unpkg.com/htmx.org@1.9.6"></script>
 {% endblock content %}

@@ -1,13 +1,30 @@
-{% extends 'base.html' %}
 
-{% block title %}Login page{% endblock title %}
+<dialog id="my_modal_1" class="modal">
+  <div class="modal-box">
+      <h3>Login</h3>
+      <form action="{% url 'auth_app:login' %}"
+            method="post">
 
-{% block content %}
-    <form 
-    method='post'
-    action="{% url 'auth_app:login' %}">
-     {% csrf_token %}
-        {{form}}
-        <input type="submit" value="Se connecter">
-    </form>
-{% endblock content %}
+        {% csrf_token %}
+        <div class="mb-4">
+          {{form.username.label_tag}} 
+          {{form.username}}
+        </div>
+
+        <div class="mb-4">
+          {{form.password.label_tag}} 
+          {{form.password}}
+        </div>
+
+          <input type="submit" value="Connexion" class="btn btn-primary"/>
+
+      </form>
+
+      <div class="modal-action">
+          <button onclick="my_modal_1.close()" class="btn">Close</button>
+      </div>
+      
+    </div>
+</dialog>
+
+

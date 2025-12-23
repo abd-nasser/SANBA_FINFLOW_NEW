@@ -1,12 +1,157 @@
-<!-- partials/liste_chantiers_partial.html -->
 
-{% for chantier in chaniers %}
-<div class="chantier-card">
-    <h3>{{ chantier.nom_chantier }}</h3>
-    <p>Status: {{ chantier.get_status_display }} </p>
-    <p>Client {{ chantier.client.nom }}</p>
-</div>    
-{% empty %}
-<p>Aucun chantier trouvé</p>
-{% endfor %}
+<div class="card shadow">
+    <div class="card-header bg-dark text-white d-flex justify-content-between align-items-center">
+        <h5 class="mb-0">
+            📋 Liste des chantiers 
+            <span class="badge bg-light text-dark ms-2">{{ chantiers|length }}</span>
+        </h5>
+        <small class="text-light">
+            Mis à jour : {{ "now"|date:"H:i:s" }}
+        </small>
+    </div>
     
+    {% if chantiers %}
+    <div class="table-responsive">
+        <table class="table table-hover mb-0">
+            <thead class="table-light">
+                <tr>
+                    <th>Référence</th>
+                    <th>Nom du chantier</th>
+                    <th>Client</th>
+                    <th>Type travaux</th>
+                    <th>Statut</th>
+                    <th>Budget</th>
+                    <th>Échéance</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for chantier in chantiers %}
+                <tr class="{% if chantier.est_en_retard %}table-danger{% endif %}">
+                    <td>
+                        <strong>{{ chantier.reference }}</strong>
+                    </td>
+                    <td>
+                        <div class="fw-bold">{{ chantier.nom_chantier }}</div>
+                        <small class="text-muted">{{ chantier.ville_chantier|default:"Ville non spécifiée" }}</small>
+                    </td>
+                    <td>
+                        {% if chantier.client.type_client == 'entreprise' %}
+                            {{ chantier.client.raison_sociale }}
+                        {% else %}
+                            {{ chantier.client.nom }} {{ chantier.client.prenom }}
+                        {% endif %}
+                    </td>
+                    <td>
+                        <span class="badge bg-info">
+                            {{ chantier.get_type_travaux_display }}
+                        </span>
+                    </td>
+                    <td>
+                        {% if chantier.est_en_retard %}
+                            <span class="badge bg-danger">
+                                🚨 Retard
+                            </span>
+                        {% else %}
+                            <span class="badge 
+                                {% if chantier.status_chantier == 'en_cours' %}bg-primary
+                                {% elif chantier.status_chantier == 'termine' %}bg-success
+                                {% elif chantier.status_chantier == 'planification' %}bg-secondary
+                                {% else %}bg-warning{% endif %}">
+                                {{ chantier.get_status_chantier_display }}
+                            </span>
+                        {% endif %}
+                    </td>
+                    <td>
+                        {% if chantier.budget_total %}
+                            <strong>{{ chantier.budget_total|floatformat:0 }} FCFA</strong>
+                        {% else %}
+                            <span class="text-muted">Non défini</span>
+                        {% endif %}
+                    </td>
+                    <td>
+                        {% if chantier.date_fin_prevue %}
+                            <div class="{% if chantier.est_en_retard %}text-danger fw-bold{% endif %}">
+                                {{ chantier.date_fin_prevue|date:"d/m/Y" }}
+                            </div>
+                            {% if chantier.est_en_retard %}
+                                <small class="text-danger">
+                                    {{ chantier.date_fin_prevue|timesince }} de retard
+                                </small>
+                            {% endif %}
+                        {% else %}
+                            <span class="text-muted">Non définie</span>
+                        {% endif %}
+                    </td>
+                    <td>
+                        <div class="btn-group btn-group-sm">
+                            <a href="{% url 'chantier_app:detail-chantier' chantier.id %}" 
+                               class="btn btn-outline-info" title="Voir">
+                                👁️
+                            </a>
+                            {% if request.user.post.nom == "Directeur" %}
+                            <a href="{% url 'chantier_app:modifier-chantier' chantier.id %}"
+                               class="btn btn-outline-warning" title="Modifier">
+                                ✏️
+                            </a>
+                            {% endif %}
+                        </div>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    
+    <!-- PAGINATION (si besoin) -->
+    {% if is_paginated %}
+    <div class="card-footer">
+        <nav aria-label="Pagination">
+            <ul class="pagination justify-content-center mb-0">
+                {% if page_obj.has_previous %}
+                <li class="page-item">
+                    <a class="page-link" 
+                       hx-get="{% url 'chantier_app:liste-chantier' %}?page={{ page_obj.previous_page_number }}"
+                       hx-target="#chantiers-table-container"
+                       aria-label="Précédent">
+                        &laquo;
+                    </a>
+                </li>
+                {% endif %}
+                
+                <li class="page-item active">
+                    <span class="page-link">
+                        Page {{ page_obj.number }} sur {{ page_obj.paginator.num_pages }}
+                    </span>
+                </li>
+                
+                {% if page_obj.has_next %}
+                <li class="page-item">
+                    <a class="page-link"
+                       hx-get="{% url 'chantier_app:liste-chantier' %}?page={{ page_obj.next_page_number }}"
+                       hx-target="#chantiers-table-container"
+                       aria-label="Suivant">
+                        &raquo;
+                    </a>
+                </li>
+                {% endif %}
+            </ul>
+        </nav>
+    </div>
+    {% endif %}
+    
+    {% else %}
+    <div class="card-body text-center py-5">
+        <div class="text-muted">
+            <i class="fas fa-inbox fa-3x mb-3"></i>
+            <h4>Aucun chantier trouvé</h4>
+            <p>Essayez de modifier vos filtres de recherche.</p>
+            <button class="btn btn-outline-primary"
+                    hx-get="{% url 'chantier_app:liste-chantier' %}"
+                    hx-target="#chantiers-table-container">
+                🗑️ Effacer les filtres
+            </button>
+        </div>
+    </div>
+    {% endif %}
+</div>

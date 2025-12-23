@@ -138,3 +138,5 @@ ssm_env/
 .env
 frontend/
 .env.prod
+snippet
+readme.md

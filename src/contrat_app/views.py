@@ -3,7 +3,7 @@ from django.urls import reverse_lazy
 from django.contrib import messages
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.views.generic import CreateView, ListView,  UpdateView, DetailView, DeleteView
-
+from django.db.models import Q
 
 from .models import Contrat
 from .forms import ContratForm
@@ -13,6 +13,31 @@ class ContratView(LoginRequiredMixin, ListView):
     model = Contrat
     template_name = 'contrat_templates/list_contrat.html'
     context_object_name = "contrats"
+    
+    def get_template_names(self) -> list[str]:
+        """ retourne le template partials si requete HTMX """
+        if self.request.headers.get('HX-request'):
+            # si requet HTMX -> retourne slmt le tableau(pas toute la page)
+            return ["partials/liste_contrat_partial.html"]
+        # requet normale -> retourne la page complète
+        return[self.template_name]
+    
+    
+    def get_queryset(self):
+        """FILTRAGE INTELLIGENT AVEC OPTIMASATION"""
+        #OPTIMISATION CRITIQUE: select_related
+        queryset = Contrat.objects.all().select_related(
+            'chantier'
+        )
+        #########################__RECHERCHE DE CONTRAT PAR NON CHANTIER__###########################
+        search_query = self.request.GET.get('q')
+        if search_query:
+            queryset = queryset.filter(
+                Q(chantier__nom_chantier__icontain=search_query)|
+                Q(reference_contrat__icontains=search_query)
+            )
+        return  queryset
+    
     
     
 class createContratView(LoginRequiredMixin, CreateView):
@@ -36,8 +61,20 @@ class ContratUpdateView(LoginRequiredMixin, UpdateView):
 
 class ContratDetaiView(LoginRequiredMixin, DetailView):
     model = Contrat
-    template_name='contrat_templates/detail_contrat.html'
-    context_object_name = 'contrat'
+    chantier = Contrat.chantier
+    context_object_name= "contrat"
+    
+    def get_template_names(self) -> list[str]:
+        if self.chantier.type_travaux in ['decoration']:
+            return ["contrat_templates/detail_contrat_deco.html"]
+        elif self.chantier.type_travaux in ['toiture_tole', 'toiture_couverture', 'toiture_etancheite']:
+            return ["contrat_templates/detail_contrat_toiture.html"]
+        
+        else:
+            return ["contrat_templates/detail_contrat.html"]
+        
+    
+
     
     
 

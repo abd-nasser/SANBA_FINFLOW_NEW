@@ -1,5 +1,6 @@
 from django.db import models
-
+from django.urls import reverse
+from django.utils import timezone
 from auth_app.models import Personnel
 
 
@@ -11,11 +12,12 @@ class Chantier(models.Model):
     """
     TYPE_TRAVAUX_CHOICES = [
         ("charpente_metallique", "Charpente Métallique"),
-        ("toiture_tole", "Toiture en Tôle"),
-        ("couverture", "Couverture"),
+        ("toiture_tole", "Toiture Tôle"),
+        ("decoration", "Décoration"),
+        ("toiture_couverture", "Toiture Couverture"),
         ("isolation", "Isolation"),
         ("ventilation", "Ventilation"),
-        ("etancheite", "Étanchéité"),
+        ("toiture_etancheite", "Toiture Étanchéité"),
         ("garde_corps", "Garde-Corps"),
         ("escalier_metal", "Escalier en Métal"),
         ("porte_grillee", "Porte/Grille Métallique"),
@@ -58,10 +60,9 @@ class Chantier(models.Model):
     
     #LOCALISATION PRÉCISE
     adresse_chantier = models.TextField()
-    adresse_chantier = models.CharField(max_length=100)
     quartier_chantier = models.CharField(max_length=100, null=True, blank=True)
     ville_chantier = models.CharField(max_length=100, null=True, blank=True)
-    pays_chantier = models.CharField(max_length=100)
+    pays_chantier = models.CharField(max_length=100, default="Burkina Faso")
     
     #gps_latitude et longitude = position gps du chantier
     gps_latitude = models.DecimalField(max_digits=9, decimal_places=6, null=True, blank=True)
@@ -150,8 +151,10 @@ class Chantier(models.Model):
     
     @property
     def est_en_retard(self):
-        """Vérifie si le chantier est en retard par rapport à la date de fin prévue
-        """
-        if self.date_fin_prevue and self.date_fin_reelle:
-            return self.date_fin_reelle > self.date_fin_prevue
+        """Vérifie si le chantier est en retard"""
+        if self.status_chantier == 'en_cours' and self.date_fin_prevue:
+            return self.date_fin_prevue < timezone.now().date()
         return False
+    
+    def get_absolute_url(self):
+        return reverse('chantier_app:detail-chantier', args=[str(self.id)])

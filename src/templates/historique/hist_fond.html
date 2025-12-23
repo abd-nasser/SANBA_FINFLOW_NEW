@@ -1,0 +1,222 @@
+{% extends 'base.html' %}
+
+{% block title %}🔍 Audit des Fonds - Sanba{% endblock %}
+
+{% block content %}
+<div class="container-fluid mt-4">
+    <h1 class="mb-4">💰 <strong>HISTORIQUE COMPLET DES FONDS</strong></h1>
+    <p class="text-muted">
+        <i class="fas fa-info-circle"></i> 
+        Chaque ajout d'argent est tracé, horodaté et signé. Transparence totale.
+    </p>
+
+    <!-- CARD STATS RAPIDES -->
+    <div class="row mb-4">
+        <div class="col-md-3">
+            <div class="card bg-primary text-white">
+                <div class="card-body">
+                    <h6 class="card-title">📅 Dernier ajout</h6>
+                    <h4>{{ hist_fond.first.date_ajout|date:"d/m/Y" }}</h4>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card bg-success text-white">
+                <div class="card-body">
+                    <h6 class="card-title">💰 Total ajouté</h6>
+                    <h4>{{ total_ajoutes|floatformat:0 }} FCFA</h4>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card bg-info text-white">
+                <div class="card-body">
+                    <h6 class="card-title">👤 Nombre d'ajouts</h6>
+                    <h4>{{ hist_fond.count }}</h4>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card bg-warning text-white">
+                <div class="card-body">
+                    <h6 class="card-title">📈 Moyenne par ajout</h6>
+                    <h4>{{ moyenne_ajout|floatformat:0 }} FCFA</h4>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- TABLE AUDIT DÉTAILLÉ -->
+    <div class="card shadow">
+        <div class="card-header bg-dark text-white">
+            <h5 class="mb-0">
+                <i class="fas fa-history"></i> Journal des Mouvements de Fonds
+                <span class="badge bg-light text-dark float-end">{{ hist_fond.count }} entrées</span>
+            </h5>
+        </div>
+        <div class="card-body p-0">
+            <div class="table-responsive">
+                <table class="table table-hover mb-0">
+                    <thead class="table-light">
+                        <tr>
+                            <th><i class="fas fa-hashtag"></i> ID</th>
+                            <th><i class="fas fa-calendar"></i> Date & Heure</th>
+                            <th><i class="fas fa-user"></i> Responsable</th>
+                            <th><i class="fas fa-money-bill-wave"></i> Montant Ajouté</th>
+                            <th><i class="fas fa-file-invoice"></i> Référence</th>
+                            <th><i class="fas fa-clock"></i> Il y a</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for mouvement in hist_fond %}
+                        <tr class="{% if forloop.first %}table-success{% endif %}">
+                            <td><strong>#{{ mouvement.id }}</strong></td>
+                            <td>
+                                <div class="fw-bold">{{ mouvement.date_ajout|date:"d/m/Y" }}</div>
+                                <small class="text-muted">{{ mouvement.date_ajout|date:"H:i:s" }}</small>
+                            </td>
+                            <td>
+                                <div class="d-flex align-items-center">
+                                    <div class="avatar-sm bg-primary text-white rounded-circle d-flex align-items-center justify-content-center me-2" 
+                                         style="width: 32px; height: 32px; font-size: 14px;">
+                                        {{ mouvement.nom.username|first|upper }}
+                                    </div>
+                                    <div>
+                                        <div class="fw-bold">{{ mouvement.nom.get_full_name }}</div>
+                                        <small class="text-muted">@{{ mouvement.nom.username }}</small>
+                                    </div>
+                                </div>
+                            </td>
+                            <td>
+                                <span class="badge bg-success rounded-pill fs-6">
+                                    +{{ mouvement.montant|floatformat:0 }} FCFA
+                                </span>
+                            </td>
+                            <td>
+                                <small class="text-muted">FOND-{{ mouvement.date_ajout|date:"Ymd" }}-{{ mouvement.id }}</small>
+                            </td>
+                            <td>
+                                {% with delta=movement.date_ajout|timesince %}
+                                <span class="badge {% if 'jour' in delta %}bg-warning{% else %}bg-info{% endif %}">
+                                    {{ delta }}
+                                </span>
+                                {% endwith %}
+                            </td>
+                        </tr>
+                        {% empty %}
+                        <tr>
+                            <td colspan="6" class="text-center py-4">
+                                <div class="text-muted">
+                                    <i class="fas fa-database fa-2x mb-2"></i><br>
+                                    Aucun mouvement de fonds enregistré.
+                                </div>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+        <div class="card-footer text-muted">
+            <small>
+                <i class="fas fa-shield-alt"></i> 
+                Système d'audit sécurisé - Toutes les modifications sont permanentes.
+            </small>
+            <a href="{% url 'directeur_app:directeur-view' %}" class="btn btn-sm btn-outline-primary float-end">
+                <i class="fas fa-arrow-left"></i> Retour au Dashboard
+            </a>
+        </div>
+    </div>
+
+    <!-- GRAPHIQUE TIMELINE (optionnel avec Chart.js) -->
+    <div class="row mt-4">
+        <div class="col-md-8">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0"><i class="fas fa-chart-line"></i> Évolution des Ajouts de Fonds</h5>
+                </div>
+                <div class="card-body">
+                    <canvas id="fondChart" height="150"></canvas>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0"><i class="fas fa-users"></i> Top 3 Contributeurs</h5>
+                </div>
+                <div class="card-body">
+                    <ul class="list-group list-group-flush">
+                        {% for user in top_contributeurs %}
+                        <li class="list-group-item d-flex justify-content-between align-items-center">
+                            <div>
+                                <strong>{{ user.nom__username }}</strong><br>
+                                <small>{{ user.total_ajoute|floatformat:0 }} FCFA</small>
+                            </div>
+                            <span class="badge bg-primary rounded-pill">{{ user.nb_ajouts }} fois</span>
+                        </li>
+                        {% endfor %}
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- SCRIPT POUR LE GRAPHIQUE -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const ctx = document.getElementById('fondChart').getContext('2d');
+    
+    // Données example (à adapter avec tes vraies données)
+    const data = {
+        labels: [{% for m in hist_fond|slice:":10" %}'{{ m.date_ajout|date:"d/m" }}'{% if not forloop.last %},{% endif %}{% endfor %}],
+        datasets: [{
+            label: 'Ajouts de Fonds (FCFA)',
+            data: [{% for m in hist_fond|slice:":10" %}{{ m.montant }}{% if not forloop.last %},{% endif %}{% endfor %}],
+            borderColor: 'rgb(46, 204, 113)',
+            backgroundColor: 'rgba(46, 204, 113, 0.2)',
+            fill: true,
+            tension: 0.4
+        }]
+    };
+    
+    new Chart(ctx, {
+        type: 'line',
+        data: data,
+        options: {
+            responsive: true,
+            scales: {
+                y: {
+                    beginAtZero: true,
+                    ticks: {
+                        callback: function(value) {
+                            return value.toLocaleString() + ' FCFA';
+                        }
+                    }
+                }
+            }
+        }
+    });
+});
+</script>
+
+<!-- STYLE SUPPLEMENTAIRE -->
+<style>
+.avatar-sm {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: bold;
+}
+.table tbody tr:hover {
+    background-color: rgba(52, 152, 219, 0.05);
+    transition: background-color 0.2s;
+}
+.badge.fs-6 {
+    font-size: 0.9em;
+    padding: 0.4em 0.8em;
+}
+</style>
+{% endblock %}

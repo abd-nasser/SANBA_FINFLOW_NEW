@@ -28,9 +28,11 @@
             <tr>
             <th>Nom</th>
             <th>Type depense </th>
+            <th>Chantier</th>
+            <th>demande de decaissement</th>
             <th>Matériaux/Articles</th>
             <th>Prix unitaire</th>
-            <th>Chantier</th>
+            
             <th>Quantité</th>
             <th>Fournisseur</th>
             <th>Facture</th>
@@ -46,9 +48,11 @@
 
             <td>{{rapport_depense.employee}}</td>
             <td>{{rapport_depense.type_depense}}</td>
+            <td>{{rapport_depense.chantier}}</td>
+            <td>{{ rapport_depense.demande_decaissement }}</td>
             <td>{{rapport_depense.materiau_article}}</td>
             <td>{{rapport_depense.prix_unitaire}}</td>
-            <td>{{rapport_depense.chantier}}</td>
+            
             <td>{{rapport_depense.quantité}}</td>
             
             {% if rapport_depense.fournisseur %}
@@ -66,22 +70,15 @@
             <td><em style='color:red'>"Pas de facture"</em></td>
             {% endif %}
 
-            <td><a href="#">Modifier</a></td>
-                
-                
-           
-
+            <td>
+                <a href= "{% url 'directeur_app:validation-rapports' rapport_depense.id %}">
+        Valider/Rejeter
+    </>"></a>
+            </td>
 </tr>
            
    {% endfor %}
-        </tbody>
-         </table>
-
-         <form action="#">
-            {% csrf_token %}
-            {{ form.as_p }}
-         </form>
-        
+</tbody> 
 {% endblock content %}
     
     

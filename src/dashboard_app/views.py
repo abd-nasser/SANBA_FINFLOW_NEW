@@ -1,10 +1,13 @@
+
 from django.shortcuts import render, get_object_or_404
 from django.views.generic import TemplateView #pour les vues basées sur template
 from django.contrib.auth.mixins import LoginRequiredMixin #Sécurité : Oblige la connexion
-from django.db.models import F, Count, Sum, Avg, Q, Max#Magie des requetes Django
+from django.db.models import F, Count, Sum, Avg, Q, Value, Max, DecimalField#Magie des requetes Django
+from decimal import Decimal
 from django.utils import timezone # Gestion du temps dans Django
-from django.db.models.functions import TruncMonth
+from django.db.models.functions import TruncMonth, Coalesce
 from datetime import timedelta #calcul des dates
+
 
 from client_app.models import Client #Modèles
 from chantier_app.models import Chantier
@@ -13,6 +16,9 @@ from directeur_app.models import FondDisponible
 from employee_app.models import TypeDepense, RapportDepense, Fournisseur
 from auth_app.models import Personnel
 
+import logging
+ 
+logger = logging.getLogger(__name__)
 
 class DashboardView(LoginRequiredMixin, TemplateView):
     """Cerveau du DASHBOARD
@@ -156,73 +162,170 @@ class DashboardView(LoginRequiredMixin, TemplateView):
             duree_moyenne=Avg("duree_estimee")
         )
         
+        #Préparation des données pour Radar Chart
+        radar_data = []
+        for perf in performance_travaux:
+            if perf['total'] > 0: #Evite les divisions par zéro
+                efficacite = perf['budget_moyen'] or 0 / max(perf['duree_moyenne'] or 1)
+            else:
+                efficacite=0
+                radar_data.append({
+                    'type_travaux': perf['type_travaux'],
+                    'label': perf['type_travaux'].replace("_"," ").title(),
+                    'nombre': perf['total'],
+                    'budget_moyen':perf['budget_moyen'] or 0,
+                    'duree_moyenne':perf['duree_moyenne'] or 0,
+                    'efficacite':efficacite
+                })
+        #Normalisation pour le radar(0-100)
+        if radar_data:
+            max_budget_moyen_par_type = max([d['budget_moyen'] for d in radar_data]) or 1
+            max_duree_moyen_par_type= max([d['duree_moyenne']for d in radar_data]) or 1
+            max_efficacite_par_type = max([d['efficacite']for d in radar_data]) or 1
+            max_nombre_par_type = max([d['nombre']for d in radar_data]) or 1 
+            
+            for data in radar_data:
+                data['budget_norm'] = (data['budget_moyen'] / max_budget_moyen_par_type) * 100
+                data["duree_norm"] = (data['duree_moyenne'] / max_duree_moyen_par_type) * 100
+                data["efficacite_norm"] = (data["efficacite"]/ max_efficacite_par_type) * 100
+                data["nombre_norm"] = (data['nombre'] / max_nombre_par_type) * 100
+                
+        
+        
         return {
             "nombre_chantier_par_status": chantiers_par_status,
             "nombre_chantier_en_retard": chantiers_retard,
-            "performance_type_travaux":performance_travaux
+            "performance_type_travaux":performance_travaux,
+            "radar_performance_data":radar_data
         }
 
     def get_depense_analytics(self):
-        """🎯 Version corrigée avec calcul SQL correct"""
-        #Fond disponible
+        """Analytics DES DEPENSES"""
+       
+        # 1-################__DEPENSE PAR CATEGORIE__##############
         fond_disponible = get_object_or_404(FondDisponible, id=1)
-        # 1. Dépenses par catégorie
+        
+        # 1. DÉPENSES PAR CATÉGORIE (avec Decimal)
         depenses_par_categorie = TypeDepense.objects.filter(
             est_actif=True
         ).values('categorie').annotate(
-            # ✅ Calcul SQL direct, pas la méthode Python
-            total_pourcentage=Sum(F('rapports__prix_unitaire') *F('rapports__quantité')*100/fond_disponible),
-            couleur=Max('couleur')
-        ).order_by('-total_pourcentage')
-        
-        # 2. Dépenses par type détaillé
-        depense_par_type = TypeDepense.objects.filter(
-            est_actif=True
-        ).annotate(
-            total_depenses=Sum(F('rapports__prix_unitaire') * F('rapports__quantité')),
-            nombre_utilisations=Count('rapports')
+            total_depenses=Coalesce(
+                Sum(F('rapports__prix_unitaire') * F('rapports__quantité')),
+                Value(Decimal('0')),
+                output_field=DecimalField(max_digits=12, decimal_places=2)
+            )
         ).order_by('-total_depenses')
         
-        # 3. Total dépenses ce mois
-        mois_courant = timezone.now().month
+        # Ajout couleur et pourcentage
+        for item in depenses_par_categorie:
+            categorie = item['categorie']
+            
+            # Couleur
+            type_dep = TypeDepense.objects.filter(
+                categorie=categorie,
+                est_actif=True
+            ).first()
+            item['couleur'] = type_dep.couleur if type_dep else '#CCCCCC'
+            
+            # Pourcentage en Decimal
+            total_dep = item['total_depenses'] or Decimal('0')
+            total_fond = fond_disponible.montant
+            
+            if total_fond > Decimal('0'):
+                item['total_pourcentage'] = (total_dep * Decimal('100')) / total_fond
+            else:
+                item['total_pourcentage'] = Decimal('0')
+            
+            # 2-################__DEPENSE PAR TYPE DETAILLE__##############
+            depense_par_type = TypeDepense.objects.filter(
+                est_actif=True
+            ).values("nom","categorie", "couleur").annotate(
+                total_depenses_sum = Sum(F("rapports__prix_unitaire") * F("rapports__quantité")),
+                nombre_utilisation = Count("rapports"),
+                total_depenses=Sum(F("rapports__prix_unitaire") * F("rapports__quantité"))
+            ).annotate(
+                total_pourcentage =(
+                    F('total_depenses')*100/fond_disponible.montant
+                )
+                ).order_by('-total_depenses_sum')
+            
+        # 3-################__TOTAL DEPENSES DU MOIS COURANT__##############
+        mois_courant =timezone.now().month
         total_depenses_mois = RapportDepense.objects.filter(
             status='valide',
             date_depense__month=mois_courant
         ).aggregate(
-            total=Sum(F('prix_unitaire') * F('quantité'))
+            total = Coalesce(
+                Sum(F("prix_unitaire") * F("quantité")),
+                0,
+                output_field=DecimalField(max_digits=12, decimal_places=2)
+            )
         )['total'] or 0
         
-        # 4. Depense par mois pour graph barres
+        # 4-################__ DEPENSES PAR MOIS (6 derniers mois)__##############
         depense_par_mois = RapportDepense.objects.filter(
             status='valide',
-            date_depense__gte=timezone.now()-timedelta(days=180)
+            date_depense__gte=timezone.now() - timedelta(days=180)
         ).annotate(
-            mois=TruncMonth('date_depense')
+            mois = TruncMonth('date_depense')
         ).values('mois').annotate(
-            total=Sum(F('prix_unitaire')*F('quantité'))
+            total = Coalesce(
+                Sum(F("prix_unitaire") * F("quantité")),
+                0,
+                output_field=DecimalField(max_digits=12, decimal_places=2)
+            )
         ).order_by('mois')
         
-        # 5. Top employéz dépensiers
-        top_employes_depense = Personnel.objects.annotate(
-            total_depense=Sum(F('rapports_depense__prix_unitaire')*F("rapports_depense__quantité")),
-        ).exclude(total_depense=None).order_by('-total_depense')[:5]
+        #convertir pour le template
+        depense_par_mois_list = []
+        for item in depense_par_mois:
+            depense_par_mois_list.append({
+                'mois':item['mois'],
+                'total':float(item['total']) #convertit decimal en float pour chart.js
+            })
+        
+        # 5-################__TOP EMPLOYES DEPENSIERS__##############
+        top_employes_depense = Personnel.objects.values("username").annotate(
+            employes_total_depense_sum=Sum(F("rapports_depense__prix_unitaire")*F('rapports_depense__quantité'))
+        ).exclude(employes_total_depense_sum=None).order_by("-employes_total_depense_sum")
+        
+        # 6-################__TOP FOURNISSEUR__##############
+        top_fournisseur = Fournisseur.objects.values('nom').annotate(
+            total_achats_sum = Sum(F("achats__prix_unitaire")*F("achats__quantité"))
+        ).exclude(total_achats_sum=None).order_by("-total_achats_sum")[:5] 
         
         
-        # 6. Top fournisseurs
-        top_fournisseur = Fournisseur.objects.annotate(
-            total_achats = Sum(F("achats__prix_unitaire")*F('achats__quantité'))
-        ).exclude(total_achats=None).order_by('-total_achats')[:5]
-        
+        # 7-################__RAPPORT AVEC LIEN DEMANDE DECAISSEMENT__############## 
+        rapports_avec_lien = RapportDepense.objects.filter(
+            demande_decaissement__isnull=False,
+            status='valide'
+        ).count()
+
+        # 7-################__RAPPORT SANS LIEN DEMANDE DECAISSEMENT__############## 
+        rapports_sans_lien = RapportDepense.objects.filter(
+            demande_decaissement__isnull=True,
+            status='valide'
+        ).count()
         
         return {
-            'depenses_par_categorie': (depenses_par_categorie),
-            'depense_par_mois':list(depense_par_mois),
-            'total_depenses_mois':total_depenses_mois, 
-            'depense_par_type': depense_par_type,
+            'depenses_par_categorie':list(depenses_par_categorie),
+            'depense_par_mois':depense_par_mois_list,
+            'total_depenses_mois':total_depenses_mois,
+            'depense_par_type':depense_par_type,
             'top_employes_depense':top_employes_depense,
             'top_fournisseur':top_fournisseur,
-            'couleurs_categories': self.get_couleurs_categories(),
-        }
+            'couleurs_categories':self.get_couleurs_categories(),
+            'rapports_avec_lien': rapports_avec_lien,
+            'rapports_sans_lien': rapports_sans_lien,
+            'taux_lien': (rapports_avec_lien / max(rapports_avec_lien + rapports_sans_lien, 1)) * 100
+        }   
+    
+   
+
+
+
+
+    
     
     def get_alerts(self):
         """ALERTES INTELLIGENTES
@@ -248,7 +351,7 @@ class DashboardView(LoginRequiredMixin, TemplateView):
         if contrats_non_signes >0:
             alerts.append({
                 "type":'info',
-                'message':f'{contrats_non_signes} contrats(s) en attenete de signature',
+                'message':f'{contrats_non_signes} contrats(s) en attente de signature',
                 'lien':'/contrats/' 
             })
         
@@ -263,7 +366,7 @@ class DashboardView(LoginRequiredMixin, TemplateView):
         
         #Fonds bas
         fond_disponible = FondDisponible.objects.get(id=1)
-        if fond_disponible.montant < 200000:
+        if fond_disponible.montant < 100000:
             alerts.append({
                 "type":'danger',
                 "message":"Fonds très bas!",
@@ -280,6 +383,22 @@ class DashboardView(LoginRequiredMixin, TemplateView):
                     "type":"info",
                     'message':f"Anniversaire client{nom_aniv.nom}"
                 })
+                
+        # Rapports sans demande après 48h
+        from datetime import timedelta
+        rapports_tardifs = RapportDepense.objects.filter(
+            demande_decaissement__isnull=True,
+            date_creation__lte=timezone.now() - timedelta(hours=48),
+            status__in=['soumis', 'brouillon']
+        ).count()
+
+        if rapports_tardifs > 0:
+            alerts.append({
+                'type': 'warning',
+                'message': f'🚨 {rapports_tardifs} rapport(s) sans lien à une demande (>48h)',
+                'lien': '/directeur/rapports-a-verifier/'
+            })        
+        
         return {
             "alerts":alerts,
             "chantiers_en_retard":chantiers_retard,
@@ -301,18 +420,22 @@ class DashboardView(LoginRequiredMixin, TemplateView):
         total_encaisse = sum(c.montant_encaisse for c in contrats)
         
         return (total_encaisse/total_montant*100) if total_montant>0 else 0 
-     
+
     def get_couleurs_categories(self):
-        """ Récupère un mapping catégorie --> couleur pour les graphiques """
-        couleurs = {}
-        #Récupère la couleur dominante pour chaque catégorie
-        categories = TypeDepense.objects.filter(
-            est_actif=True
-        ).values('categorie', 'couleur').distinct()
-        
-        for cat in categories:
-            if cat['categorie'] not in couleurs:
-                couleurs[cat['categorie']]=cat['couleur']
-                
-                
-        return couleurs
+       #Récupère les couleurs depuis la base
+       categories_couleurs = {}
+       
+       #Query optimisé: récupère totutes les catégories avec leur couleur
+       types = TypeDepense.objects.filter(
+           est_actif = True
+       ).values('categorie', 'couleur').distinct()
+       
+       for type_item in types:
+           categorie = type_item['categorie']
+           couleur = type_item['couleur']
+           
+           #si la catégorie n'a pas encore de couleur ou si cette couleur est définie
+           if categorie not in categories_couleurs or couleur:
+               categories_couleurs[categorie]=couleur
+               
+       return couleur

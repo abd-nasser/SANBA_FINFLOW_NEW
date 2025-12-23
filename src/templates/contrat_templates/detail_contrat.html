@@ -1,46 +1,80 @@
-{% extends 'base.html' %}
 
+{% comment %}
+Template: detail_contrat.html
+Vue: ContratDetaiView (DetailView)
+Modèle: Contrat
+Contexte: objet "contrat" avec tous ses attributs
+Ce template est utilisé pour tous les types de chantier sauf 'decoration' et 'toiture_tole'
+{% endcomment %}
 
-{% block title %}
-    Details contrats
-{% endblock title %}
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <title>Contrat {{ contrat.reference_contrat }}</title>
+</head>
+<body>
+    {% comment %} En-tête du contrat avec référence et dates {% endcomment %}
+    <header>
+        <h1>CONTRAT DE TRAVAUX</h1>
+        <h2>Référence : {{ contrat.reference_contrat }}</h2>
+    </header>
     
-
-{% block content %}
-<h1> Tout sur le contrat du chantier :  <strong>"{{ contrat.chantier.nom_chantier}}"</strong></h1>
-
-<div class='liens_chantier'>
-    <h3>Liens avec Chantier</h3>
-    <p>Réference unique : <strong>{{ contrat.reference_contrat }}</strong></p>
-    <p>Date de signature : <strong>{{contrat.date_signature}}</strong></p>
-    <p>Mode de paiement : <strong>{{contrat.mode_paiement}}</strong></p>
-    <p>Montant total du contrat :<strong>{{contrat.montant_total}} <em>FCFA</em></strong></p>
-    <p>Acompte pourcentage :<strong>{{contrat.acompte_pourcentage}}%</strong></p>
-     <p>Acompte payer par le client: <strong>{{ contrat.montant_acompte }} <em>FCFA</em></strong></p>
-    <p>Nombre de tranche restant :<strong>{{contrat.nombre_tranches}}</strong></p>
-
-</div>
+    {% comment %} Section informations du chantier {% endcomment %}
+    <section>
+        <h3>INFORMATIONS DU CHANTIER</h3>
+        <p><strong>Chantier :</strong> {{ contrat.chantier.nom_chantier }}</p>
+        <p><strong>Référence chantier :</strong> {{ contrat.chantier.reference }}</p>
+        <p><strong>Type de travaux :</strong> {{ contrat.chantier.get_type_travaux_display }}</p>
+        <p><strong>Type de bâtiment :</strong> {{ contrat.chantier.get_type_batiment_display }}</p>
+        <p><strong>Adresse :</strong> {{ contrat.chantier.adresse_chantier }}</p>
+    </section>
     
-<div class="suivi_paiement">
-    <h3>Suivis de paiements</h3>
-    <p>Montant encaissé :<strong>{{contrat.montant_encaisse}} <em>FCFA</em></strong></p>
-    <p>Date du dernier paiement : <strong>{{contrat.date_du_dernier_paiement}}</strong></p>
-    <p>Pourcentage du contrat encaisseé actuellement: <strong>{{contrat.pourcentage_encaisse}}</strong></p>
-    <p>reste à payer: <strong>{{ contrat.solde_restant }} <em>FCFA</em></strong></p>
-</div>
-
-<a href="{% url 'contrat_app:nouveau-paiement' contrat.id %}">Mettre à jour nouveau paiement</a>
-
-
-{% if contrat.contrat_pdf %}
-<div class='clause_special'>
-    <h3>Clause speciales</h3>
-    <p>Fichier PDF :<strong>{{ contrat.contrat_pdf }}</strong></p>
-    {% elif contrat.devis_initial%}
-    <p>Devis initial : <strong>{{ contrat.devis_initial }}</strong> </p>
-</div>
+    {% comment %} Section informations client {% endcomment %}
+    <section>
+        <h3>INFORMATIONS CLIENT</h3>
+        <p><strong>Client :</strong> {{ contrat.chantier.client.nom_complet }}</p>
+        <p><strong>Téléphone :</strong> {{ contrat.chantier.client.telephone|default:"Non renseigné" }}</p>
+        <p><strong>Email :</strong> {{ contrat.chantier.client.email|default:"Non renseigné" }}</p>
+    </section>
     
-{% endif %}
+    {% comment %} Section conditions financières {% endcomment %}
+    <section>
+        <h3>CONDITIONS FINANCIÈRES</h3>
+        <p><strong>Montant total :</strong> {{ contrat.montant_total }} FCFA</p>
+        <p><strong>Mode de paiement :</strong> {{ contrat.get_mode_paiement_display }}</p>
         
-{% endblock content %}
+        {% if contrat.mode_paiement == 'tranche' %}
+        <p><strong>Acompte :</strong> {{ contrat.acompte_pourcentage }}% ({{ contrat.montant_acompte }} FCFA)</p>
+        <p><strong>Nombre de tranches :</strong> {{ contrat.nombre_tranches }}</p>
+        {% endif %}
+        
+        <p><strong>Montant déjà encaissé :</strong> {{ contrat.montant_encaisse }} FCFA</p>
+        <p><strong>Solde restant :</strong> {{ contrat.solde_restant }} FCFA</p>
+        <p><strong>Pourcentage payé :</strong> {{ contrat.pourcentage_encaisse|floatformat:2 }}%</p>
+
+        <a href="{% url 'contrat_app:nouveau-paiement' contrat.id %}">Mettre à jour nouveau paiement</a>
+    </section>
     
+    {% comment %} Section date de signature {% endcomment %}
+    {% if contrat.est_signed %}
+    <section>
+        <h3>SIGNATURE</h3>
+        <p><strong>Date de signature :</strong> {{ contrat.date_signature }}</p>
+        <p><strong>Dernier paiement :</strong> {{ contrat.date_du_dernier_paiement|default:"Aucun paiement enregistré" }}</p>
+    </section>
+    {% endif %}
+    
+    {% comment %} Section garantie et clauses {% endcomment %}
+    <section>
+        <h3>GARANTIE ET CLAUSES</h3>
+        <p><strong>Garantie :</strong> {{ contrat.garantie_mois }} mois</p>
+        {% if contrat.notes_contractuelles %}
+        <p><strong>Notes contractuelles :</strong> {{ contrat.notes_contractuelles }}</p>
+        {% endif %}
+    </section>
+    
+    {% comment %} Bouton d'impression {% endcomment %}
+    <button onclick="window.print()">Imprimer ce contrat</button>
+</body>
+</html>

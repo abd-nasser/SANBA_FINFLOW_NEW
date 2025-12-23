@@ -73,5 +73,103 @@ def reset_mysql_sequences():
         print(f"🎉 {len(tables)} tables MySQL réinitialisées")
 
 # 🚀 EXÉCUTION
-if __name__ == "__main__":
-    reset_database_sequences()
+#if __name__ == "__main__":
+reset_database_sequences()
+    
+    
+#############################################################################################################################################""""  
+    
+  # Couleurs par défaut si jamais
+        couleurs_par_defaut = {
+         ('#FF6384', 'Rouge'),     # Matériaux
+        ('#36A2EB', 'Bleu'),       # Transport  
+        ('#FFCE56', 'Jaune'),      # Main d'œuvre
+        ('#4BC0C0', 'Turquoise'),  # Frais divers
+        ('#9966FF', 'Violet'),     # Administration
+        ('#FF9F40', 'Orange'),     # Autre
+        }
+        
+        for categorie, couleur in couleurs.items():
+                couleur[categorie]=couleurs_par_defaut
+                
+                
+
+ def get_couleurs_categories(self):
+        """ Récupère un mapping catégorie --> couleur pour les graphiques """
+        couleurs = {}
+        #Récupère la couleur dominante pour chaque catégorie
+        categories = TypeDepense.objects.filter(
+            est_actif=True
+        ).values('categorie', 'couleur').distinct()
+        
+        for cat in categories:
+            if cat['categorie'] not in couleurs:
+                couleurs[cat['categorie']]=cat['couleur']
+                
+                
+        return couleurs
+##############################################################################################################################################
+# Après succès d'envoie de demande
+                
+                send_mail(
+                    subject=" Demande Décaissement de ",
+                    message=f"""Bonjour, Mr {form.cleaned_data.get('demandeur')},
+                    \n demande un décaissement de {form.cleaned_data.get('montant')} FCFA'
+                    \n pour {form.cleaned_data.get("motif")}
+                    \n plus d'information : https//directeur/directeur-interface.
+                    """ ,
+                    from_email="caisse@sanba.bf",
+                    recipient_list=['directeur@gmail.com', 'comptable@gmail.com']
+                )
+                
+
+<script src="{% static 'js/htmx.min.js' %}"></script>
+
+
+
+#'accord. Pour DaisyUI en local :
+
+1. Installez Tailwind CSS :
+
+bash
+npm install -D tailwindcss postcss autoprefixer
+npx tailwindcss init
+2. Installez DaisyUI :
+
+bash
+npm install daisyui
+3. Configurez tailwind.config.js :
+
+javascript
+/** @type {import('tailwindcss').Config} */
+module.exports = {
+  content: [
+    "./templates/**/*.html",
+  ],
+  theme: {
+    extend: {},
+  },
+  plugins: [
+    require('daisyui'),
+  ],
+}
+4. Créez static/css/input.css :
+
+css
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+5. Build CSS (package.json) :
+
+json
+"scripts": {
+  "build:css": "tailwindcss -i ./static/css/input.css -o ./static/css/output.css --minify"
+}
+6. Lien dans votre base.html :
+
+html
+<link href="{% static 'css/output.css' %}" rel="stylesheet">
+Pour build : npm run build:css
+
+C'est plus simple que django-tailwind et prêt pour la prod.
+

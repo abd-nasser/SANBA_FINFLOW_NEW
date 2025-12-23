@@ -42,12 +42,12 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     
-    'django_htmx',
+    #'django_htmx',
     'formtools',
     
     #Tailwind_app
-    'tailwind',
-    'theme',
+    #'tailwind',
+    #'theme',
     
     #other_app
     'auth_app',
@@ -159,9 +159,9 @@ AUTH_USER_MODEL= "auth_app.Personnel"
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 
-TAILWIND_APP_NAME = "theme"
-INTERNAL_IPS = [
-    "127.0.0.1"
-                ]
+#TAILWIND_APP_NAME = "theme"
+#INTERNAL_IPS = [
+    #"127.0.0.1"
+                #]
 
 NPM_BIN_PATH = r'C:\Program Files\nodejs\npm.cmd'

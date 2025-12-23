@@ -1,0 +1,40 @@
+{% extends 'base.html' %}
+
+
+{% block title %}
+    Changer Identifiant
+{% endblock title %}
+
+
+{% block content %}
+    
+<h2>Changer identifiants</h2>
+<form method="post">
+    {% csrf_token %}
+    
+    <div>
+        <label>{{ form.new_username.label }}</label>
+        {{ form.new_username }}
+    </div>
+    
+    <div>
+        <label>{{ form.current_password.label }}</label>
+        {{ form.current_password }}
+    </div>
+    
+    <div>
+        <label>{{ form.new_password.label }}</label>
+        {{ form.new_password }}
+    </div>
+    
+    <div>
+        <label>{{ form.confirm_password.label }}</label>
+        {{ form.confirm_password }}
+    </div>
+    
+    <button type="submit">Mettre à jour</button>
+</form>
+
+{% endblock content %}
+    
+    

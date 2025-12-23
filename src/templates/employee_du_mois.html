@@ -1,10 +1,65 @@
 
+{% comment %}
+Template: employee_du_mois.html
+Vue: BestEmployeeView (TemplateView)
+Contexte fourni:
+- total_depense_employee: Liste avec le top 1 employé par dépenses
+- most_rapport_by_employee: Liste avec le top 1 employé par nombre de rapports
+- top_commerciaux: Liste avec le top 1 commercial par CA généré
+{% endcomment %}
+
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <title>Employé du Mois</title>
+</head>
+<body>
+    <h1>🎯 Employés Performants du Mois</h1>
     
-    {% for the_best in best_employee   %}
-        <h3>Meilleur performance : Mr {{ the_best.employee__username }}</h3>
-        <p>Avec plus de <strong>{{ the_best.total_rapports }} </strong> Rapport soumis</p>
-    {% endfor %}
-        
+    {% comment %} Section 1: Meilleur commercial par CA {% endcomment %}
+    {% if top_commerciaux %}
+        {% for commercial in top_commerciaux %}
+        <section>
+            <h2>🏆 Meilleur Commercial</h2>
+            <p><strong>Nom:</strong> {{ commercial.username }}</p>
+            <p><strong>CA Généré:</strong> {{ commercial.ca_genere|default:"0" }} FCFA</p>
+            <p><strong>Clients Amenés:</strong> {{ commercial.clients_amenes }}</p>
+            <p><strong>Contrats Signés:</strong> {{ commercial.contrats_signes }}</p>
+            <p><strong>Chantiers en cours:</strong> {{ commercial.chantier_status_en_cours }}</p>
+            <p><strong>Chantiers terminés:</strong> {{ commercial.chantier_status_termine }}</p>
+        </section>
+        {% endfor %}
+    {% endif %}
+    
+    {% comment %} Section 2: Employé avec le plus de dépenses {% endcomment %}
+    {% if total_depense_employee %}
+        {% for emp in total_depense_employee %}
+        <section>
+            <h2>💰 Dépenses Engagées</h2>
+            <p><strong>Nom:</strong> {{ emp.employee__username }}</p>
+            <p><strong>Total Dépensé:</strong> {{ emp.total_depense|default:"0" }} FCFA</p>
+        </section>
+        {% endfor %}
+    {% endif %}
+    
+    {% comment %} Section 3: Employé avec le plus de rapports {% endcomment %}
+    {% if rapports_employee %}
+        {% for emp in rapports_employee %}
+        <section>
+            <h2>📊 Productivité Rapports</h2>
+            <p><strong>Nom:</strong> {{ emp.employee__username }}</p>
+            <p><strong>Nombre de Rapports:</strong> {{ emp.total_rapports }}</p>
+        </section>
+        {% endfor %}
+    {% endif %}
+    
+    {% comment %} Message si aucune donnée {% endcomment %}
+    {% if not top_commerciaux and not total_depense_employee and not most_rapport_by_employee %}
+        <p>Aucune donnée disponible pour le mois en cours.</p>
+    {% endif %}
+</body>
+</html>
 
     
     

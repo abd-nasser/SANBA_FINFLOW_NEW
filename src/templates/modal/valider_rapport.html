@@ -1,0 +1,10 @@
+<!-- directeur_templates/valider_rapport.html -->
+<h2>📋 Valider le rapport de {{ rapport.employee.username }}</h2>
+<p>Type : {{ rapport.type_depense.nom }}</p>
+<p>Montant : {{ rapport.total_affichage }}</p>
+
+<form method="post">
+    {% csrf_token %}
+    {{ form.as_p }}
+    <button type="submit">Valider</button>
+</form>

@@ -1,0 +1,67 @@
+{% comment %}
+Template: detail_contrat_toiture.html
+Vue: ContratDetaiView (DetailView)
+Type de travaux: 'toiture_tole' uniquement
+Utilise uniquement les champs des modèles Contrat et Chantier
+{% endcomment %}
+
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <title>Contrat Toiture - {{ contrat.reference_contrat }}</title>
+</head>
+<body>
+    <header>
+        <h1>CONTRAT DE TRAVAUX - TOITURE EN TÔLE</h1>
+        <h2>Référence : {{ contrat.reference_contrat }}</h2>
+    </header>
+    
+    <section>
+        <h3>INFORMATIONS DU CHANTIER</h3>
+        <p><strong>Chantier :</strong> {{ contrat.chantier.nom_chantier }}</p>
+        <p><strong>Type de travaux :</strong> {{ contrat.chantier.get_type_travaux_display }}</p>
+        <p><strong>Type de bâtiment :</strong> {{ contrat.chantier.get_type_batiment_display }}</p>
+        <p><strong>Surface :</strong> {{ contrat.chantier.surface_totale|default:"Non spécifiée" }} m²</p>
+        <p><strong>Hauteur :</strong> {{ contrat.chantier.hauteur_batiment|default:"Non spécifiée" }} m</p>
+        <p><strong>Adresse :</strong> {{ contrat.chantier.adresse_chantier }}</p>
+        <p><strong>Description :</strong> {{ contrat.chantier.description_detaille|default:"Aucune description" }}</p>
+    </section>
+    
+    <section>
+        <h3>INFORMATIONS CLIENT</h3>
+        <p><strong>Client :</strong> {{ contrat.chantier.client.nom_complet}}</p>
+        <p><strong>Contact :</strong> {{ contrat.chantier.client.telephone|default:"Non renseigné" }}</p>
+    </section>
+    
+    <section>
+        <h3>CONDITIONS FINANCIÈRES</h3>
+        <p><strong>Montant total :</strong> {{ contrat.montant_total }} FCFA</p>
+        <p><strong>Mode de paiement :</strong> {{ contrat.get_mode_paiement_display }}</p>
+        <p><strong>Acompte :</strong> {{ contrat.acompte_pourcentage }}% ({{ contrat.montant_acompte }} FCFA)</p>
+        {% if contrat.mode_paiement == 'tranche' %}
+        <p><strong>Nombre de tranches :</strong> {{ contrat.nombre_tranches }}</p>
+        {% endif %}
+        <p><strong>Montant encaissé :</strong> {{ contrat.montant_encaisse }} FCFA</p>
+        <p><strong>Solde restant :</strong> {{ contrat.solde_restant }} FCFA</p>
+    </section>
+    
+    <section>
+        <h3>GARANTIE ET CLAUSES</h3>
+        <p><strong>Garantie :</strong> {{ contrat.garantie_mois }} mois</p>
+        {% if contrat.notes_contractuelles %}
+        <p><strong>Notes :</strong> {{ contrat.notes_contractuelles }}</p>
+        {% endif %}
+    </section>
+    
+    {% if contrat.est_signed %}
+    <section>
+        <h3>SIGNATURE</h3>
+        <p><strong>Date de signature :</strong> {{ contrat.date_signature }}</p>
+        <p><strong>Dernier paiement :</strong> {{ contrat.date_du_dernier_paiement|default:"Aucun" }}</p>
+    </section>
+    {% endif %}
+    
+    <button onclick="window.print()">Imprimer</button>
+</body>
+</html>

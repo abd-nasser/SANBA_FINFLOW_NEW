@@ -4,7 +4,7 @@ from django.views.generic import ListView, CreateView , DetailView, UpdateView, 
 from django.urls import reverse_lazy
 from django.http import JsonResponse
 from django.contrib import messages
-
+from django.db.models import Q
 
 from chantier_app.models import Chantier
 from .models import Client  # Import the Client model
@@ -23,13 +23,59 @@ class ClientListView(LoginRequiredMixin, ListView):
     context_object_name = "clients" #comment on l'appel dans le templates
     paginate_by = 20 # 20 clients par page 
     
-    def get_queryset(self):
-        """Personnalise quel client on souhaite afficher
-           par defaut = Client.objects.all()
-        """
+    def get_template_names(self):
+        """retourne le template partials si requete HTMX"""
+        if self.request.headers.get('HX-request'):
+            #si requet HTMX -> retourne slmt le tableau(pas toute la page)
+            return ["partials/liste_client_partial.html"]
         
-        return Client.objects.all().order_by("nom")
+        #requet normale -> retourne la page complète
+        return[self.template_name]
     
+    
+    
+    def get_queryset(self):
+      """FILTRAGE INTELLIGENT AVEC OPTIMISATION DB"""
+      #OPTIMISATION CRITIQUE: select_related
+      queryset = Client.objects.all().select_related(
+          'commercial_attache'
+      )
+       ########################__ 1️⃣ FILTRE PAR TYPE_CLIENT __############################
+      type_client = self.request.GET.get('type_client')
+      if type_client:
+          queryset = queryset.filter(type_client=type_client)
+          
+          
+    #########################__ # 2️⃣ FILTRE TYPE TRAVAUX __############################
+      type_travaux = self.request.GET.get("type_travaux")
+      if type_travaux:
+          queryset = queryset.filter(secteur_activite=type_travaux)
+          
+     ########################__ # 3️⃣ FILTRER PAR SOURCE CLIENT __############################     
+      source_client = self.request.GET.get("source_client")
+      if source_client:
+          queryset = queryset.filter(source_client=source_client)
+          
+    ########################__ # 3️⃣ RECHERCHE TEXTE (nom chantier Ou client) __############################
+      search_query = self.request.GET.get('q')
+      if search_query:
+          queryset = queryset.filter(
+              
+              Q(chantiers__nom_chantie__icontains=search_query)|
+              Q(chantiers__reference__icontains=search_query)|
+              Q(ville__icontains=search_query)|
+              Q(quartier__icontains=search_query)|
+              Q(pays__incontains=search_query)|
+              Q(nom__icontains=search_query)|
+              Q(prenom__icontains=search_query)|
+              Q(total_contrats__icontains=search_query)
+          
+              
+          )
+             
+      return queryset
+    ########################__ # 3️⃣ RECHERCHE TEXTE (nom chantier Ou client) __############################
+     
     
 class ClientCreateView(LoginRequiredMixin, CreateView):
     
@@ -51,7 +97,7 @@ class ClientCreateView(LoginRequiredMixin, CreateView):
         """
         #Ajoute le commercial connecté automatiquement
         if hasattr(self.request.user, 'personnel'):
-            form.instance.commercial_attache = self.request.user.personnel
+            form.instance.commercial_attache = self.request.user
         #Message de succès
         messages.success(self.request, f"Client {form.instance.nom} à été ajouté avec succès")
         
@@ -77,6 +123,7 @@ class ClientDetailView(LoginRequiredMixin, DetailView):
         
         #Ajoute les chantiers de ce client
         context["client_all_chantiers"]=self.object.chantiers.all()
+        context["client_all_contrats"]=self.object.chantiers.contrats.all()
         return context
     
 
