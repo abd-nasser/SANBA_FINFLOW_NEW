@@ -4,6 +4,11 @@ from .form import PersonnelRegisterForm, ChangeCredentialsForm
 from django.contrib import messages
 from auth_app.models import Personnel, Post
 from django.contrib.auth.forms import AuthenticationForm
+from directeur_app.models import FondDisponible
+from secretaire_app.models import DemandeDecaissement
+from secretaire_app.forms import DemandeDecaissementForm
+from client_app.forms import ClientForm
+from employee_app.form import RapportDepenseForm
 import logging
 
 
@@ -54,12 +59,28 @@ def register_view(request):
                     f"🔐 MDP: {password}")
                 
                 return redirect("directeur_app:directeur-view")
+            
+            else:
+                # Préserver le contexte directeur
+                fond = get_object_or_404(FondDisponible, id=1)
+                list_demande = DemandeDecaissement.objects.all().order_by("-date_demande")
+                
+                ctx = {
+                    "list_demande": list_demande,
+                    "fond":fond.montant,
+                    "form": form,
+                    "ch_form":ChangeCredentialsForm(user=request.user),
+                    "open_register_modal": True}
+                
+                response = render(request, "directeur_templates/directeur.html", ctx)
+                response['HX-Trigger'] = 'registerFailed'
+                return response
                 
         except Exception as e:
             logger.error(f"Erreur inscription: {e}")
             messages.error(request, "❌ Erreur lors de l'inscription")
     
-    return render(request, "auth_templates/register.html", {"form": PersonnelRegisterForm()})
+    return render(request, "directeur_templates/directeur.html", {"form": PersonnelRegisterForm()})
 
 
 
@@ -88,8 +109,11 @@ def login_view(request):
                 return redirect("auth_app:login")
         
         else:
-            # Formulaire invalide
-            return render(request, "home.html", {"form": form})
+            # Formulaire invalide — rendre la page avec un flag pour rouvrir le modal
+            response = render(request, "home.html", {"form": form, "open_login_modal": True})
+            # Si la requête provient d'HTMX, déclencher aussi l'événement côté client
+            response['HX-Trigger'] = 'loginFailed'
+            return response
     
     # GET request
     return render(request, "home.html", {"form": AuthenticationForm()})
@@ -138,12 +162,74 @@ def change_credentials_view(request):
             
                 else:
                     # Poste non reconnu - dashboard par défaut
-                    return redirect("auth_app:login")
+                    return redirect("home_app:home-view")
+        else:
+            
+                    # Préserver le contexte directeur
+            fond = get_object_or_404(FondDisponible, id=1)
+            list_demande = DemandeDecaissement.objects.all().order_by("-date_demande")
+            
+            ctx = {
+                "list_demande": list_demande,
+                "fond": fond.montant,
+                "ch_form": form,  # Le form avec erreurs
+                "form": PersonnelRegisterForm(),
+                "dmd_form":DemandeDecaissementForm(),
+                "rapport_form":RapportDepenseForm(),
+                "open_change_id": True
+            }
+            
+            if request.user.post.nom == "Directeur" or request.user.is_superuser:
+                response = render(request, "directeur_templates/directeur.html", ctx)
+                response["HX-Trigger"] ="failed_change_id"
+                return response
+            
+            elif request.user.post.nom == "Sécretaire":
+                response = render(request, "secretaire_templates/secretaire.html",{
+                "list_demande": list_demande,
+                "fond": fond.montant,
+                "ch_form": form,  # Le form avec erreurs
+                "form": ClientForm(),
+                "dmd_form":DemandeDecaissementForm(),
+                "rapport_form":RapportDepenseForm(),
+                "open_change_id": True
+            })
+                response["HX-Trigger"] ="failed_change_id"
+                return response
+            
+            elif request.user.post.nom == "Comptable":
+                response = render(request, "comptable_templates/comtable.html",{
+                "list_demande": list_demande,
+                "fond": fond.montant,
+                "ch_form": form,  # Le form avec erreurs
+                "form": ClientForm(),
+                "dmd_form":DemandeDecaissementForm(),
+                "rapport_form":RapportDepenseForm(),
+                "open_change_id": True
+            })
+                response["HX-Trigger"] ="failed_change_id"
+                return response
+            
+            elif request.user.post.nom == "Employé":
+                response = render(request, "employee_templates/creer_rapport.html",{
+                "list_demande": list_demande,
+                "fond": fond.montant,
+                "ch_form": form,  # Le form avec erreurs
+                "form": ClientForm(),
+                "dmd_form":DemandeDecaissementForm(),
+                "rapport_form":RapportDepenseForm(),
+                "open_change_id": True
+            })
+                response["HX-Trigger"] ="failed_change_id"
+                return response
+                
             
                
     else:
-        form = ChangeCredentialsForm(request.user)
-    return render(request, "auth_templates/changer_id.html", {"form":form})    
+        form = ChangeCredentialsForm(user=request.user)
+    return render(request, "directeur_templates/directeur.html", {"ch_form":form,
+                                                                  "form": PersonnelRegisterForm()
+                                                                  })    
 
 
 def logout_view(request):

@@ -1,0 +1,171 @@
+nav{
+    background-color: black;
+    color: rgb(255, 255, 255);
+    text-align: center;
+    font-size: 1rem;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    position: fixed;
+    z-index: 1000;
+    width: 100%;
+}
+
+
+header{
+display: flex;
+    background: linear-gradient(144deg, rgba(255, 0, 0, 1) 2%, rgba(222, 211, 211, 1) 50%, rgba(13, 12, 13, 1) 100%);
+    height: 27vh;
+    width: 100%;
+    position: relative;
+    border: 1px solid black;
+    box-shadow: 7px 5px 14px 6px rgb(42 18 18 / 71%);
+    justify-content: space-around;
+    flex-direction: column;
+    align-items: center;
+    align-content: center;
+    position: fixed;
+    z-index: 1000;
+    margin-top: 1.5rem;
+}
+
+header h1{
+    color: linear-gradient(170deg,rgba(201, 26, 26, 1) 4%, rgba(223, 158, 159, 1) 35%, rgba(255, 245, 249, 1) 51%, rgba(179, 172, 175, 1) 64%, rgba(0, 0, 0, 1) 94%);
+    text-align: center;
+    text-shadow: 0 0 0;
+    padding-top: 0.5em;
+    font-size: 1rem;
+    font-weight: bold;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+
+header .statistique{
+    display: flex;
+    flex-direction: row;
+    width: 100%;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    align-items: center;
+    justify-content: center;
+}
+
+header .statistique .card{
+    margin: 1rem;
+}
+
+
+main{
+   background: linear-gradient(144deg,rgba(255, 0, 0, 1) 2%, rgba(222, 211, 211, 1) 50%, rgba(13, 12, 13, 1) 100%);
+   min-width: 100%;
+   min-height: 110vh;
+   display: flex;
+   justify-content: center;
+   flex-direction: column;
+   padding: 2rem;
+   padding-top: 15rem;
+}
+
+main .filter_container{
+    padding-bottom: 2rem;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+main .filter{
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    flex-direction: row;
+    margin-top: 2rem;
+}
+
+
+ .table-container {
+            overflow-x: auto;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+            border-radius: 0.5rem;
+        }
+table .badge{
+   width: max-content;
+
+}
+        .stat-card {
+            transition: all 0.3s ease;
+            border-left: 4px solid;
+        }
+        
+        .stat-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+        }
+        
+        .status-badge {
+            padding: 0.25rem 0.75rem;
+            border-radius: 9999px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            display: inline-block;
+        }
+        
+        .status-soumis { background-color: #fef3c7; color: #92400e; }
+        .status-valide { background-color: #d1fae5; color: #065f46; }
+        .status-rejete { background-color: #fee2e2; color: #991b1b; }
+        
+        .total-amount {
+            font-size: 1rem;
+            font-weight: bold;
+            color: #059669;
+        }
+        
+        .filters-container {
+            backdrop-filter: blur(10px);
+            background-color: rgba(255, 255, 255, 0.95);
+        }
+        
+        .hover-row:hover {
+            background-color: #f8fafc !important;
+        }
+        
+        @media print {
+            .no-print {
+                display: none !important;
+            }
+        }
+
+main .select, input, .textarea{
+    backdrop-filter: blur(0.5rem);
+    background:rgba(255, 255, 255, 0) ;
+}
+
+select option{
+    backdrop-filter: blur(0.5rem);
+    background:rgba(205, 135, 135, 0.43) ;
+}
+
+.modal-box{
+    backdrop-filter: blur(0.5rem);
+    background: linear-gradient(144deg,rgba(255, 0, 0, 1) 2%, rgba(222, 211, 211, 1) 50%, rgba(13, 12, 13, 1) 100%);
+    border-radius: 1rem;
+    padding: 1rem;
+    color: rgb(3, 3, 3);}
+
+.modal-box .input, .select, .textarea{
+    backdrop-filter: blur(0.5rem);
+    background:rgba(255, 255, 255, 0) ;
+}
+
+
+@media(max-width:480px){
+    header .statistique{
+    display: flex;
+    flex-direction: row;
+    width: 100%;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    align-items: center;
+    justify-content: normal;
+}
+}
+
+footer{
+    background: rgb(33, 33, 33);
+}

@@ -1,0 +1,119 @@
+<!-- Tableau des clients -->
+  
+    <div class="card shadow table_container" id="table_container">
+      <table class="table table-hover mb-0">
+        <thead class="table-light">
+          <tr>
+            <th>Client</th>
+            <th>Contact</th>
+            <th>Localisation</th>
+            <th>Chiffre d'affaires</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for client in clients %}
+          {% include 'modal/modifier_client.html' %}
+          <tr class="hover:bg-gray-50 transition-colors">
+            <!-- Nom/Type -->
+            <td>
+              <div class="flex items-center gap-3">
+                <div class="avatar placeholder">
+                  <div class="bg-neutral text-neutral-content rounded-full w-10">
+                  </div>
+                </div>
+                <div>
+                  <a href="{% url 'client_app:detail-client' client.id %}" class="font-semibold text-gray-900 hover:text-primary">
+                    {% if client.type_client == 'entreprise' %}
+                      {{ client.raison_sociale }}
+                    {% else %}
+                      {{ client.nom }} {{ client.prenom|default:"" }}
+                    {% endif %}
+                  </a>
+                  <div class="flex items-center gap-2 mt-1">
+                    <span class="badge badge-sm {% if client.type_client == 'entreprise' %}badge-primary{% elif client.type_client == 'institution' %}badge-secondary{% else %}badge-accent{% endif %}">
+                      {{ client.get_type_client_display }}
+                    </span>
+                    {% if client.est_fidel %}
+                    <span class="badge badge-sm badge-success">Fidèle</span>
+                    {% endif %}
+                  </div>
+                </div>
+              </div>
+            </td>
+            
+            <!-- Contact -->
+            <td>
+              <div class="space-y-1">
+                <div class="flex items-center gap-2">
+                  <svg class="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z"/>
+                  </svg>
+                  <span>{{ client.telephone }}</span>
+                </div>
+                {% if client.email %}
+                <div class="flex items-center gap-2">
+                  <svg class="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 4.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/>
+                  </svg>
+                  <span class="text-sm">{{ client.email }}</span>
+                </div>
+                {% endif %}
+              </div>
+            </td>
+            
+            <!-- Localisation -->
+            <td>
+              <div class="space-y-1">
+                <div class="font-medium">{{ client.ville }}</div>
+                {% if client.quartier %}
+                <div class="text-sm text-gray-500">{{ client.quartier }}</div>
+                {% endif %}
+                <div class="text-sm text-gray-500">{{ client.pays }}</div>
+              </div>
+            </td>
+            
+            <!-- Chiffre d'affaires -->
+            <td>
+              <div class="space-y-1">
+                <div class="font-bold text-lg">{{ client.chiffre_daff_total|floatformat }} FCFA</div>
+                <div class="text-sm text-gray-500">{{ client.total_contrats|default:"0" }} contrat(s)</div>
+                {% if client.potentiel_client %}
+                <div class="badge badge-sm {% if client.potentiel_client == 'élevé' %}badge-success{% elif client.potentiel_client == 'moyen' %}badge-warning{% else %}badge-error{% endif %}">
+                  {{ client.get_potentiel_client_display }}
+                </div>
+                {% endif %}
+              </div>
+            </td>
+            
+            <!-- Actions -->
+            <td>
+              
+                <a href="{% url 'client_app:detail-client' client.id %}" class="btn btn-sm btn-outline btn-info">
+                  Détails
+                </a>
+              
+                <a href="{% url 'client_app:supprimer-client' client.id %}" class="btn btn-sm btn-outline btn-error" onclick="return confirm('Supprimer ce client ?');">
+                  Supprimer
+                </a>
+             
+            </td>
+          </tr>
+          {% empty %}
+          <tr>
+            <td colspan="5" class="text-center py-12">
+              <div class="w-6 h-6 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                <svg class="w-8 h-8 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"/>
+                </svg>
+              </div>
+              <h3 class="text-lg font-medium text-gray-900 mb-1">Aucun client enregistré</h3>
+              <p class="text-gray-500">Commencez par ajouter votre premier client</p>
+            </td>
+          </tr>
+
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+    

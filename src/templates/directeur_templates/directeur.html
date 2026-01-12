@@ -1,89 +1,187 @@
-{% extends 'base.html' %}
-
-
-
-{% block title %}
-    Interface Directeur
-{% endblock title %}
-
-
-
-{% block content %}
-
-<!-- EN HAUT du template -->
-{% if messages %}
-<div class="messages">
-    {% for message in messages %}
-    <div class="alert alert-{{ message.tags }}">
-        {{ message }}
-    </div>
-    {% endfor %}
-</div>
-{% endif %}
-
-
-<h2>Fond disponible: {{ fond }}</h2>
-<a href="{% url 'auth_app:register' %}">Ajouter un employée</a>
-<a href="{% url 'directeur_app:ajouter-fond' %}">Ajouter des fonds</a>
-
-<a href="{% url 'directeur_app:rapport-depense-employee' %}">Rapport des dépenses </a>
-
-<a href="{% url 'secretaire_app:hist-demande-decaisse' %}">Historique des demandes</a>
-<a href="{% url 'directeur_app:historique-fonds' %}">historique 'ajouts fonds</a>
-
-<a href="{% url 'client_app:liste-client' %}">Voir tout les clients</a>
-
-<a href="{% url 'chantier_app:liste-chantier' %}">Voir tout les chantier</a>
-
-<a href="{% url 'contrat_app:liste-contrats' %}"> Voir les contrats</a>
-
-<a href="{% url 'employee_app:employee-du-mois' %}">🏆 Employé du mois</a>
-
-<a href="{%url 'dashboard_app:dashboard-view'%}"> Dashbord</a>
-
-<a href="{% url 'auth_app:changer-identifiants' %}" class="btn">🔐 Changer identifiants</a>
-
-<a href="{% url 'auth_app:logout' %}">Deconnexion</a>
-
-<div class='list_demande'>
-    <hr>
-    <hr>
-    <h1>Interface Directeur</h1>
-<h1>List et status de demande en cours</h1>
-
-{% for demande in list_demande %}
-    <h4>Nom: <strong>{{ demande.nom  }}</strong></h4>
-    <h4>Montant: <strong>{{ demande.montant }} FCFA</strong></h4>
-    
-    {% if  demande.chantier %}
-    <h4>Chantier: <strong>{{ demande.chantier }}</strong></h4>
-    {% endif %}
-    
-    <h4>Motif: <em>{{ demande.motif }}</em></h4>
-   
-
-    {% if demande.decaisse %}
-    <h3 style='color:skyblue;'>Décaissé</h3>
-
-    {% elif demande.status == 'approuvee_directeur' or demande.status == 'approuvee_comptable' %}
-    <h3 style='color:green;'>{{ demande.get_status_display }}</h3>
-  
-    {% elif demande.status == 'refusee_directeur' or demande.status == 'refusee_comptable' %}
-    <h3 style='color:red;'>{{ demande.get_status_display }}</h3>
-
-    {% else %}
-    <h3 style='color:orange;'>{{ demande.get_status_display }}</h3>
-
-      <a href="{% url 'comptable_app:comptable-approuver-demande' demande.id %}" style='color: green;'>Approuver</a>
-         <a href="{% url 'comptable_app:comptable-refuser-demande' demande.id %}"style='color: red;'>Refusé</a>
-   {% endif %}
-    
+{% load static %}
+{% load tailwind_tags %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"> 
+    <title>  {% block title %} {% endblock title %}</title>
+    <link rel="stylesheet" href="{% static 'css/base_style.css' %}">
+    <link rel="stylesheet" href="{% static 'css/directeur_style.css' %}">
+    <script src="{% static 'js/htmx.min.js' %}"></script>
+    {% tailwind_css %}
+</head>
+    <body>
         
-    
-    <hr>
-    <hr>
-{% endfor %}
-    
-</div>
-{% endblock content %}
-    
+{% include 'auth_templates/register.html' %}
+{% include 'auth_templates/changer_id.html' %}
+{% include 'modal/ajouter_fond.html' %}
+        <nav>
+            <h1>Interface Directeur</h1>
+        </nav>
+        <header>
+            <h1>SANBA STRUCTURE METTALIQUE</h1>
+            <h3 class="txt-fond">Fond disponible: <span class="fond">{{ fond }}</span></h3>
+                <div class="action">
+                    <div class="right_actions">
+                        
+                        <button class="btn aj_fond" onclick="openFondModal()"> ➕ Ajouter des fonds</button>
+                        <button class="btn aj_emplye" onclick="openRegisterModal()"> ➕ Ajouter un employée</button>
+                    </div>
+                
+                    <div class='left_actions'>    
+                        <button onclick="openChangeCredentialsModal()" class="btn ch_identifiant">🔐 Changer identifiants</button>
+                        <a class="btn deconnexion" href="{% url 'auth_app:logout' %}">Deconnexion</a>
+                    </div>
+                </div>
+                
+                
+        </header>
+
+       <main>
+            
+             {% if messages %}
+                <div class="messages">
+                    {% for message in messages %}
+                    <div class="alert alert-{{ message.tags }}">
+                        {{ message }}
+                    </div>
+                    {% endfor %}
+                </div>
+                {% endif %}
+                <div>
+
+            <div class="div_all_btn">
+
+                <section class="historique_section">
+                    <a class="btn" href="{% url 'secretaire_app:hist-demande-decaisse' %}">Historique des demandes</a>
+                    <a class="btn" href="{% url 'directeur_app:historique-fonds' %}">historique 'ajouts fonds</a>
+                </section>
+
+                <section class="views_section">
+                    <a class="btn" href="{% url 'client_app:liste-client' %}">Voir tout les clients</a>
+                    <a class="btn" href="{% url 'chantier_app:liste-chantier' %}">Voir tout les chantier</a>
+                    <a class="btn" href="{% url 'contrat_app:liste-contrats' %}"> Voir les contrats</a>
+                </section>
+
+                <section class="dasboard_section">
+                    <a class="btn" href="{% url 'directeur_app:rapport-depense-employee' %}">Rapport des dépenses </a>
+                    <a class="btn" href="{% url 'employee_app:employee-du-mois' %}">🏆 Employé du mois</a>
+                    <a class="btn" href="{%url 'dashboard_app:dashboard-view'%}"> Dashbord</a>
+                </section>
+
+            </div>
+            
+
+            <div class="section_container">
+
+                <h2>Liste et statuts des demandes de decaissement</h2>
+
+                <section class="demande_section">
+
+                {% for demande in list_demande %}
+                <div class="demande_card">
+                    <span><strong>Nom:</strong> <em>{{ demande.demandeur.username }}</em></span>
+                    <span><strong>Montant:</strong> <em>{{ demande.montant }} FCFA</em></span>
+                    
+                    {% if  demande.chantier %}
+                    <span><strong>Chantier:</strong> <em>{{ demande.chantier }}</em></span>
+                    {% endif %}
+                    <span><strong>Motif:</strong> <em>{{ demande.motif }}</em></span>
+                
+                    <div class="status_section">
+
+                        {% if demande.decaisse %}
+                         <span class="status-badge status-decaisse">Décaissée</span>
+
+                        {% elif demande.status == 'approuvee_directeur' or demande.status == 'approuvee_comptable' %}
+                        <span class="status-badge status-approuvee">{{ demande.get_status_display }}</span>
+                    
+                        {% elif demande.status == 'refusee_directeur' or demande.status == 'refusee_comptable' %}
+                        <span class="status-badge status-refusee">{{ demande.get_status_display }}</span>
+
+                        {% else %}
+                        <span class="status-badge status-en-attente">{{ demande.get_status_display }}</span>
+
+                            <a href="{% url 'comptable_app:comptable-approuver-demande' demande.id %}" style='color: green;'>Approuver</a>
+                            <a href="{% url 'comptable_app:comptable-refuser-demande' demande.id %}"style='color: red;'>Refusé</a>
+                        {% endif %}
+                
+                    </div>
+                
+                </div>
+                {% endfor %}
+                
+            </section>
+
+            </div>
+       </main>
+               <!-- Footer -->
+<footer class="bg-gray-900 text-white mt-12">
+        <div class="container mx-auto px-4 py-8">
+            <div class="flex flex-col md:flex-row justify-between items-center">
+                <div class="mb-4 md:mb-0">
+                    <p class="font-bold text-lg">SANBA GESTION FINFLOW</p>
+                    <p class="text-gray-400 text-sm">Interface Directeur</p>
+                </div>
+                
+                <div class="text-center md:text-right">
+                    <p class="text-gray-400">© {% now "Y" %} - Tous droits réservés</p>
+                    <p class="text-gray-500 text-sm mt-1">
+                        Généré le {% now "d/m/Y à H:i" %}
+                    </p>
+                </div>
+            </div>
+        </div>
+</footer>
+    </body>
+</html>
+
+
+
+<!-- Script -->
+<script>
+    function openRegisterModal() {
+    document.getElementById('registerModal').showModal();
+    }
+    </script>
+
+    {% if open_register_modal %}
+        <script>
+            document.addEventListener("DOMContentLoaded", function() {
+                openRegisterModal();
+            });
+        </script>
+    {% endif %}
+        
+    <!-- Script -->
+    <script>
+        function openFondModal() {
+        document.getElementById('fondModal').showModal();
+        document.getElementById('montant').focus();
+        }
+    </script>
+
+    <!-- Script pour ouvrir/fermer et toggle password -->
+        
+    <script>
+        function openChangeCredentialsModal() {
+        document.getElementById('changeCredentialsModal').showModal();
+        document.getElementById('new_username').focus();
+        }
+
+        function togglePassword(fieldId) {
+        const field = document.querySelector(`[name="${fieldId}"]`);
+        const type = field.getAttribute('type') === 'password' ? 'text' : 'password';
+        field.setAttribute('type', type);
+        }
+    </script>
+
+    {% if open_change_id %}
+    <script>
+        document.addEventListener("DOMContentLoaded", function(){
+            openChangeCredentialsModal();
+        });
+    </script>
+        
+    {% endif %}

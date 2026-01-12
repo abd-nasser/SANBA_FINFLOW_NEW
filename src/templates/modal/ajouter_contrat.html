@@ -1,144 +1,352 @@
-<h3> Enregistrer Nouveau contrat</h3>
+{% load static %}
+{% load tailwind_tags %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"> 
+    <title>  {% block title %} {% endblock title %}</title>
+    <link rel="stylesheet" href="{% static 'css/base_style.css' %}">
+    <link rel="stylesheet" href="{% static 'css/ajouter_contrat_style.css' %}">
+    <script src="{% static 'js/htmx.min.js' %}"></script>
+    {% tailwind_css %}
+</head>
+    <body>
+        <nav>
+            <h1>Interface Directeur</h1>
+        </nav>
+        <header>
+            <h1>Nouveau contrat</h1>
+        </header>
+        <main>
+          {% if messages %}
+                <div class="messages">
+                    {% for message in messages %}
+                    <div class="alert alert-{{ message.tags }}">
+                        {{ message }}
+                    </div>
+                    {% endfor %}
+                </div>
+                {% endif %}
+                
+  <div class="container mx-auto px-4 py-8 max-w-4xl">
+  <!-- En-tête -->
+  <div class="mb-8">
+    <h1 class="text-3xl font-bold">📋 Créer un nouveau contrat</h1>
+    <p class="text-gray-600">Remplissez toutes les informations du contrat</p>
+  </div>
 
-<form method="post">
+  <!-- Messages d'erreur globaux -->
+  {% if form.non_field_errors %}
+  <div class="alert alert-error mb-6">
+    <svg style="width: 20px; height: 20px;" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+    </svg>
+    <div>
+      {% for error in form.non_field_errors %}
+      <p>{{ error }}</p>
+      {% endfor %}
+    </div>
+  </div>
+  {% endif %}
+
+  <form method="post" enctype="multipart/form-data" class="space-y-8">
     {% csrf_token %}
-
-     <!-- Messages d'erreur globaux -->
-        {% if form.non_field_errors %}
-        <div>
-            {% for error in form.non_field_errors %}
-            <p>{{ error }}</p>
-            {% endfor %}
-        </div>
-        {% endif %}
+    
+    <!-- Section 1: LIENS AVEC CHANTIER -->
+    <div class="card bg-base-100 shadow">
+      <div class="card-body">
+        <h2 class="card-title text-xl border-b pb-3 mb-6">
+          <svg style="width: 20px; height: 20px;" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"/>
+          </svg>
+          LIEN AVEC LE CHANTIER
+        </h2>
         
-
-
-
-    <fieldset>
-        <legend>LIENS AVEC CHANTIER</legend>
-
-        <div class="cont_chantier">
-        <label>Chantier:</label>
-        {{form.chantier}}
-        {% if form.chantier.errors %}
-            <p>{{error}}</p>
-        {% endif %}
-
-        </div>
-       
-        <div class="cont_refer_contrat">
-        <label>Réference du contrat:</label>
-        {{form.reference_contrat}}
-        {% if form.reference_contrat.errors %}
-            <p>{{error}}</p>
-        {% endif %}
-
-        </div>
-        
-        <div class="cont_date_sign">
-        <label>Date de signature:</label>
-        {{form.date_signature}}
-        {% if form.date_signature.errors %}
-        <p>{{error}}</p>
-        {% endif %}
-        </div>
-
-        <div class="cont_mode_paiement">
-            <label>Mode de paiements:</label>
-            {{form.mode_paiement}}
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <!-- Chantier -->
+          <div class="form-control">
+            <label class="label">
+              <span class="label-text font-bold">Chantier *</span>
+            </label>
+            {{ form.chantier }}
+            {% if form.chantier.errors %}
+            <div class="text-error text-sm mt-1">
+              {% for error in form.chantier.errors %}{{ error }}{% endfor %}
+            </div>
+            {% endif %}
+          </div>
+          
+          <!-- Référence contrat -->
+          <div class="form-control">
+            <label class="label">
+              <span class="label-text font-bold">Référence du contrat *</span>
+            </label>
+            {{ form.reference_contrat }}
+            {% if form.reference_contrat.errors %}
+            <div class="text-error text-sm mt-1">
+              {% for error in form.reference_contrat.errors %}{{ error }}{% endfor %}
+            </div>
+            {% endif %}
+          </div>
+          
+          <!-- Date signature -->
+          <div class="form-control">
+            <label class="label">
+              <span class="label-text font-bold">Date de signature</span>
+            </label>
+            {{ form.date_signature }}
+            {% if form.date_signature.errors %}
+            <div class="text-error text-sm mt-1">
+              {% for error in form.date_signature.errors %}{{ error }}{% endfor %}
+            </div>
+            {% endif %}
+          </div>
+          
+          <!-- Mode paiement -->
+          <div class="form-control">
+            <label class="label">
+              <span class="label-text font-bold">Mode de paiement *</span>
+            </label>
+            {{ form.mode_paiement }}
             {% if form.mode_paiement.errors %}
-                <p>{{error}}</p>
+            <div class="text-error text-sm mt-1">
+              {% for error in form.mode_paiement.errors %}{{ error }}{% endfor %}
+            </div>
             {% endif %}
-                
-        </div>     
-        
-        <div class="cont_montant_total">
-            <label>montant total du contrat:</label>
-            {{form.montant_total}}
-            {% if form.montant_total.errors  %}
-                <p>{{ errors }}</p>
-            {% endif %}   
-        </div>
-
-        <div class="cont_acompte_pourcentage">
-            <label>Pourcentage du contrat déja payé:</label>
-            {{form.acompte_pourcentage}}
+          </div>
+          
+          <!-- Montant total -->
+          <div class="form-control">
+            <label class="label">
+              <span class="label-text font-bold">Montant total (FCFA) *</span>
+            </label>
+            {{ form.montant_total }}
+            {% if form.montant_total.errors %}
+            <div class="text-error text-sm mt-1">
+              {% for error in form.montant_total.errors %}{{ error }}{% endfor %}
+            </div>
+            {% endif %}
+          </div>
+          
+          <!-- Acompte -->
+          <div class="form-control">
+            <label class="label">
+              <span class="label-text font-bold">Acompte (%)</span>
+            </label>
+            {{ form.acompte_pourcentage }}
+            <div class="text-xs text-gray-500 mt-1">
+              Pourcentage payé à la signature
+            </div>
             {% if form.acompte_pourcentage.errors %}
-            <p>{{ error }}</p>
+            <div class="text-error text-sm mt-1">
+              {% for error in form.acompte_pourcentage.errors %}{{ error }}{% endfor %}
+            </div>
             {% endif %}
-                
-        </div>
-
-        <div class="cont_nombre_tranches">
-            <label>Tranche restant:</label>
-            {{form.nombre_tranches}}
-            {% if form.nombre_tranches.errors%}
-            <p>{{ error }}</p>
+          </div>
+          
+          <!-- Nombre tranches -->
+          <div class="form-control">
+            <label class="label">
+              <span class="label-text font-bold">Nombre de tranches</span>
+            </label>
+            {{ form.nombre_tranches }}
+            <div class="text-xs text-gray-500 mt-1">
+              Nombre de paiements restants
+            </div>
+            {% if form.nombre_tranches.errors %}
+            <div class="text-error text-sm mt-1">
+              {% for error in form.nombre_tranches.errors %}{{ error }}{% endfor %}
+            </div>
             {% endif %}
-                
+          </div>
         </div>
-    </fieldset>
-    <br>
-    <fieldset>
-        <legend>SUIVIS DES PAIEMENTS</legend>
+      </div>
+    </div>
 
-        <div class="cont_montant_encaisse">
-            <label>Montant encaissé:</label>
-            {{form.montant_encaisse}}
+    <!-- Section 2: SUIVIS DES PAIEMENTS -->
+    <div class="card bg-base-100 shadow">
+      <div class="card-body">
+        <h2 class="card-title text-xl border-b pb-3 mb-6">
+          <svg style="width: 20px; height: 20px;" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+          </svg>
+          SUIVI DES PAIEMENTS
+        </h2>
+        
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <!-- Montant encaissé -->
+          <div class="form-control">
+            <label class="label">
+              <span class="label-text font-bold">Montant déjà encaissé (FCFA)</span>
+            </label>
+            {{ form.montant_encaisse }}
+            <div class="text-xs text-gray-500 mt-1">
+              Montant déjà reçu du client
+            </div>
             {% if form.montant_encaisse.errors %}
-            <p>{{ error }}</p>
-            {% endif %} 
-        </div>
-
-        <div class='cont_date_du_dernier_paiement'>
-            <label>Date du dernier paiement: </label>
-            {{form.date_du_dernier_paiement}}
+            <div class="text-error text-sm mt-1">
+              {% for error in form.montant_encaisse.errors %}{{ error }}{% endfor %}
+            </div>
+            {% endif %}
+          </div>
+          
+          <!-- Date dernier paiement -->
+          <div class="form-control">
+            <label class="label">
+              <span class="label-text font-bold">Date du dernier paiement</span>
+            </label>
+            {{ form.date_du_dernier_paiement }}
             {% if form.date_du_dernier_paiement.errors %}
-            <p>{{ error }}</p>
-            {% endif %}   
+            <div class="text-error text-sm mt-1">
+              {% for error in form.date_du_dernier_paiement.errors %}{{ error }}{% endfor %}
+            </div>
+            {% endif %}
+          </div>
         </div>
-    </fieldset>
-    <br>
-    <fieldset>
-        <legend>DOCUMENTS IMPORTANTS</legend>
-        <div class="cont_contrat_pdf">
-            <label>Fichier PDF du contrat:</label>
-            {{form.contrat_pdf}}
+      </div>
+    </div>
+
+    <!-- Section 3: DOCUMENTS IMPORTANTS -->
+    <div class="card bg-base-100 shadow">
+      <div class="card-body">
+        <h2 class="card-title text-xl border-b pb-3 mb-6">
+          <svg style="width: 20px; height: 20px;" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z"/>
+          </svg>
+          DOCUMENTS IMPORTANTS
+        </h2>
+        
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <!-- Contrat PDF -->
+          <div class="form-control">
+            <label class="label">
+              <span class="label-text font-bold">Contrat PDF</span>
+            </label>
+            {{ form.contrat_pdf }}
+            <div class="text-xs text-gray-500 mt-1">
+              Télécharger le contrat signé (PDF)
+            </div>
             {% if form.contrat_pdf.errors %}
-            <p>{{ error }}</p>
-            {% endif %}       
-        </div>
-
-        <div class="cont_devis_initial">
-            <label>Devis Initial:</label>
-            {{form.devis_initial}}
+            <div class="text-error text-sm mt-1">
+              {% for error in form.contrat_pdf.errors %}{{ error }}{% endfor %}
+            </div>
+            {% endif %}
+          </div>
+          
+          <!-- Devis initial -->
+          <div class="form-control">
+            <label class="label">
+              <span class="label-text font-bold">Devis initial</span>
+            </label>
+            {{ form.devis_initial }}
+            <div class="text-xs text-gray-500 mt-1">
+              Premier devis accepté par le client
+            </div>
             {% if form.devis_initial.errors %}
-            <p>{{ error }}</p>
+            <div class="text-error text-sm mt-1">
+              {% for error in form.devis_initial.errors %}{{ error }}{% endfor %}
+            </div>
             {% endif %}
-                
+          </div>
         </div>
-    </fieldset>
+      </div>
+    </div>
 
-    <fieldset>
-        <legend>CLAUSE SPECIALES</legend>
-
-        <div class="cont_garantie_mois">
-        <label>Mois de garantie du travail</label>
-        {{form.garantie_mois}}
-        {% if form.garantie_mois.errors %}
-        <p>{{ error }}</p>
-        {% endif %}
-        </div>  
-
-        <div class="cont_notes_contact">
-            <label>Notes contractuelles</label>
-            {{form.notes_contractuelles}}
-            
+    <!-- Section 4: CLAUSES SPÉCIALES -->
+    <div class="card bg-base-100 shadow">
+      <div class="card-body">
+        <h2 class="card-title text-xl border-b pb-3 mb-6">
+          <svg style="width: 20px; height: 20px;" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"/>
+          </svg>
+          CLAUSES SPÉCIALES
+        </h2>
+        
+        <div class="space-y-6">
+          <!-- Garantie -->
+          <div class="form-control">
+            <label class="label">
+              <span class="label-text font-bold">Garantie (mois)</span>
+            </label>
+            {{ form.garantie_mois }}
+            <div class="text-xs text-gray-500 mt-1">
+              Durée de la garantie des travaux en mois
+            </div>
+            {% if form.garantie_mois.errors %}
+            <div class="text-error text-sm mt-1">
+              {% for error in form.garantie_mois.errors %}{{ error }}{% endfor %}
+            </div>
+            {% endif %}
+          </div>
+          
+          <!-- Notes contractuelles -->
+          <div class="form-control">
+            <label class="label">
+              <span class="label-text font-bold">Notes contractuelles</span>
+            </label>
+            {{ form.notes_contractuelles }}
+            <div class="text-xs text-gray-500 mt-1">
+              Conditions particulières, clauses spéciales, etc.
+            </div>
             {% if form.notes_contractuelles.errors %}
-            <p>{{ error }}</p>
+            <div class="text-error text-sm mt-1">
+              {% for error in form.notes_contractuelles.errors %}{{ error }}{% endfor %}
+            </div>
             {% endif %}
-                <input type="submit" value="Enregistrer le contrat">
+          </div>
         </div>
-    </fieldset>
-</form>
+      </div>
+    </div>
+
+
+<div class="bas_form">
+     <!-- Boutons -->
+
+
+   
+
+    <div class="flex justify-between items-center pt-6 border-t">
+        <button type="submit" class="btn btn-new_contrat">
+        <svg style="width: 20px; height: 20px;" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
+        </svg>
+        Enregistrer le contrat
+      </button>
+      <a href="{% url 'contrat_app:liste-contrats' %}" class="btn btn-ghost">
+        <svg style="width: 20px; height: 20px;" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"/>
+        </svg>
+        Retour à la liste
+      </a>
+    </div>
+</div>
+   
+  </form>
+</div>
+
+        </main>
+            <!-- Footer -->
+<footer class="bg-gray-900 text-white mt-12">
+        <div class="container mx-auto px-4 py-8">
+            <div class="flex flex-col md:flex-row justify-between items-center">
+                <div class="mb-4 md:mb-0">
+                    <p class="font-bold text-lg">SANBA GESTION FINFLOW</p>
+                    <p class="text-gray-400 text-sm"> Gestion des Contrats</p>
+                </div>
+                
+                <div class="text-center md:text-right">
+                    <p class="text-gray-400">© {% now "Y" %} - Tous droits réservés</p>
+                    <p class="text-gray-500 text-sm mt-1">
+                        Généré le {% now "d/m/Y à H:i" %}
+                    </p>
+                </div>
+            </div>
+        </div>
+</footer>
+    </body>
+
+</html>
+
+
+

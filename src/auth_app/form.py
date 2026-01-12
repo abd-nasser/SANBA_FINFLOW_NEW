@@ -22,29 +22,47 @@ class PersonnelRegisterForm(forms.ModelForm):
         ]
         
 class ChangeCredentialsForm(forms.Form):
-    new_username = forms.CharField(max_length=150, required=False, label="Nouveau nom d'utilisateur")
-    current_password =  forms.CharField(widget=forms.PasswordInput, label="Mot de passe actuel")
-    new_password = forms.CharField(widget=forms.PasswordInput, required=False, label="Nouveau mot de asse")  
-    confirm_password = forms.CharField(widget=forms.PasswordInput, required=False, label="confirmez nouveau mot de passe")
+    new_username = forms.CharField(
+        max_length=150, 
+        required=False,
+        widget=forms.TextInput(attrs={"class": "input input-bordered w-300"}),
+        label="Nouveau nom d'utilisateur"
+    )
+    
+    current_password = forms.CharField(
+        widget=forms.PasswordInput(attrs={"class": "input input-bordered w-300",
+                                          "id":"new_username"}),
+        label="Mot de passe actuel"
+    )
+    
+    new_password = forms.CharField(
+        widget=forms.PasswordInput(attrs={"class": "input input-bordered w-300"}),
+        required=True,
+        label="Nouveau mot de passe"
+    )
+    
+    confirm_password = forms.CharField(
+        widget=forms.PasswordInput(attrs={"class": "input input-bordered w-300"}),
+        required=True,
+        label="Confirmez nouveau mot de passe"
+    )
     
     def __init__(self, user, *args, **kwargs):
         self.user = user
         super().__init__(*args, **kwargs)
-        
-        
+    
     def clean(self):
         cleaned_data = super().clean()
         current_password = cleaned_data.get('current_password')
         new_password = cleaned_data.get('new_password')
         confirm_password = cleaned_data.get("confirm_password")
         
-        #Verification mot de passe actuel
+        # Verification mot de passe actuel
         if not self.user.check_password(current_password):
             raise forms.ValidationError("Mot de passe actuel incorrect")
         
-        #verifie si nouveau mots de passe correspondent
+        # Verifie si nouveau mots de passe correspondent
         if new_password and new_password != confirm_password:
             raise forms.ValidationError("Les nouveaux mots de passe ne correspondent pas")
         
         return cleaned_data
-        

@@ -1,30 +1,320 @@
-{% extends 'base.html' %}
+{% load static %}
+{% load tailwind_tags %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"> 
+    <title>  {% block title %} {% endblock title %}</title>
+    <link rel="stylesheet" href="{% static 'css/base_style.css' %}">
+    <link rel="stylesheet" href="{% static 'css/detail_client_style.css' %}">
+    <script src="{% static 'js/htmx.min.js' %}"></script>
+    {% tailwind_css %}
+</head>
+    <body>
+        <nav>
+             
+            
+            <div class="container mx-auto px-4 py-3">
+            
+            {% if user.is_authenticated and user.post.nom == 'Directeur' %}
+                <h1 class="text-xl font-bold">Interface Directeur</h1>
+                {% elif user.is_authenticated and user.post.nom == 'Comptable' %}
+                <h1 class="text-xl font-bold">Interface Comptable</h1>
+            {% endif %}
+                 
+        </div>
+        </nav>
+        <header>
+               <h1>{{ client.nom|upper }} {{ client.prenom|upper }}</h1>  
 
-
-{% block title %}
-    Detail client
-{% endblock title %}
+              <div class="flex gap-2">
+          <button onclick="modifclientModal.showModal()" class="btn btn-modif_client">
+          <svg style="width: 20px; height: 20px;" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/>
+        </svg>
+        Modifier
+        </button>
+      {% include 'modal/supprimer_client.html' %}
+     <button class="btn btn-supp_client" onclick="modal_supp_client.showModal()">
+      <svg style="width: 20px; height: 20px;" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
+        </svg>
+      Supprimer
+    </button>
     
-
-{% block content %}
-
-
-    <p> Nom: {{ client.nom }} </p>
-    <p> Prenom: {{ client.prenom }}</p>
-
-    <p>Email: {{ client.email }}</p>
-    <p>Téléphone: {{ client.telephone }}</p>
-    <p>Adresse: {{ client.adresse }}</p>
-    <p>Chantiers associés:</p>
-    <ul>
-    {% for chantier in client_all_chantiers %}
-        <li> <a href="{% url 'chantier_app:detail-chantier' chantier.id %}">{{ chantier.nom_chantier }}</a></li>
-    {% empty %}
-        <li>Aucun chantier associé.</li>
-    {% endfor %}
-    </ul>
-    <a href="{% url 'client_app:modifier-client' client.id %}">Modifier le client</a>
-    <a href="{% url 'client_app:supprimer-client' client.id %}">Supprimer le client</a>
- 
-{% endblock content %}
+    </div>
+        </header>
+      <main>
+           {% if messages %}
+                <div class="messages">
+                    {% for message in messages %}
+                    <div class="alert alert-{{ message.tags }}">
+                        {{ message }}
+                    </div>
+                    {% endfor %}
+                </div>
+                {% endif %}
+<div class="container mx-auto px-4 py-8">
+  <!-- En-tête -->
+  <div class="flex justify-between en_tete items-start mb-8">
+    <div>
+      <div class="flex items-center gap-4 mb-4">
+        <div>
+          <h1 class="text-3xl font-bold">
+            {% if client.type_client == 'entreprise' %}
+              {{ client.raison_sociale }}
+            {% else %}
+              {{ client.nom|upper }} {{ client.prenom|upper }}
+            {% endif %}
+          </h1>
+          <p class="text-gray-600">{{ client.get_type_client_display }}</p>
+        </div>
+      </div>
+      
+      <!-- Badges -->
+      <div class="flex gap-2 mb-6">
+        <span class="badge badge-outline">{{ client.get_type_client_display }}</span>
+        {% if client.potentiel_client %}
+        <div class="badge 
+          {% if client.potentiel_client == 'élevé' %}badge-success
+          {% elif client.potentiel_client == 'moyen' %}badge-warning
+          {% else %}badge-error{% endif %}">
+          Potentiel {{ client.get_potentiel_client_display }}
+        </div>
+        {% endif %}
+        {% if client.est_fidel %}
+        <div class="badge badge-primary">Client fidèle</div>
+        {% endif %}
+      </div>
+    </div>
     
+  </div>
+
+  <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+    <!-- Colonne gauche : Informations -->
+    <div class="lg:col-span-2">
+      <!-- Cartes d'informations -->
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
+        <!-- Coordonnées -->
+        <div class="card bg-base-100 shadow">
+          <div class="card-body">
+            <h3 class="card-title flex items-center gap-2">
+              <svg style="width: 20px; height: 20px;" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z"/>
+              </svg>
+              Coordonnées
+            </h3>
+            <div class="space-y-3">
+              <div>
+                <p class="text-sm text-gray-500">Téléphone principal</p>
+                <p class="font-medium">{{ client.telephone }}</p>
+              </div>
+              {% if client.telephone_secondaire %}
+              <div>
+                <p class="text-sm text-gray-500">Téléphone secondaire</p>
+                <p class="font-medium">{{ client.telephone_secondaire }}</p>
+              </div>
+              {% endif %}
+              {% if client.email %}
+              <div>
+                <p class="text-sm text-gray-500">Email</p>
+                <p class="font-medium">{{ client.email }}</p>
+              </div>
+              {% endif %}
+            </div>
+          </div>
+        </div>
+
+        <!-- Adresse -->
+        <div class="card bg-base-100 shadow">
+          <div class="card-body">
+            <h3 class="card-title flex items-center gap-2">
+              <svg style="width: 20px; height: 20px;" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/>
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"/>
+              </svg>
+              Adresse
+            </h3>
+            <div class="space-y-2">
+              <p class="font-medium">{{ client.adresse }}</p>
+              <div class="flex gap-4 text-sm">
+                <span class="text-gray-600">{{ client.ville }}</span>
+                {% if client.quartier %}
+                <span class="text-gray-600">{{ client.quartier }}</span>
+                {% endif %}
+                <span class="text-gray-600">{{ client.pays }}</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Informations métier -->
+      <div class="card bg-base-100 shadow mb-8">
+        <div class="card-body">
+          <h3 class="card-title">Informations métier</h3>
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+            {% if client.secteur_activite %}
+            <div>
+              <p class="text-sm text-gray-500">Secteur d'activité</p>
+              <p class="font-medium">{{ client.get_secteur_activite_display }}</p>
+            </div>
+            {% endif %}
+            
+            {% if client.source_client %}
+            <div>
+              <p class="text-sm text-gray-500">Source</p>
+              <p class="font-medium">{{ client.get_source_client_display }}</p>
+            </div>
+            {% endif %}
+            
+            {% if client.commercial_attache %}
+            <div>
+              <p class="text-sm text-gray-500">Commercial attaché</p>
+              <div class="flex items-center gap-2">
+                <div class="avatar placeholder">
+                  <div class="bg-secondary text-secondary-content rounded-full w-6">
+                    <span class="text-xs">{{ client.commercial_attache.username|slice:":2"|upper }}</span>
+                  </div>
+                </div>
+                <span>{{ client.commercial_attache.get_full_name|default:client.commercial_attache.username }}</span>
+              </div>
+            </div>
+            {% endif %}
+            
+            <div>
+              <p class="text-sm text-gray-500">Premier contact</p>
+              <p class="font-medium">{{ client.date_premier_contact|date:"d/m/Y" }}</p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Statistiques -->
+      <div class="card bg-base-100 shadow">
+        <div class="card-body">
+          <h3 class="card-title">Statistiques</h3>
+          <div class="stats stats-vertical md:stats-horizontal shadow">
+            <div class="stat">
+              <div class="stat-title">Contrats</div>
+              <div class="stat-value">{{ client.total_contrats }}</div>
+              <div class="stat-desc">Total signés</div>
+            </div>
+            
+            <div class="stat">
+              <div class="stat-title">Chiffre d'affaires</div>
+              <div class="stat-value">{{ client.chiffre_daff_total|floatformat }} FCFA</div>
+              <div class="stat-desc">Total généré</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Colonne droite : Chantiers et Notes -->
+    <div class="space-y-8">
+      <!-- Chantiers associés -->
+      <div class="card bg-base-100 shadow">
+        <div class="card-body">
+          <h3 class="card-title flex items-center gap-2">
+            <svg style="width: 20px; height: 20px;" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"/>
+            </svg>
+            Chantiers associés
+          </h3>
+          
+          {% if client_all_chantiers %}
+          <div class="space-y-3">
+            {% for chantier in client_all_chantiers %}
+            <div class="border rounded-lg p-3 hover:bg-base-200">
+              <a href="{% url 'chantier_app:detail-chantier' chantier.id %}" class="font-medium hover:text-primary block">
+                {{ chantier.nom_chantier }}
+              </a>
+              <div class="flex justify-between text-sm mt-1">
+                <span class="badge badge-ghost">{{ chantier.get_status_chantier_display }}</span>
+                <span class="text-gray-500">{{ chantier.date_debut_prevue|date:"M Y"|default:"-" }}</span>
+              </div>
+            </div>
+            {% endfor %}
+          </div>
+          {% else %}
+          <div class="text-center py-4 text-gray-400">
+            <svg style="width: 20px; height: 20px;" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"/>
+            </svg>
+            <p>Aucun chantier associé</p>
+          </div>
+          {% endif %}
+        </div>
+      </div>
+
+      <!-- Notes internes -->
+      {% if client.notes_internes %}
+      <div class="card bg-base-100 shadow">
+        <div class="card-body">
+          <h3 class="card-title">Notes internes</h3>
+          <div class="prose max-w-none">
+            <p class="whitespace-pre-line">{{ client.notes_internes }}</p>
+          </div>
+        </div>
+      </div>
+      {% endif %}
+
+      <!-- Actions rapides -->
+      <div class="card bg-base-100 shadow">
+        <div class="card-body">
+          <h3 class="card-title">Actions rapides</h3>
+          <div class="space-y-2">
+            <a href="{% url 'chantier_app:ajouter-chantier' %}" class="btn btn-add_chantier btn-block justify-start">
+              <svg style="width: 20px; height: 20px;" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
+              </svg>
+              Nouveau chantier
+            </a>
+            <a href="{% url 'contrat_app:ajouter-contrat' %}" class="btn btn-add_contrat btn-block justify-start">
+              <svg style="width: 20px; height: 20px;" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+              </svg>
+              Nouveau contrat
+            </a>
+
+             <a href="{% url 'client_app:liste-client' %}" class="btn btn-ghost">
+        <svg style="width: 20px; height: 20px;" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"/>
+        </svg>
+        Retour à la liste
+      </a>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+{% include 'modal/modifier_client.html' %}
+      </main>
+
+         <!-- Footer -->
+<footer class="bg-gray-900 text-white mt-12">
+        <div class="container mx-auto px-4 py-8">
+            <div class="flex flex-col md:flex-row justify-between items-center">
+                <div class="mb-4 md:mb-0">
+                    <p class="font-bold text-lg">SANBA GESTION FINFLOW</p>
+                    <p class="text-gray-400 text-sm"> Gestion des Clients</p>
+                </div>
+                
+                <div class="text-center md:text-right">
+                    <p class="text-gray-400">© {% now "Y" %} - Tous droits réservés</p>
+                    <p class="text-gray-500 text-sm mt-1">
+                        Généré le {% now "d/m/Y à H:i" %}
+                    </p>
+                </div>
+            </div>
+        </div>
+</footer>
+         
+    </body>
+</html>
+
+
+

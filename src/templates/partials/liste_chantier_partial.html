@@ -1,6 +1,4 @@
-
-<div class="card shadow">
-    <div class="card-header bg-dark text-white d-flex justify-content-between align-items-center">
+  <div class="card-header bg-dark text-white d-flex justify-content-between align-items-center">
         <h5 class="mb-0">
             📋 Liste des chantiers 
             <span class="badge bg-light text-dark ms-2">{{ chantiers|length }}</span>
@@ -9,9 +7,10 @@
             Mis à jour : {{ "now"|date:"H:i:s" }}
         </small>
     </div>
-    
+
+<div class="card shadow table_container" id="table_container">
     {% if chantiers %}
-    <div class="table-responsive">
+    
         <table class="table table-hover mb-0">
             <thead class="table-light">
                 <tr>
@@ -101,7 +100,7 @@
                 {% endfor %}
             </tbody>
         </table>
-    </div>
+    
     
     <!-- PAGINATION (si besoin) -->
     {% if is_paginated %}

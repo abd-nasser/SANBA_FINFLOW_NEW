@@ -1,0 +1,16 @@
+.dash_container{
+        background:linear-gradient(144deg,rgba(255, 0, 0, 1) 2%, rgba(222, 211, 211, 1) 50%, rgba(13, 12, 13, 1) 100%);
+        }
+
+.body{
+     background:linear-gradient(144deg,rgba(255, 0, 0, 1) 2%, rgba(222, 211, 211, 1) 50%, rgba(13, 12, 13, 1) 100%);
+}
+
+.card,.card-body{
+background-color: rgba(255, 255, 255, 0);
+    backdrop-filter: blur(1.8rem);
+}
+
+.card{
+    box-shadow: 3px 6px 20px 0px;
+}

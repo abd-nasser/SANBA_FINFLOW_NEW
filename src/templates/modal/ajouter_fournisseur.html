@@ -1,7 +1,69 @@
-<h1>Ajouter nouveau fournisseur</h1>
-
-<form method="post"action="{% url 'directeur_app:ajouter-fournisseur' %}">
-{% csrf_token %}
-{{form.as_p}}
-<input type="submit" value="Ajouter">
-</form>
+<!-- Modal -->
+<dialog id="ajouterFournisseurModal" class="modal">
+  <div class="modal-box max-w-lg">
+    <!-- Header -->
+    <div class="flex justify-between items-center mb-6 pb-4 border-b">
+      <h3 class="text-xl font-bold">
+        👤 Nouveau fournisseur
+      </h3>
+      <form method="dialog">
+        <button class="btn btn-sm btn-circle btn-ghost">✕</button>
+      </form>
+    </div>
+    
+    <!-- Formulaire -->
+    <form method="post" action="{% url 'directeur_app:ajouter-fournisseur' %}">
+      {% csrf_token %}
+      
+      <div class="space-y-4">
+        <!-- Nom -->
+        <div class="form-control">
+          <label class="label">
+            <span class="label-text font-semibold">Nom</span>
+          </label>
+          {{ fournisseur_form.nom }}
+        </div>
+        
+        <!-- Téléphone -->
+        <div class="form-control">
+          <label class="label">
+            <span class="label-text font-semibold">Téléphone</span>
+          </label>
+          {{ fournisseur_form.telephone }}
+        </div>
+        
+        <!-- Email -->
+        <div class="form-control">
+          <label class="label">
+            <span class="label-text font-semibold">Email</span>
+          </label>
+          {{ fournisseur_form.email }}
+        </div>
+        
+        <!-- Spécialité -->
+        <div class="form-control">
+          <label class="label">
+            <span class="label-text font-semibold">Spécialité</span>
+          </label>
+          {{ fournisseur_form.specialite }}
+        </div>
+      </div>
+      
+      <!-- Boutons -->
+      <div class="modal-action">
+        <button type="submit" class="btn btn-primary">
+          Ajouter le fournisseur
+        </button>
+        <form method="dialog">
+          <button class="btn btn-ghost">Annuler</button>
+        </form>
+      </div>
+    </form>
+  </div>
+  
+  <!-- Fermeture en cliquant à l'extérieur -->
+  <form method="dialog" class="modal-backdrop">
+    <button>close</button>
+  </form>
+</dialog>
+```

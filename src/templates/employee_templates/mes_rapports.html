@@ -1,54 +1,294 @@
-<div style="border: 1px, solid, black;">
-<a href="{% url 'employee_app:employee-du-mois' %}">🏆</a>
-</div>
+{% load static %}
+{% load tailwind_tags %}
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Rapports de Dépenses - SANBA GESTION FINFLOW</title>
+    <link rel="stylesheet" href="{% static 'css/base_style.css' %}">
+    <link rel="stylesheet" href="{% static 'css/mes_rapport_style.css' %}">
+    <script src="{% static 'js/htmx.min.js' %}"></script>
+    {% tailwind_css %}
 
-
-<table border=1 style="max-width: 100%;" >
-    <thead>
-        <tr>
-            <th>Nom</th>
-            <th>Type de depense</th>
-            <th>Chantier</th>
-            <th>Materiaux_article</th>
-            <th>Quantité</th>
-            <th>Prix Unitaire</th>
-            <th>Date depense effectuée</th>
-            <th>Fournisseur</th>
-            <th>Factute</th>
-            <th>date rapport_soumis</th>
-        </tr>
-    </thead>
-    <tbody>
+</head>
+<body class="bg-gray-50 min-h-screen">
+    <nav> total rapport</nav>
+    <header>
         
-        {% for rapport in rapports  %}
-            
-        <tr>
-            <td>{{ rapport.employee.username }}</td>
-            <td>{{ rapport.type_depense.categorie }}</td>
-            <td>{{ rapport.chantier.nom_chantier }}</td>
-            <td>{{ rapport.materiau_article }}</td>
-            <td>{{ rapport.quantité }}</td>
-            <td>{{ rapport.prix_unitaire }}</td>
-            <td>{{ rapport.date_depense }}</td>
-            
-            {% if rapport.fournisseur %}
-                <td>{{ rapport.fournisseur }}</td>
-                {% else %}
-                <td>important pour l'analyse</td>
-            {% endif %}
+        <h1 class="text-3xl font-bold">📊 SANBA GESTION FINFLOW</h1>
+         <h3 class="text-blue-100 mt-2">Rapports de Dépenses - Tableau de Bord</h3>
 
+        <div class="action">
+           <a href="{% url 'employee_app:employee-view' %}" class="btn btn_ btn-outline btn-sm bg-white/10 border-white/20 hover:bg-white/20 no-print">
+                        📝 Nouveau Rapport
+            </a>
+
+            <button onclick="window.print()" class="btn btn_ btn-outline btn-sm bg-white/10 border-white/20 hover:bg-white/20 no-print">
+                        🖨️ Imprimer
+            </button>
+
+            <a href="{% url 'auth_app:logout' %}" class="btn btn-error btn-sm no-print">
+                        🚪 Déconnexion
+            </a>
+        </div>
+               
+       
+
+               
+       
+    </header>
+     
+        <main>
+
+            <div class="flex justify-between items-center mb-6">
+                <h2 class="text-2xl font-bold text-gray-800">📋 Liste des Rapports de Dépenses</h2>
+                <span class="badge badge-info">
+                    {{ rapports|length }} rapport(s)
+                </span>
+            </div>
             
-            {% if rapport.facture %}
-            <td>{{ rapport.facture }}</td>
-            {% else %}
-            <td>important pour l'entreprise</td>
-            {% endif %}
-             <td>{{ rapport.date_creation }}</td>
-        </tr>
-            {% empty %}
-                    <tr>
-                        <td colspan="4">Aucun Rapport soumis</td>
-                    </tr>
-                 {% endfor %} 
-    </tbody>
-</table>
+            <div class="table-container bg-white rounded-lg">
+                <table class="table table-zebra w-full">
+                    <thead class="bg-gray-100">
+                        <tr>
+                            <th class="font-bold text-gray-700">Employé</th>
+                            <th class="font-bold text-gray-700">Type Dépense</th>
+                            <th class="font-bold text-gray-700">Chantier</th>
+                            <th class="font-bold text-gray-700">Matériau/Article</th>
+                            <th class="font-bold text-gray-700 text-right">Quantité</th>
+                            <th class="font-bold text-gray-700 text-right">Prix Unitaire</th>
+                            <th class="font-bold text-gray-700 text-right">Total</th>
+                            <th class="font-bold text-gray-700">Date Dépense</th>
+                            <th class="font-bold text-gray-700">Fournisseur</th>
+                            <th class="font-bold text-gray-700">Facture</th>
+                            <th class="font-bold text-gray-700">Date Soumission</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for rapport in rapports %}
+                        <tr class="hover:bg-gray-50 transition-colors duration-200">
+                            <!-- Employé -->
+                            <td>
+                                <div class="flex items-center">
+                                    <div class="avatar placeholder mr-2">
+                                        <div class="bg-blue-100 text-blue-800 rounded-full w-8 h-8 flex items-center justify-center font-semibold">
+                                            {{ rapport.employee.username|first|upper }}
+                                        </div>
+                                    </div>
+                                    <span class="font-medium">{{ rapport.employee.username }}</span>
+                                </div>
+                            </td>
+                            
+                            <!-- Type Dépense -->
+                            <td>
+                                <span class="badge badge-outline">
+                                    {{ rapport.type_depense.categorie }}
+                                </span>
+                            </td>
+                            
+                            <!-- Chantier -->
+                            <td>
+                                {% if rapport.chantier %}
+                                    <span class="badge badge-info">
+                                        {{ rapport.chantier.nom_chantier|truncatechars:20 }}
+                                    </span>
+                                {% else %}
+                                    <span class="text-gray-400 italic">Non spécifié</span>
+                                {% endif %}
+                            </td>
+                            
+                            <!-- Matériau/Article -->
+                            <td class="max-w-xs">
+                                <div class="tooltip" data-tip="{{ rapport.materiau_article }}">
+                                    {{ rapport.materiau_article|truncatechars:30|default:"-" }}
+                                </div>
+                            </td>
+                            
+                            <!-- Quantité -->
+                            <td class="text-right font-semibold">
+                                {{ rapport.quantité }}
+                            </td>
+                            
+                            <!-- Prix Unitaire -->
+                            <td class="text-right">
+                                <span class="font-bold text-green-600">
+                                    {{ rapport.prix_unitaire|floatformat:0 }} FCFA
+                                </span>
+                            </td>
+                            
+                            <!-- Total -->
+                            <td class="text-right">
+                                <span class="font-bold text-blue-600">
+                                    {% widthratio rapport.prix_unitaire 1 rapport.quantité as total %}
+                                    {{ total }} FCFA
+                                </span>
+                            </td>
+                            
+                            <!-- Date Dépense -->
+                            <td>
+                                <span class="text-sm">
+                                    {{ rapport.date_depense|date:"d/m/Y" }}
+                                </span>
+                            </td>
+                            
+                            <!-- Fournisseur -->
+                            <td>
+                                {% if rapport.fournisseur %}
+                                    <span class="badge badge-success">
+                                        {{ rapport.fournisseur|truncatechars:20 }}
+                                    </span>
+                                {% else %}
+                                    <span class="text-red-500 font-semibold tooltip" data-tip="Information importante pour l'analyse">
+                                        ❗ Requis
+                                    </span>
+                                {% endif %}
+                            </td>
+                            
+                            <!-- Facture -->
+                            <td>
+                                {% if rapport.facture %}
+                                    <span class="badge badge-primary">
+                                        {{ rapport.facture|truncatechars:15 }}
+                                    </span>
+                                {% else %}
+                                    <span class="text-amber-600 font-semibold tooltip" data-tip="Important pour l'entreprise">
+                                        ⚠️ Absente
+                                    </span>
+                                {% endif %}
+                            </td>
+                            
+                            <!-- Date Soumission -->
+                            <td>
+                                <div class="tooltip" data-tip="{{ rapport.date_creation|date:'H:i' }}">
+                                    <span class="text-sm text-gray-500">
+                                        {{ rapport.date_creation|date:"d/m/Y" }}
+                                    </span>
+                                </div>
+                            </td>
+                        </tr>
+                        {% empty %}
+                        <tr>
+                            <td colspan="11" class="text-center py-12">
+                                <div class="flex flex-col items-center justify-center">
+                                    <div class="text-6xl mb-4 text-gray-300">📭</div>
+                                    <h3 class="text-xl font-semibold text-gray-500 mb-2">Aucun rapport trouvé</h3>
+                                    <p class="text-gray-400">Commencez par soumettre votre premier rapport</p>
+                                    <a href="{% url 'employee_app:employee-view' %}" class="btn btn-primary mt-4">
+                                        📝 Créer un rapport
+                                    </a>
+                                </div>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                    <tfoot>
+                        <tr>
+                            <th colspan="6" class="text-right font-bold">TOTAL GÉNÉRAL :</th>
+                            <th class="text-right font-bold text-green-700">
+                                {% with total_general=0 %}
+                                    {% for rapport in rapports %}
+                                        {% widthratio rapport.prix_unitaire 1 rapport.quantité as subtotal %}
+                                        {% with total_general=total_general|add:subtotal %}
+                                        {% endwith %}
+                                    {% endfor %}
+                                    {{ total_general }} FCFA
+                                {% endwith %}
+                            </th>
+                            <th colspan="4"></th>
+                        </tr>
+                    </tfoot>
+                </table>
+            </div>
+
+                 <a href="{% url 'employee_app:employee-view' %}" class="btn btn-ghost">
+        <svg style="width: 20px; height: 20px;" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"/>
+        </svg>
+        retour
+      </a>
+        </main>
+    </div>
+
+     <!-- Footer -->
+<footer class="bg-gray-900 text-white mt-12">
+        <div class="container mx-auto px-4 py-8">
+            <div class="flex flex-col md:flex-row justify-between items-center">
+                <div class="mb-4 md:mb-0">
+                    <p class="font-bold text-lg">SANBA GESTION FINFLOW</p>
+                    <p class="text-gray-400 text-sm"> Gestion des Rapports</p>
+                </div>
+                
+                <div class="text-center md:text-right">
+                    <p class="text-gray-400">© {% now "Y" %} - Tous droits réservés</p>
+                    <p class="text-gray-500 text-sm mt-1">
+                        Généré le {% now "d/m/Y à H:i" %}
+                    </p>
+                </div>
+            </div>
+        </div>
+</footer>
+    <!-- Scripts -->
+    <script>
+        // Initialiser les tooltips DaisyUI
+        document.addEventListener('DOMContentLoaded', function() {
+            // Calculer et afficher le total général
+            let totalGeneral = 0;
+            document.querySelectorAll('tbody tr').forEach(row => {
+                const totalCell = row.querySelector('td:nth-child(7)');
+                if (totalCell) {
+                    const totalText = totalCell.textContent.trim();
+                    const totalValue = parseFloat(totalText.replace(/[^0-9.]/g, ''));
+                    if (!isNaN(totalValue)) {
+                        totalGeneral += totalValue;
+                    }
+                }
+            });
+            
+            // Mettre à jour l'affichage du total
+            const totalDisplay = document.querySelector('tfoot th:nth-child(2)');
+            if (totalDisplay) {
+                totalDisplay.textContent = totalGeneral.toLocaleString('fr-FR') + ' FCFA';
+            }
+            
+            // Animation pour les lignes
+            const rows = document.querySelectorAll('tbody tr');
+            rows.forEach((row, index) => {
+                row.style.animationDelay = `${index * 0.05}s`;
+                row.classList.add('animate-fadeIn');
+            });
+        });
+        
+        // Fonction pour exporter en CSV
+        function exportToCSV() {
+            let csv = [];
+            // En-têtes
+            const headers = [];
+            document.querySelectorAll('thead th').forEach(th => {
+                headers.push(th.textContent.trim());
+            });
+            csv.push(headers.join(','));
+            
+            // Données
+            document.querySelectorAll('tbody tr').forEach(row => {
+                const rowData = [];
+                row.querySelectorAll('td').forEach(td => {
+                    rowData.push(`"${td.textContent.trim().replace(/"/g, '""')}"`);
+                });
+                csv.push(rowData.join(','));
+            });
+            
+            const csvContent = csv.join('\n');
+            const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+            const link = document.createElement('a');
+            const url = URL.createObjectURL(blob);
+            link.setAttribute('href', url);
+            link.setAttribute('download', `rapports_depenses_${new Date().toISOString().slice(0,10)}.csv`);
+            link.style.visibility = 'hidden';
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+        }
+    </script>
+</body>
+</html>

@@ -3,7 +3,7 @@ from django.urls import reverse_lazy
 from django.contrib import messages
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.views.generic import CreateView, ListView,  UpdateView, DetailView, DeleteView
-from django.db.models import Q
+from django.db.models import Q, Sum
 
 from .models import Contrat
 from .forms import ContratForm
@@ -33,10 +33,34 @@ class ContratView(LoginRequiredMixin, ListView):
         search_query = self.request.GET.get('q')
         if search_query:
             queryset = queryset.filter(
-                Q(chantier__nom_chantier__icontain=search_query)|
+                Q(chantier__nom_chantier__icontains=search_query)|
                 Q(reference_contrat__icontains=search_query)
             )
         return  queryset
+    
+    
+    
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        queryset = self.get_queryset()
+        
+        # Calculs des statistiques
+        total = queryset.count()
+        somme_montants = queryset.aggregate(Sum('montant_total'))['montant_total__sum'] or 0
+        somme_encaisses = queryset.aggregate(Sum('montant_encaisse'))['montant_encaisse__sum'] or 0
+        somme_soldes = somme_montants - somme_encaisses
+        
+        context.update({
+            'all_total_contrats': total,
+            'all_montant_total': somme_montants,
+            'all_montant_encaisse': somme_encaisses,
+            'all_solde_total_rest': somme_soldes,
+            'MODE_PAIEMENT_CHOICES': Contrat.MODE_PAIEMENT_CHOICES,
+        })
+        return context
+    
+
+    
     
     
     
@@ -65,9 +89,9 @@ class ContratDetaiView(LoginRequiredMixin, DetailView):
     context_object_name= "contrat"
     
     def get_template_names(self) -> list[str]:
-        if self.chantier.type_travaux in ['decoration']:
+        if self.object.chantier.type_travaux in ['decoration']:
             return ["contrat_templates/detail_contrat_deco.html"]
-        elif self.chantier.type_travaux in ['toiture_tole', 'toiture_couverture', 'toiture_etancheite']:
+        elif self.object.chantier.type_travaux in ['toiture_tole', 'toiture_couverture', 'toiture_etancheite']:
             return ["contrat_templates/detail_contrat_toiture.html"]
         
         else:

@@ -1,30 +1,86 @@
-
-<dialog id="my_modal_1" class="modal">
-  <div class="modal-box">
-      <h3>Login</h3>
-      <form action="{% url 'auth_app:login' %}"
-            method="post">
-
-        {% csrf_token %}
-        <div class="mb-4">
-          {{form.username.label_tag}} 
-          {{form.username}}
-        </div>
-
-        <div class="mb-4">
-          {{form.password.label_tag}} 
-          {{form.password}}
-        </div>
-
-          <input type="submit" value="Connexion" class="btn btn-primary"/>
-
-      </form>
-
-      <div class="modal-action">
-          <button onclick="my_modal_1.close()" class="btn">Close</button>
+<dialog id="loginModal" class="modal">
+  <div class="modal-box max-w-md">
+    
+    <!-- En-tête avec icône -->
+    <div class="text-center mb-6">
+      <div class="inline-flex items-center justify-center w-12 h-12 rounded-full bg-error/10 mb-3">
+        <svg class="w-6 h-6 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/>
+        </svg>
       </div>
-      
+      <h3 class="text-2xl font-bold">Connexion</h3>
+      <p class="text-sm opacity-70 mt-1">Accédez à votre espace</p>
     </div>
+
+    <!-- Formulaire -->
+    <form method="post" action="{% url 'auth_app:login' %}" class="space-y-4">
+      {% csrf_token %}
+      
+      <!-- Champ Username -->
+      <div class="form-control">
+        <label class="label">
+          <span class="label-text font-medium">{{ form.username.label }}</span>
+        </label>
+        <label class="input input-bordered flex items-center gap-2">
+          <svg class="w-4 h-4 opacity-70" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/>
+          </svg>
+          {{ form.username }}
+          {% if form.username.errors %}
+            <span class="text-red-500 text-sm">{{ form.username.errors }}</span>
+          {% endif %}
+        </label>
+      </div>
+
+      <!-- Champ Password -->
+      <div class="form-control">
+        <label class="label">  
+          <span class="label-text font-medium">{{ form.password.label }}</span>
+        </label>
+        <label class="input input-bordered flex items-center gap-2">
+          <svg class="w-4 h-4 opacity-70" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 7a2 2 0 012 2m4 0a6 6 0 01-7.743 5.743L11 17H9v2H7v2H4a1 1 0 01-1-1v-2.586a1 1 0 01.293-.707l5.964-5.964A6 6 0 1121 9z"/>
+          </svg>
+          {{ form.password }}
+          
+          {% if form.password.errors %}
+            <span class="text-red-500 text-sm">{{ form.password.errors }}</span>
+          {% endif %}
+            
+        </label>
+      </div>
+
+      <!-- Options supplémentaires -->
+      <div class="flex items-center justify-between text-sm">
+        <label class="cursor-pointer label">
+          <input type="checkbox" class="checkbox checkbox-sm" name="remember">
+          <span class="label-text ml-2">Se souvenir de moi</span>
+        </label>
+        <a href="#" class="link border-l-pink-500 link-hover">Mot de passe oublié ?</a>
+      </div>
+
+      <!-- Bouton de soumission -->
+      <div class="form-control mt-6">
+        <button type="submit" class="btn btn-connexion w-full">
+          <span>Se connecter</span>
+          <svg class="w-4 h-4 ml-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3"/>
+          </svg>
+        </button>
+      </div>
+    </form>
+
+    <!-- Pied de modal -->
+    <div class="modal-action">
+      <button onclick="loginModal.close()" class="btn btn-ghost">Annuler</button>
+    </div>
+
+  </div>
+  
+  <!-- Backdrop pour fermer -->
+  <form method="dialog" class="modal-backdrop">
+    <button>close</button>
+  </form>
 </dialog>
 
 

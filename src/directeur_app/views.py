@@ -1,7 +1,11 @@
 from django.utils import timezone
 from django.shortcuts import render, get_object_or_404, redirect
 from django.views.generic import CreateView, UpdateView, ListView
-from django.db.models import Sum, Count
+from django.db.models import Sum, Count, F, Q, Value, DecimalField
+from django.db.models.functions import TruncMonth, Coalesce
+from decimal import Decimal
+
+from employee_app.models import TypeDepense
 
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.urls import reverse_lazy
@@ -13,7 +17,7 @@ from .models import FondDisponible, Historique_dajout_fond
 from secretaire_app.models import DemandeDecaissement
 from employee_app.models import RapportDepense, Fournisseur
 from employee_app.form import ValidationRapportForm, FournisseurForm, RapportDepenseForm, updateRapportFournisseurForm
-
+from auth_app.form import ChangeCredentialsForm, PersonnelRegisterForm
 
 
 logger = logging.getLogger(__name__)
@@ -21,11 +25,13 @@ logger = logging.getLogger(__name__)
 
 def directeur_view(request):
     fond = get_object_or_404(FondDisponible, id=1)
-    list_demande = DemandeDecaissement.objects.all().order_by("-date_demande")
+    list_demande = DemandeDecaissement.objects.all().order_by("-date_demande")[:5]
     
     ctx = {
             "list_demande": list_demande,
             "fond":fond.montant,
+            "ch_form":ChangeCredentialsForm(request.user),
+            "form":PersonnelRegisterForm()
            }
     return render(request, "directeur_templates/directeur.html", ctx)
 
@@ -36,9 +42,15 @@ def ajouter_fond(request):
     if request.method == 'POST':
         try:
             fond_aj = request.POST.get("montant")
+            type_depot = request.POST.get("type_depot")
+            notes = request.POST.get("notes")
+            print(f'Le type de depot est de : {type_depot}')
             fond.montant +=int(fond_aj)
+            fond.type_depot = type_depot
+            fond.notes = notes
             fond.save()
-            historique_de_fond = Historique_dajout_fond.objects.create(nom=request.user, montant=fond_aj)
+            historique_de_fond = Historique_dajout_fond.objects.create(nom=request.user, montant=fond_aj,
+                                                                       type_depot=type_depot, notes=notes)
             historique_de_fond.save()
             print('Fond ajouté avec succès')
             messages.success(request, f"vous venez d'ajouter la somme de {fond_aj} au fond disponible ! Nouveau Capitale est de : {fond.montant}")
@@ -47,7 +59,7 @@ def ajouter_fond(request):
         except Exception as e:
             logger.error(f"error{e}")
             
-    return render(request, "modal/ajouter_fond.html")
+    return render(request, "directeur_templates/directeur.html", {"fond":fond.montant})
 
 def historique_ajout_fonf(request):
     hist_fond = Historique_dajout_fond.objects.all().order_by('-date_ajout')
@@ -114,19 +126,85 @@ def directeur_refuse_demande_view(request, demande_id):
     return redirect(redirect_name)
 
 
-def list_rapport_depense_view(request):
-    list_rapport_depense = RapportDepense.objects.all().order_by("-date_creation")
-    ctx = {"list_rapport_depense":list_rapport_depense}
-    return render(request, "directeur_templates/rapport_employee.html", ctx)
+
+
+class ListRapportDepenseView(LoginRequiredMixin, ListView):
+    model= RapportDepense
+    template_name = "directeur_templates/rapport_employee.html"
+    context_object_name="list_rapport_depense"
+    
+    def get_template_names(self) -> list[str]:
+        if self.request.headers.get('HX-request'):
+            return ["partials/rapport_employee_partial.html"]
+        return [self.template_name]
+    
+    def get_context_data(self, **kwargs):
+       context =super().get_context_data(**kwargs)
+       context["STATUS_RAPPORT_CHOICES"]=RapportDepense.STATUS_RAPPORT_CHOICES
+       context['validation_form'] = ValidationRapportForm()
+       context["fournisseur_form"] = FournisseurForm()
+       context["form"] = updateRapportFournisseurForm()
+       context["rapport_soumis"] = RapportDepense.objects.filter(status="soumis").count()
+       context["fournisseur"]= RapportDepense.objects.filter(fournisseur__isnull=False).count()
+       context["depenses_par_categorie"] =depenses_par_categorie= TypeDepense.objects.filter(
+            est_actif=True
+            ).values('categorie').annotate(
+            total_depenses=Coalesce(
+                Sum(F('rapports__prix_unitaire') * F('rapports__quantité'), 
+                    filter=Q(rapports__status='valide')),
+                Value(Decimal('0')),
+                output_field=DecimalField(max_digits=12, decimal_places=2)
+            )
+        ).filter(total_depenses__gte=0).order_by('-total_depenses')
+              
+        
+        # Calculer le TOTAL GÉNÉRAL des dépenses validées
+       total_general_depenses = Decimal('0')
+       for item in depenses_par_categorie:
+            total_general_depenses += item['total_depenses'] or Decimal('0')  
+            
+       context['total_general_depenses']=total_general_depenses
+       return context
+        
+    
+    def get_queryset(self):
+        queryset= RapportDepense.objects.all().order_by("-date_creation")
+        
+        #filtrer rapport par status
+        status = self.request.GET.get('status')
+        if status:
+            queryset = RapportDepense.objects.filter(status=status)
+        
+        #filter par type depense 
+        type_depense = self.request.GET.get('type_depense') 
+        if type_depense:
+            queryset = RapportDepense.objects.filter(type_depense__categorie=type_depense)
+            
+        #recherche
+        search = self.request.GET.get('q')
+        if search:
+            queryset = RapportDepense.objects.filter(
+                Q(demande_decaissement__reference_demande=search)|
+                Q(employee__username=search)|
+                Q(chantier__nom_chantier=search)|
+                Q(chantier__reference=search)     
+            )
+        return queryset
+
+
 
 
 class ValidationRapportView(LoginRequiredMixin, UpdateView):
     model = RapportDepense
-    template_name = 'modal/valider_rapport.html'
+    template_name = "partials\rapport_employee_partial.html"
     context_object_name="rapport"
     form_class = ValidationRapportForm
     success_url = reverse_lazy("directeur_app:rapport-depense-employee")
     
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context["form"] = "validation_form"
+        return context
     def form_valid(self, form):
         return super().form_valid(form)
    
@@ -137,6 +215,11 @@ class CreateFournisseurView(LoginRequiredMixin, CreateView):
     template_name="modal/ajouter_fournisseur.html"
     success_url = reverse_lazy('directeur_app:rapport-depense-employee')
     
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context["form"] = "fournisseur_form"
+        return context
+    
     def form_valid(self, form):
         return super().form_valid(form)
     
@@ -146,12 +229,12 @@ class UpdateRapportFournisseurView(LoginRequiredMixin, UpdateView):
     template_name = "modal/modifier_rapport_fournisseur.html"
     success_url = reverse_lazy('directeur_app:rapport-depense-employee')
     
+    
     def form_valid(self, form):
-        print("Post valide")
         return super().form_valid(form)
     
     def form_invalid(self, form):
-        print('Post mais invalide')
         return super().form_invalid(form)
     
+     
     

@@ -1,0 +1,137 @@
+nav{
+    background-color: black;
+    color: rgb(255, 255, 255);
+    text-align: center;
+    font-size: 1rem;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    position: fixed;
+    z-index: 1000;
+    width: 100%;
+}
+
+header{
+    display: flex;
+    background:linear-gradient(144deg,rgba(255, 0, 0, 1) 2%, rgba(222, 211, 211, 1) 50%, rgba(13, 12, 13, 1) 100%);
+    height: 27vh;
+    width: 100%;
+    position: relative;
+    border: 1px solid black;
+    box-shadow: 7px 5px 14px 6px rgb(42 18 18 / 71%);
+    justify-content: space-around;
+    flex-direction: column;
+    align-items: center;
+    align-content: center;
+    position: fixed;
+    z-index: 1000;
+    margin-top: 1.5rem;
+}
+
+header h1{
+    font-weight: bold;
+    
+}
+main{
+   background:linear-gradient(144deg,rgba(255, 0, 0, 1) 2%, rgba(222, 211, 211, 1) 50%, rgba(13, 12, 13, 1) 100%);
+   min-height: 70vh;
+   min-width: 100%;
+   display: flex;
+   justify-content: center;
+   flex-direction: column;
+   padding: 1rem;
+   padding-top: 15rem;
+}
+
+
+main .container{
+    display: flex;
+    margin-inline: auto;
+    flex-direction: column;
+    align-content: space-between;
+    align-items: center;
+    margin-top: 4rem;
+    margin-bottom: 4rem;
+}
+
+.card-body {
+    display: flex;
+    flex: auto;
+    flex-direction: column;
+    gap: calc(0.25rem * 2);
+    padding: var(--card-p, 1.5rem);
+    font-size: var(--card-fs, 0.875rem);
+    align-content: flex-start;
+    align-items: stretch;
+}
+.card {
+    border-radius: 1rem;
+    margin-top: 2rem;
+    box-shadow: 0px -1px 13px 7px;
+}
+
+/* Améliorations pour les champs */
+
+.form-control select,
+.form-control input:not([type="file"]),
+.form-control textarea {
+  border: 1px solid #e5e7eb;
+  border-radius: 0.5rem;
+  padding: 0.75rem 1rem;
+  width: 100%;
+  backdrop-filter: blur(0.5rem);
+  background:rgba(255, 255, 255, 0);
+}
+
+select option{
+    backdrop-filter: blur(0.5rem);
+    background:rgba(240, 239, 239, 0.43) ;
+}
+.form-control input[type="file"] {
+  padding: 0.5rem 0;
+}
+
+
+.card-title {
+  color: #374151;
+}
+
+main .bas_form{
+    margin-top: 2rem;
+}
+
+main .btn-new_contrat{
+    backdrop-filter: blur(0.5rem);
+    background:linear-gradient(144deg,rgba(255, 0, 0, 1) 2%, rgba(222, 211, 211, 1) 50%, rgba(13, 12, 13, 1) 100%);
+    box-shadow: 0 4px 8px rgba(14, 13, 13, 0.779);
+    color: rgb(0, 0, 0);
+    transition: all 0.5s ease;
+}
+
+main .btn-new_contrat:hover{
+    background: linear-gradient(270deg,rgba(71, 56, 59, 1) 19%, rgba(181, 152, 166, 1) 33%, rgb(183, 89, 103) 51%, rgba(189, 155, 158, 1) 69%, rgba(41, 30, 30, 1) 87%);
+    color: white;
+    box-shadow: 0 4px 8px rgba(255, 255, 255, 0.779);
+}
+
+
+
+@media(max-width:420px){
+    main{
+        padding: 1rem;
+        padding-top: 15rem;
+    }
+
+    header{
+        box-shadow: 0 0 0px;
+    }
+    .justify-between {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    align-content: center;
+}
+}
+
+footer{
+    background: rgb(33, 33, 33);
+     color: beige;
+}

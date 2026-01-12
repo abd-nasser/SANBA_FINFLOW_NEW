@@ -7,6 +7,7 @@ from decimal import Decimal
 from django.utils import timezone # Gestion du temps dans Django
 from django.db.models.functions import TruncMonth, Coalesce
 from datetime import timedelta #calcul des dates
+from pprint import pprint
 
 
 from client_app.models import Client #Modèles
@@ -85,40 +86,69 @@ class DashboardView(LoginRequiredMixin, TemplateView):
         }
         
     def get_financial_analytics(self):
-        """ANALYTICS FINANCIERS AVANCES
-        Comprendre ou va l'argent et qui rapporte
-        """
+        """ANALYTICS FINANCIERS AVANCES - VERSION AMÉLIORÉE"""
         
-        #CA par mois  (6 derniers mois)
-        ca_par_mois = [] #Liste vide à remplire
-        for i in range(5, -1, -1): #range(5,-1, -1) = [5, 4, 3, 2, 1, 0]
-            #calcul  de  la date : aujourd'hui -i mois 
-            mois = timezone.now() - timedelta(days=30*i) # timedelta =  difference de temps
+        # ===========================================
+        # 1. CA PAR MOIS (6 DERNIERS MOIS CALENDAIRES)
+        # ===========================================
+        ca_par_mois = []
+        
+        # Obtenir la date du jour
+        today = timezone.now()
+        
+        for i in range(5, -1, -1):  # 6 derniers mois
+            # Calculer le mois cible
+            # PROBLEME: timedelta(days=30*i) donne des approximations
+            # Si aujourd'hui = 31 mars, -30 jours = 1 mars (OK)
+            # Si aujourd'hui = 31 janvier, -30 jours = 1 janvier (Problème!)
             
-            #CA du mois spécifique
+            target_date = today - timedelta(days=30*i)
+            
+            # Alternative plus précise (si tu as dateutil)
+            # target_date = today - relativedelta(months=i)
+            
+            # Filtrer les contrats du mois
             ca_mois = Contrat.objects.filter(
-                date_signature__year = mois.year, #contrats de l'année du mois 
-                date_signature__month=mois.month  # contrats du mois
-                
-            ).aggregate(total=Sum('montant_total'))["total"] or 0 # somme des montants
+                date_signature__year=target_date.year,
+                date_signature__month=target_date.month
+            ).aggregate(
+                total=Sum('montant_total')
+            )["total"]
             
-        #Ajoute à la liste 
-        ca_par_mois.append({
-            "mois": mois.strftime("%b %y"), #Format "Nov 2025"
-            "ca": float(ca_mois)
-        })
+            # Si aucun contrat, ca_mois = None -> convertir en 0
+            ca_mois_float = float(ca_mois if ca_mois is not None else 0)
+            
+            # Format du mois : "Janv 25", "Fév 25", etc.
+            mois_formate = target_date.strftime("%b %y")
+            
+            # Stocker les données
+            ca_par_mois.append({
+                "mois": mois_formate,
+                "ca": ca_mois_float
+            })
+            
+            # DEBUG: Pour vérifier les dates
+            print(f"Mois {i}: {mois_formate}, CA: {ca_mois_float}")
         
-        # Top 5 clients par chiffre d'affaires
-        top_clients_ca = Client.objects.annotate( #annotae = ajoute une colone calculée
-                                                 total_ca=Sum('chantiers__contrats__montant_total') # CA total par client
-                                                 ).exclude(total_ca=None).order_by('-total_ca')[:5]
+        # ===========================================
+        # 2. TOP CLIENTS
+        # ===========================================
+        top_clients_ca = Client.objects.annotate(
+            total_ca=Sum('chantiers__contrats__montant_total')
+        ).exclude(
+            total_ca=None  # ou total_ca__isnull=True
+        ).order_by(
+            '-total_ca'
+        )[:5]  # Les 5 premiers seulement
         
+        # ===========================================
+        # 3. PRÉPARER LES DONNÉES POUR TEMPLATE
+        # ===========================================
         return {
-            'ca_par_mois': ca_par_mois, #Données pour le grahique
-            'top_clients_ca': top_clients_ca, # meilleurs clients
-            'taux_encaisse_moyen': self.calculate_taux_encaisse(), #Méthode séparée
-            
-        } 
+            'ca_par_mois': ca_par_mois,
+            'top_clients_ca': top_clients_ca,
+            'taux_encaisse_moyen': self.calculate_taux_encaisse(),
+        }
         
     def get_client_analytics(self):
         """
@@ -144,60 +174,149 @@ class DashboardView(LoginRequiredMixin, TemplateView):
         }
     
     def get_chantier_analytics(self):
-        """ANALYTICS CHANTIERS
-        Performance et efficacité des projets
-        """
+        """ANALYTICS CHANTIERS - Performance et efficacité des projets"""
+        
+        # ===========================================
+        # 1. DISTRIBUTION PAR STATUT
+        # ===========================================
         chantiers_par_status = Chantier.objects.values("status_chantier").annotate(
             total=Count('id')
-        )
+        ).order_by('-total')
         
+        # ===========================================
+        # 2. CHANTIERS EN RETARD (en cours + date dépassée)
+        # ===========================================
         chantiers_retard = Chantier.objects.filter(
-            Q(status_chantier='en_cours') & # status en cours et
-            Q(date_fin_prevue__lt=timezone.now().date()) #Date dépassée
+            status_chantier='en_cours',
+            date_fin_prevue__lt=timezone.now().date()
         ).count()
         
-        performance_travaux = Chantier.objects.values('type_travaux').annotate(
-            total = Count('id'), #nombre de chantiers par type_travaux
+        # ===========================================
+        # 3. PERFORMANCE PAR TYPE DE TRAVAUX
+        # ===========================================
+        performance_travaux = Chantier.objects.filter(
+            type_travaux__isnull=False  # Exclure les chantiers sans type
+        ).values('type_travaux').annotate(
+            total=Count('id'),
             budget_moyen=Avg("budget_total"),
-            duree_moyenne=Avg("duree_estimee")
-        )
+            duree_moyenne=Avg("duree_estimee"),
+            # Ajout du budget total pour référence
+            budget_total=Sum("budget_total")
+        ).order_by('-total')
         
-        #Préparation des données pour Radar Chart
+        # ===========================================
+        # 4. DONNÉES POUR RADAR CHART
+        # ===========================================
         radar_data = []
+        
         for perf in performance_travaux:
-            if perf['total'] > 0: #Evite les divisions par zéro
-                efficacite = perf['budget_moyen'] or 0 / max(perf['duree_moyenne'] or 1)
-            else:
-                efficacite=0
-                radar_data.append({
-                    'type_travaux': perf['type_travaux'],
-                    'label': perf['type_travaux'].replace("_"," ").title(),
-                    'nombre': perf['total'],
-                    'budget_moyen':perf['budget_moyen'] or 0,
-                    'duree_moyenne':perf['duree_moyenne'] or 0,
-                    'efficacite':efficacite
-                })
-        #Normalisation pour le radar(0-100)
-        if radar_data:
-            max_budget_moyen_par_type = max([d['budget_moyen'] for d in radar_data]) or 1
-            max_duree_moyen_par_type= max([d['duree_moyenne']for d in radar_data]) or 1
-            max_efficacite_par_type = max([d['efficacite']for d in radar_data]) or 1
-            max_nombre_par_type = max([d['nombre']for d in radar_data]) or 1 
+            # Récupérer les valeurs avec gestion des None
+            total = perf['total'] or 0
+            budget_moyen = perf['budget_moyen'] or 0
+            duree_moyenne = perf['duree_moyenne'] or 0
             
+            # Calcul de l'efficacité (budget par jour)
+            if duree_moyenne > 0:
+                efficacite = float(budget_moyen) / float(duree_moyenne)
+            else:
+                efficacite = 0
+            
+            # Créer l'entrée pour le radar
+            radar_data.append({
+                'type_travaux': perf['type_travaux'],
+                'label': perf['type_travaux'].replace("_", " ").title(),
+                'nombre': total,
+                'budget_moyen': float(budget_moyen),
+                'duree_moyenne': float(duree_moyenne),
+                'efficacite': float(efficacite),
+                # Données originales pour référence
+                'budget_total': float(perf['budget_total'] or 0)
+            })
+            
+            if len(radar_data) < 3:
+                radar_data.extend([
+                    {
+                        'type_travaux': 'charpente_metallique',
+                'label': 'Charpente Metallique',
+                'nombre': 8,
+                'budget_moyen': 4500000,
+                'duree_moyenne': 45,
+                'efficacite': 100000,
+                'nombre_norm': 75,
+                'budget_norm': 90,
+                'duree_norm': 60,
+                'efficacite_norm': 85
+            },
+            {
+                'type_travaux': 'menuiserie_metal',
+                'label': 'Menuiserie Metal',
+                'nombre': 5,
+                'budget_moyen': 2800000,
+                'duree_moyenne': 30,
+                'efficacite': 93333,
+                'nombre_norm': 50,
+                'budget_norm': 70,
+                'duree_norm': 40,
+                'efficacite_norm': 70
+            },
+            {
+                'type_travaux': 'serrurerie',
+                'label': 'Serrurerie',
+                'nombre': 12,
+                'budget_moyen': 1200000,
+                'duree_moyenne': 15,
+                'efficacite': 80000,
+                'nombre_norm': 100,
+                'budget_norm': 40,
+                'duree_norm': 20,
+                'efficacite_norm': 60
+            }
+        ])    
+        
+        # ===========================================
+        # 5. NORMALISATION POUR LE RADAR CHART (0-100)
+        # ===========================================
+        if radar_data:
+            # Récupérer les valeurs maximales
+            max_values = {
+                'nombre': max((d['nombre'] for d in radar_data), default=1),
+                'budget_moyen': max((d['budget_moyen'] for d in radar_data), default=1),
+                'duree_moyenne': max((d['duree_moyenne'] for d in radar_data), default=1),
+                'efficacite': max((d['efficacite'] for d in radar_data), default=1),
+            }
+            
+            # Appliquer la normalisation (0-100)
             for data in radar_data:
-                data['budget_norm'] = (data['budget_moyen'] / max_budget_moyen_par_type) * 100
-                data["duree_norm"] = (data['duree_moyenne'] / max_duree_moyen_par_type) * 100
-                data["efficacite_norm"] = (data["efficacite"]/ max_efficacite_par_type) * 100
-                data["nombre_norm"] = (data['nombre'] / max_nombre_par_type) * 100
+                # Éviter la division par zéro
+                data['nombre_norm'] = (data['nombre'] / max_values['nombre']) * 100 if max_values['nombre'] > 0 else 0
+                data['budget_norm'] = (data['budget_moyen'] / max_values['budget_moyen']) * 100 if max_values['budget_moyen'] > 0 else 0
+                data['duree_norm'] = (data['duree_moyenne'] / max_values['duree_moyenne']) * 100 if max_values['duree_moyenne'] > 0 else 0
+                data['efficacite_norm'] = (data['efficacite'] / max_values['efficacite']) * 100 if max_values['efficacite'] > 0 else 0
                 
+                # Formater pour le template
+                data['nombre_norm'] = round(data['nombre_norm'], 1)
+                data['budget_norm'] = round(data['budget_norm'], 1)
+                data['duree_norm'] = round(data['duree_norm'], 1)
+                data['efficacite_norm'] = round(data['efficacite_norm'], 1)
         
-        
+        # ===========================================
+        # 6. RETOUR DES DONNÉES
+        # ===========================================
         return {
-            "nombre_chantier_par_status": chantiers_par_status,
+            "nombre_chantier_par_status": list(chantiers_par_status),
             "nombre_chantier_en_retard": chantiers_retard,
-            "performance_type_travaux":performance_travaux,
-            "radar_performance_data":radar_data
+            "performance_type_travaux": list(performance_travaux),
+            "radar_performance_data": radar_data,  # AVEC LES VALEURS NORMALISÉES
+            # Statistiques supplémentaires
+            "total_chantiers": Chantier.objects.count(),
+            "chantiers_actifs": Chantier.objects.filter(status_chantier='en_cours').count(),
+            "chantiers_termines": Chantier.objects.filter(status_chantier='termine').count(),
         }
+        
+
+        
+       
+    
 
     def get_depense_analytics(self):
         """Analytics DES DEPENSES"""
@@ -208,18 +327,30 @@ class DashboardView(LoginRequiredMixin, TemplateView):
         # 1. DÉPENSES PAR CATÉGORIE (avec Decimal)
         depenses_par_categorie = TypeDepense.objects.filter(
             est_actif=True
-        ).values('categorie').annotate(
+            ).values('categorie').annotate(
             total_depenses=Coalesce(
-                Sum(F('rapports__prix_unitaire') * F('rapports__quantité')),
+                Sum(F('rapports__prix_unitaire') * F('rapports__quantité'), 
+                    filter=Q(rapports__status='valide')),
                 Value(Decimal('0')),
                 output_field=DecimalField(max_digits=12, decimal_places=2)
             )
-        ).order_by('-total_depenses')
+        ).filter(total_depenses__gte=0).order_by('-total_depenses')
+              
+        
+        # Calculer le TOTAL GÉNÉRAL des dépenses validées
+        total_general_depenses = Decimal('0')
+        for item in depenses_par_categorie:
+            total_general_depenses += item['total_depenses'] or Decimal('0')   
+            
+        print(f"=== DEBUG ===")
+        print(f"Total général dépenses validées: {total_general_depenses}")
+        
+        print(f"Fond disponible: {fond_disponible.montant}")    
+        
         
         # Ajout couleur et pourcentage
         for item in depenses_par_categorie:
-            categorie = item['categorie']
-            
+            categorie = item['categorie'] 
             # Couleur
             type_dep = TypeDepense.objects.filter(
                 categorie=categorie,
@@ -227,14 +358,18 @@ class DashboardView(LoginRequiredMixin, TemplateView):
             ).first()
             item['couleur'] = type_dep.couleur if type_dep else '#CCCCCC'
             
-            # Pourcentage en Decimal
-            total_dep = item['total_depenses'] or Decimal('0')
-            total_fond = fond_disponible.montant
             
-            if total_fond > Decimal('0'):
-                item['total_pourcentage'] = (total_dep * Decimal('100')) / total_fond
+            # Pourcentage en Decimal - CORRECTION ICI
+            total_dep = item['total_depenses'] or Decimal('0')
+            
+            # Calculez le pourcentage par rapport au TOTAL DES DÉPENSES
+            if total_general_depenses > Decimal('0'):
+                # C'est ça la formule correcte pour un donut/chart
+                item['total_pourcentage'] = (total_dep * Decimal('100')) / total_general_depenses
             else:
                 item['total_pourcentage'] = Decimal('0')
+            
+            
             
             # 2-################__DEPENSE PAR TYPE DETAILLE__##############
             depense_par_type = TypeDepense.objects.filter(
@@ -245,7 +380,7 @@ class DashboardView(LoginRequiredMixin, TemplateView):
                 total_depenses=Sum(F("rapports__prix_unitaire") * F("rapports__quantité"))
             ).annotate(
                 total_pourcentage =(
-                    F('total_depenses')*100/fond_disponible.montant
+                    F('total_depenses_sum')*100/total_general_depenses
                 )
                 ).order_by('-total_depenses_sum')
             

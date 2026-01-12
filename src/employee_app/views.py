@@ -5,9 +5,12 @@ from django.contrib import messages
 from django.db.models import Sum, F, Count, Q
 from django.urls import reverse_lazy
 
-from .form import RapportDepenseForm, FiltreRapportForm, FournisseurForm
+from .form import RapportDepenseForm, FournisseurForm
+from auth_app.form import ChangeCredentialsForm
+from client_app.forms import ClientForm
 from .models import RapportDepense, Fournisseur
 from auth_app.models import Personnel
+
 
 class CreerRapportDepenseView(LoginRequiredMixin, CreateView):
     """Vue pour créer les rapport de dépense"""
@@ -22,7 +25,24 @@ class CreerRapportDepenseView(LoginRequiredMixin, CreateView):
         kwargs['employee'] = self.request.user
         return kwargs
     
-    
+    def form_invalid(self, form):
+        return super().form_invalid(form)
+            
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context["rapport_form"] = context["form"] 
+        context["form"]= ClientForm()
+        context["ch_form"]= ChangeCredentialsForm(self.request.user)
+        
+        context["total_rapport"]=RapportDepense.objects.filter( employee = self.request.user).count()
+           
+        
+        
+        return context
+        
+   
+        
+        
     def form_valid(self, form):
         """Associe l'employé automatiquement"""
         form.instance.employee = self.request.user
@@ -39,6 +59,9 @@ class CreerRapportDepenseView(LoginRequiredMixin, CreateView):
                 f'(sans lien avec une demande)')
         
         return super().form_valid(form)
+    
+    
+    
             
             
 class MesRapportsView(LoginRequiredMixin, ListView):
@@ -57,31 +80,11 @@ class MesRapportsView(LoginRequiredMixin, ListView):
             employee=self.request.user
         ).select_related('type_depense','chantier', 'fournisseur')
         
-        # Applique les filtres du formulaire
-        form = FiltreRapportForm(self.request.GET)
-        if form.is_valid():
-            if form.cleaned_data.get('date_debut'):
-                queryset = queryset.filter(date_depense__gte=form.cleaned_data["date_debut"])
-                
-            if form.cleaned_data.get('date_fin'):
-                queryset = queryset.filter(date_depense__lte=form.cleaned_data['date_fin'])
-            
-            if form.cleaned_data.get('status'):
-                queryset = queryset.filter(status=form.cleaned_data['status'])
-            
-            if form.cleaned_data.get('type_depense'):
-                queryset = queryset.filter(type_depense=form.cleaned_data['type_depense'])
-            
-            if form.cleaned_data.get('chantier'):
-                queryset = queryset.filter(chantier=form.cleaned_data["chantier"])
-        
         return queryset.order_by('-date_creation')
     
     def get_context_data(self, **kwargs):
         """Ajoute le formulaire de filtre"""
         context = super().get_context_data(**kwargs)
-        context['filter_form']=FiltreRapportForm(self.request.GET)
-        
         #Stats rapides
         context['total_depenses'] = self.get_queryset().aggregate(
             total =Sum(F('prix_unitaire')*F('quantité'))
@@ -109,7 +112,7 @@ class BestEmployeeView(LoginRequiredMixin,TemplateView):
             status="valide"
         ).values("employee__username").annotate(
             total_depense =Sum(F("prix_unitaire")*F("quantité"))
-            ).order_by("-total_depense")[:1]
+            ).order_by("-total_depense")[:5]
         
         top_commerciaux = Personnel.objects.values("username").annotate(
             clients_amenes= Count('clients_attaches'),
@@ -117,14 +120,15 @@ class BestEmployeeView(LoginRequiredMixin,TemplateView):
             chantier_status_termine= Count('clients_attaches__chantiers', filter=Q(clients_attaches__chantiers__status_chantier='termine')),
             contrats_signes= Count('clients_attaches__chantiers__contrats'),
             ca_genere= Sum('clients_attaches__chantiers__contrats__montant_total')
-        ).exclude(ca_genere=None).order_by('-ca_genere')[:1]
+        ).exclude(ca_genere=None).order_by('-ca_genere')[:5]
     
 
         most_rapport_by_employee = RapportDepense.objects.filter(
             date_creation__year=timezone.now().year,
             date_creation__month=timezone.now().month
-            ).values('employee__username').annotate(total_rapports=Count('id')).order_by('-total_rapports')[:1] 
+            ).values('employee__username').annotate(total_rapports=Count('id')).order_by('-total_rapports')[:5]
         
+
              
         return {
             "total_depense_employee":employee_depense,

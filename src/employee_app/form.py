@@ -26,8 +26,6 @@ class RapportDepenseForm(forms.ModelForm):
             
             "prix_unitaire":forms.NumberInput(attrs={
                 'placeholder': 'Ex: 15000',
-                'min': '0',
-                'step': '100',
                 'class': 'form-control'
             }),
             
@@ -55,6 +53,7 @@ class RapportDepenseForm(forms.ModelForm):
         #Récupère l'employee connecté 
         self.employee = kwargs.pop('employee', None)
         super().__init__(*args, **kwargs)
+        
         self.fields['type_depense'].required=True
         self.fields['prix_unitaire'].required=True
         self.fields['quantité'].required=True
@@ -62,7 +61,22 @@ class RapportDepenseForm(forms.ModelForm):
         self.fields['chantier'].required=False
         self.fields['demande_decaissement'].required=True
         
+        # Classes DaisyUI pour tous les champs
+        base_classes = "input input-bordered w-300"
         
+        for field_name, field in self.fields.items():
+            # Classes de base
+            field.widget.attrs['class'] = base_classes
+            
+            # Classes spécifiques par type
+            if isinstance(field.widget, forms.Select):
+                field.widget.attrs['class'] = "select select-bordered w-full"
+            elif isinstance(field.widget, forms.Textarea):
+                field.widget.attrs['class'] = "textarea textarea-bordered w-full"
+            elif isinstance(field.widget, forms.CheckboxInput):
+                field.widget.attrs['class'] = "checkbox"
+            
+
         
         # AJOUTE CE FILTRE POUR LES DEMANDES :
         if self.employee:
@@ -76,7 +90,7 @@ class RapportDepenseForm(forms.ModelForm):
             self.fields['demande_decaissement'].queryset = DemandeDecaissement.objects.filter(
                 demandeur=self.employee,# ou le champ qui lie à l'employé
                 decaisse = True,
-                status__in=['approuvee_directeur', 'approuvee_comptable'],
+                #status__in=['approuvee_directeur', 'approuvee_comptable'],
                 date_approbation__gte=date_limite
             ).order_by('-date_demande')
             
@@ -133,7 +147,8 @@ class ValidationRapportForm(forms.ModelForm):
     ]
     
     action = forms.ChoiceField(choices=ACTION_CHOICES, 
-                               widget=forms.RadioSelect, 
+                               widget=forms.RadioSelect(attrs={
+                                   "class":"radio radio-secondary"}), 
                                required=True, 
                                label='Action'
                             )
@@ -143,7 +158,7 @@ class ValidationRapportForm(forms.ModelForm):
         widget = forms.Textarea(attrs={
                                         'rows':3,
                                         'placeholder':'Commentaire (optionnel)',
-                                        'class':'form-control'
+                                        'class':'textarea textarea-bordered'
                                 }),
         required=False,
         label='Commentaire'
@@ -177,43 +192,10 @@ class ValidationRapportForm(forms.ModelForm):
         
         return rapport
     
+    
+    
 
-class FiltreRapportForm(forms.Form):
-    """Formulaire pour filtrer les rapports"""
-    date_debut = forms.DateField(
-                                    required=False,
-                                    widget=forms.DateInput(attrs={'type':'date','class':'form-control'}),
-                                    label='date début'
-                                )
-    
-    date_fin = forms.DateField(
-                                    required=False,
-                                    widget=forms.DateInput(attrs={'type':'date','class':'form-control'}),
-                                    label='Date-fin'
-    )
-    
-    status = forms.ChoiceField(
-                                    required=False,
-                                    choices=[('', "Tous")] + RapportDepense._meta.get_field('status').choices,
-                                    widget=forms.Select(attrs={'class':"form-select"}),
-                                    label='status'
-                                    
-    )
-    
-    type_depense = forms.ModelChoiceField(
-                                            required=False,
-                                            queryset=TypeDepense.objects.filter(est_actif=True),
-                                            widget=forms.Select(attrs={'class':"form-select"}),
-                                            label = 'Type de dépense'    
-    ) 
-    
-    chantier = forms.ModelChoiceField(
-                                        required=False,
-                                        queryset=Chantier.objects.all(),
-                                        widget=forms.Select(attrs={'class':'form-select'}),
-                                        label='Chantier'
-    
-    )                                      
+                                  
     
 
 class FournisseurForm(forms.ModelForm):
@@ -221,7 +203,47 @@ class FournisseurForm(forms.ModelForm):
         model = Fournisseur
         fields = ['nom', 'telephone', 'email', "specialite"]
         
+    def __init__(self, *args, **kwargs ):
+        super().__init__(*args, **kwargs)
+        
+         # Classes DaisyUI pour tous les champs
+        base_classes = "input input-bordered w-300 mb-4"
+        
+        for field_name, field in self.fields.items():
+            # Classes de base
+            field.widget.attrs['class'] = base_classes
+            
+            # Classes spécifiques par type
+            if isinstance(field.widget, forms.Select):
+                field.widget.attrs['class'] = "select select-bordered w-300 mb-4 center"
+            elif isinstance(field.widget, forms.Textarea):
+                field.widget.attrs['class'] = "textarea textarea-bordered w-300"
+            elif isinstance(field.widget, forms.CheckboxInput):
+                field.widget.attrs['class'] = "checkbox"
+       
+       
+        
 class updateRapportFournisseurForm(forms.ModelForm):
     class Meta:
         model = RapportDepense
         fields = ["fournisseur"]
+        
+    def __init__(self, *args, **kwargs ):
+        super().__init__(*args, **kwargs)
+        
+         # Classes DaisyUI pour tous les champs
+        base_classes = "input input-bordered w-300 mb-4"
+        
+        for field_name, field in self.fields.items():
+            # Classes de base
+            field.widget.attrs['class'] = base_classes
+            
+            # Classes spécifiques par type
+            if isinstance(field.widget, forms.Select):
+                field.widget.attrs['class'] = "select select-bordered w-300 mb-4 center"
+            elif isinstance(field.widget, forms.Textarea):
+                field.widget.attrs['class'] = "textarea textarea-bordered w-300"
+            elif isinstance(field.widget, forms.CheckboxInput):
+                field.widget.attrs['class'] = "checkbox"
+            
+        

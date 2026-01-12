@@ -1,145 +1,239 @@
-
-<!-- chantiers_templates/chantiers_liste.html -->
-{% extends 'base.html' %}
-
-{% block title %}📋 Chantiers - Sanba{% endblock %}
-
-{% block content %}
-
-
-{% if messages %}
-<div class="messages">
-    {% for message in messages %}
-    <div class="alert alert-{{ message.tags }}">
-        {{ message }}
-    </div>
-    {% endfor %}
-</div>
-{% endif %}
-
-
-<div class="container-fluid mt-4">
-    <div class="d-flex justify-content-between align-items-center mb-4">
-        <h1>🏗️ Liste des Chantiers</h1>
-        <a href="{% url 'chantier_app:ajouter-chantier' %}" class="btn btn-success">
-            ➕ Nouveau chantier
-        </a>
-    </div>
-    
-    <!-- 🎯 SECTION FILTRES HTMX -->
-    <div class="card shadow-sm mb-4">
-        <div class="card-header bg-light">
-            <h5 class="mb-0">🔍 Filtres rapides</h5>
-        </div>
-        <div class="card-body">
-            <div class="row g-3" 
-                 hx-target="#chantiers-table-container"
-                 hx-swap="innerHTML"
-                 hx-indicator="#spinner">
+{% load static %}
+{% load tailwind_tags %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chantiers - SANBA FinFlow</title>
+    <link rel="stylesheet" href="{% static 'css/base_style.css' %}">
+    <link rel="stylesheet" href="{% static 'css/chantier_style.css' %}">
+    <script src="{% static 'js/htmx.min.js' %}"></script>
+    {% tailwind_css %}
+</head>
+<body>
+    <!-- Navigation simplifiée -->
+    <nav class="bg-white shadow-sm">
+        <div class="container mx-auto px-4 py-3">
+            
+            {% if user.is_authenticated and user.post.nom == 'Directeur' %}
+                <h1 class="text-xl font-bold">Interface Directeur</h1>
+                {% elif user.is_authenticated and user.post.nom == 'Comptable' %}
+                <h1 class="text-xl font-bold"> Interface Comptable</h1>
+            {% endif %}
                 
-                <!-- 1️⃣ FILTRE STATUT -->
-                <div class="col-md-3">
-                    <label class="form-label">📋 Statut</label>
+            
+        </div>
+    </nav>
+
+    <header>
+        <h1>Liste et Recherche de chantiers</h1>
+
+            <!-- Statistiques -->
+        <div class="statistique grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
+            <div class="card bg-white shadow">
+                <div class="card-body p-4 text-center">
+                    <div class="text-2xl font-bold text-primary">{{ total_chantiers }}</div>
+                    <div class="text-sm text-gray-500">Total chantiers</div>
+                </div>
+            </div>
+            
+            <div class="card bg-white shadow">
+                <div class="card-body p-4 text-center">
+                    <div class="text-2xl font-bold text-warning">{{ chantiers_en_cours|default:"0" }}</div>
+                    <div class="text-sm text-gray-500">En cours</div>
+                </div>
+            </div>
+            
+            <div class="card bg-white shadow">
+                <div class="card-body p-4 text-center">
+                    <div class="text-2xl font-bold text-error">{{ chantiers_en_retard|default:"0" }}</div>
+                    <div class="text-sm text-gray-500">En retard</div>
+                </div>
+            </div>
+            
+            <div class="card bg-white shadow">
+                <div class="card-body p-4 text-center">
+                    <div class="text-2xl font-bold text-success">{{ chantiers_termines|default:"0" }}</div>
+                    <div class="text-sm text-gray-500">Terminés</div>
+                </div>
+            </div>
+
+               <div class="card bg-white shadow">
+                <div class="card-body p-4 text-center">
+                    <div class="text-2xl font-bold text-green-400">{{ chantiers_paye|default:"0" }}</div>
+                    <div class="text-sm text-green-400">Payés</div>
+                </div>
+            </div>
+        </div>
+        </div>
+
+      
+
+    </header>
+
+    <main class="container mx-auto px-4 py-8">
+        <!-- Messages -->
+        {% if messages %}
+        <div class="fixed top-4 right-4 z-50 w-96 space-y-2">
+            {% for message in messages %}
+            <div class="alert alert-{{ message.tags }} shadow-lg animate-slide-in-right">
+                {% if message.tags == 'success' %}
+                <svg class="w-5 h-5 stroke-current" fill="none" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                </svg>
+                {% elif message.tags == 'error' %}
+                <svg class="w-5 h-5 stroke-current" fill="none" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                </svg>
+                {% else %}
+                <svg class="w-5 h-5 stroke-current" fill="none" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                </svg>
+                {% endif %}
+                <span>{{ message }}</span>
+            </div>
+            {% endfor %}
+        </div>
+        {% endif %}
+
+        <!-- En-tête avec bouton d'ajout -->
+        <div class="flex en_tete justify-between items-center mb-8">
+            <div>
+                <h1 class="text-3xl font-bold">Chantiers</h1>
+                <p class="text-gray-600">Gestion des projets de construction</p>
+            </div>
+            <a href="{% url 'chantier_app:ajouter-chantier' %}" class="btn btn-new_chantier">
+                <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
+                </svg>
+                Nouveau chantier
+            </a>
+        </div>
+
+        <!-- Filtres -->
+        <div class="filter_container card bg-base-200 p-6 mb-8">
+            <div class="filter grid grid-cols-1 md:grid-cols-4 gap-4">
+                <!-- Filtre Statut -->
+                <div class="form-control">
+                    <label class="label">
+                        <span class="label-text">Statut</span>
+                    </label>
                     <select name="status" 
-                            class="form-select"
+                            class="select select-bordered w-full"
                             hx-get="{% url 'chantier_app:liste-chantier' %}"
+                            hx-target="#table_container"
                             hx-trigger="change">
                         <option value="">Tous les statuts</option>
-                        <option value="en_cours">🏗️ En cours</option>
-                        <option value="planification">📅 Planification</option>
-                        <option value="termine">✅ Terminé</option>
-                        <option value="facturee">🧾 Facturé</option>
-                        <option value="paye">💰 Payé</option>
-                        <option value="retard">🚨 En retard</option>
-                    </select>
-                </div>
-                
-                <!-- 2️⃣ FILTRE TYPE TRAVAUX -->
-                <div class="col-md-3">
-                    <label class="form-label">🔧 Type de travaux</label>
-                    <select name="type_travaux"
-                            class="form-select"
-                            hx-get="{% url 'chantier_app:liste-chantier' %}"
-                            hx-trigger="change">
-                        <option value="">Tous les types</option>
-                        {% for value, label in type_travaux_choices %}
+                        {% for value, label in STATUS_CHANTIER_CHOICES %}
                         <option value="{{ value }}">{{ label }}</option>
                         {% endfor %}
                     </select>
                 </div>
                 
-                <!-- 3️⃣ RECHERCHE TEXTE -->
-                <div class="col-md-4">
-                    <label class="form-label">🔍 Recherche</label>
-                    <input type="search"
-                           name="q"
-                           class="form-control"
-                           placeholder="Nom chantier, client..."
-                           hx-get="{% url 'chantier_app:liste-chantier' %}"
-                           hx-trigger="keyup changed delay:400ms"
-                           hx-indicator="#search-spinner">
-                    <div id="search-spinner" class="htmx-indicator mt-1">
-                        <small class="text-muted">Recherche en cours...</small>
-                    </div>
+                <!-- Filtre Type travaux -->
+                <div class="form-control">
+                    <label class="label">
+                        <span class="label-text">Type de travaux</span>
+                    </label>
+                    <select name="type_travaux"
+                            class="select select-bordered w-full"
+                            hx-get="{% url 'chantier_app:liste-chantier' %}"
+                            hx-target="#table_container"
+                            hx-trigger="change">
+                        <option value="">Tous les types</option>
+                        {% for value, label in TYPE_TRAVAUX_CHOICES %}
+                        <option value="{{ value }}">{{ label }}</option>
+                        {% endfor %}
+                    </select>
                 </div>
                 
-                <!-- 4️⃣ BOUTON RESET -->
-                <div class="col-md-2 d-flex align-items-end">
-                    <button class="btn btn-outline-secondary w-100"
+                <!-- Recherche -->
+                <div class="form-control">
+                    <label class="label">
+                        <span class="label-text">Recherche</span>
+                    </label>
+                    <input type="search"
+                           name="q"
+                           class="input input-bordered w-full"
+                           placeholder="Nom chantier, client..."
+                           hx-get="{% url 'chantier_app:liste-chantier' %}"
+                           hx-target="#table_container"
+                           hx-trigger="keyup changed delay:400ms">
+                </div>
+                
+               
+            </div>
+
+             <!-- Bouton Reset -->
+                <div style="margin-top:1rem;" class="form-control">
+                    <button class="btn btn-efface"
                             hx-get="{% url 'chantier_app:liste-chantier' %}"
+                            hx-target="#table_container"
                             hx-trigger="click">
-                        🗑️ Effacer
+                        Effacer
                     </button>
                 </div>
-            </div>
-            
-            <!-- INDICATEUR CHARGEMENT -->
-            <div id="spinner" class="htmx-indicator text-center mt-3">
-                <div class="spinner-border text-primary" role="status">
-                    <span class="visually-hidden">Chargement...</span>
-                </div>
-            </div>
         </div>
-    </div>
-    
-    <!-- 📊 STATS RAPIDES -->
-    <div class="row mb-4">
-        <div class="col-md-3">
-            <div class="card bg-primary text-white">
-                <div class="card-body text-center">
-                    <h4 class="mb-0">{{ total_chantiers }}</h4>
-                    <small>Total chantiers</small>
-                </div>
-            </div>
-        </div>
-        <div class="col-md-3">
-            <div class="card bg-warning text-white">
-                <div class="card-body text-center">
-                    <h4 class="mb-0">{{ chantiers_en_retard }}</h4>
-                    <small>En retard</small>
-                </div>
-            </div>
-        </div>
-    </div>
-    
-    <!-- 🎯 TABLE DES CHANTIERS (cible HTMX) -->
-    <div id="chantiers-table-container">
-        {% include 'partials/liste_chantier_partial.html' %}
-    </div>
-</div>
 
-<!-- SCRIPT HTMX -->
-<script src="https://unpkg.com/htmx.org@1.9.6"></script>
-<style>
-.htmx-indicator {
-    opacity: 0;
-    transition: opacity 200ms ease-in;
-}
-.htmx-request .htmx-indicator {
-    opacity: 1;
-}
-.htmx-request.htmx-indicator {
-    opacity: 1;
-}
-</style>
-{% endblock %}
+        <!-- Table des chantiers -->
+        
+            {% include 'partials/liste_chantier_partial.html' %}
+        
+
+          <div class="card-footer text-muted">
+            <small>
+                <i class="fas fa-shield-alt"></i> 
+                Système Gestion chantier sécurisé - Toutes les modifications sont permanentes.
+            </small>
+            
+            {% if user.is_authenticated and user.post.nom == 'Directeur' %}
+                 <a href="{% url 'directeur_app:directeur-view' %}" class="btn btn-sm btn-outline-primary float-end">
+                <i class="fas fa-arrow-left"></i> Retour au Dashboard
+                 </a>
+                {% elif user.is_authenticated and user.post.nom == 'Comptable' %}
+                 <a href="{% url 'comptable_app:comptable-view' %}" class="btn btn-sm btn-outline-primary float-end">
+                <i class="fas fa-arrow-left"></i> Retour au Dashboard
+                 </a>
+            {% endif %}
+                
+        </div>
+   </main>
+
+        <!-- Footer -->
+<footer class=" text-white mt-12">
+        <div class="container mx-auto px-4 py-8">
+            <div class="flex flex-col md:flex-row justify-between items-center">
+                <div class="mb-4 md:mb-0">
+                    <p class="font-bold text-lg">SANBA GESTION FINFLOW</p>
+                    <p class="text-gray-400 text-sm">Gestion des Chantiers</p>
+                </div>
+                
+                <div class="text-center md:text-right">
+                    <p class="text-gray-400">© {% now "Y" %} - Tous droits réservés</p>
+                    <p class="text-gray-500 text-sm mt-1">
+                        Généré le {% now "d/m/Y à H:i" %}
+                    </p>
+                </div>
+            </div>
+        </div>
+</footer>
+
+    <!-- Style pour animations -->
+    <style>
+    @keyframes slide-in-right {
+        from { opacity: 0; transform: translateX(100%); }
+        to { opacity: 1; transform: translateX(0); }
+    }
+    
+    .animate-slide-in-right {
+        animation: slide-in-right 0.3s ease-out;
+    }
+    
+    </style>
+</body>
+</html>
+
+
+
+

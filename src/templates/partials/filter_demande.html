@@ -1,45 +1,178 @@
  
-<div class="dmd_list">
-
-    <table border=1>
-    <thead>
-        <tr>
-            <th>Nom</th>
-            <th>Montant</th>
-            <th>Chantier</th>
-            <th>Motif</th>
-            <th>Status</th>
-            <th>Approuvée par</th>
-            <th>Décaissé</th>
-            <th>date_demande</th>
-            <th>date_approbation</th>
-            <th>date_decaissement</th>
-        </tr>
-    </thead>
-    <tbody id="table_dody">
+<div class=" table_container card bg-white shadow-lg">
+    <div class="card-body p-0">
+        <div class="overflow-x-auto">
+            <table class="table table-zebra w-full">
+                <thead>
+                    <tr class="bg-gray-100">
+                        <th class="font-bold">Référence</th>
+                        <th class="font-bold">Demandeur</th>
+                        <th class="font-bold">Montant</th>
+                        <th class="font-bold">Chantier</th>
+                        <th class="font-bold">Motif</th>
+                        <th class="font-bold">Statut</th>
+                        <th class="font-bold">Approuvé par</th>
+                        <th class="font-bold">Décaissé</th>
+                        <th class="font-bold">Date Demande</th>
+                        <th class="font-bold">Date Approbation</th>
+                        <th class="font-bold">Date Décaissement</th>
+                        <th class="font-bold no-print">Actions</th>
+                    </tr>
+                </thead>
+                <tbody id="table_body">
+                    {% for hist in dmd_decaissmt_hist %}
+                    <tr id="table_row_{{ hist.id }}">
+                        <td class="font-mono text-sm">
+                            <span class="badge badge-outline">{{ hist.reference_demande|default:"-" }}</span>
+                        </td>
+                        <td class="font-semibold">{{ hist.demandeur.username }}</td>
+                        <td class="font-bold text-green-600">
+                            {{ hist.montant|floatformat:0 }} FCFA
+                        </td>
+                        <td>
+                            {% if hist.chantier %}
+                                <span class="badge badge-info">{{ hist.chantier }}</span>
+                            {% else %}
+                                <span class="text-gray-400">-</span>
+                            {% endif %}
+                        </td>
+                        <td>
+                            <div class="tooltip" data-tip="{{ hist.motif }}">
+                                <span class="line-clamp-1 max-w-[150px]">{{ hist.motif|truncatechars:50 }}</span>
+                            </div>
+                        </td>
+                        <td>
+                            {% if hist.status == 'en_attente' %}
+                                <span class="status-badge status-en_attente">⏳ En attente</span>
+                            {% elif hist.status == 'approuvee_directeur' %}
+                                <span class="status-badge status-approuvee_directeur">✅ Directeur</span>
+                            {% elif hist.status == 'approuvee_comptable' %}
+                                <span class="status-badge status-approuvee_comptable">✅ Comptable</span>
+                            {% elif hist.status == 'refusee_directeur' %}
+                                <span class="status-badge status-refusee_directeur">❌ Directeur</span>
+                            {% elif hist.status == 'refusee_comptable' %}
+                                <span class="status-badge status-refusee_comptable">❌ Comptable</span>
+                            {% elif hist.decaisse %}
+                                <span class="status-badge status-decaisse">💰 Décaissé</span>
+                            {% endif %}
+                        </td>
+                        <td>
+                            {% if hist.approuve_par %}
+                                <span class="badge badge-outline">{{ hist.approuve_par }}</span>
+                            {% else %}
+                                <span class="text-gray-400">-</span>
+                            {% endif %}
+                        </td>
+                        <td>
+                            {% if hist.decaisse %}
+                                <span class="badge badge-success">✓ Oui</span>
+                            {% else %}
+                                <span class="badge badge-error">✗ Non</span>
+                            {% endif %}
+                        </td>
+                        <td class="text-sm">
+                            {{ hist.date_demande|date:"d/m/Y" }}
+                        </td>
+                        <td class="text-sm">
+                            {% if hist.date_approbation %}
+                                {{ hist.date_approbation|date:"d/m/Y H:i" }}
+                            {% else %}
+                                <span class="text-gray-400">-</span>
+                            {% endif %}
+                        </td>
+                        <td class="text-sm">
+                            {% if hist.date_decaissement %}
+                                {{ hist.date_decaissement|date:"d/m/Y H:i" }}
+                            {% else %}
+                                <span class="text-gray-400">-</span>
+                            {% endif %}
+                        </td>
+                        <td class="no-print">
+                            <div class="flex gap-2">
+                                <button class="btn btn-xs btn-outline"
+                                        onclick="showDetails('{{ hist.id }}')">
+                                    👁️ Détails
+                                </button>
+                                
+                                {% if user.is_authenticated and user.post.nom == "Sécretaire" %}
+                                      {% if not hist.decaisse and hist.status == 'approuvee_directeur' or hist.status == 'approuvee_comptable' %}
+                                        <a href="{% url 'secretaire_app:valider-decaissement' hist.id %}"
+                                        class="btn btn-xs btn-success">
+                                            💰 Décaisser
+                                        </a>
+                                        {% endif %}
+                                {% endif %}
+                                    
+                              
+                            </div>
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="12" class="text-center py-12">
+                            <div class="text-5xl mb-4">📭</div>
+                            <h3 class="text-xl font-semibold text-gray-500 mb-2">Aucune demande trouvée</h3>
+                            <p class="text-gray-400">Essayez de modifier vos filtres de recherche</p>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+                <tfoot >
+                    <tr>
+                        <th colspan="2" class="text-right font-bold">TOTAL :</th>
+                        <th class="font-bold text-green-700">
+                            {{ total_montant|default:"0" }} FCFA
+                        </th>
+                        <th colspan="8"></th>
+                        <th class="no-print">
+                            <span class="text-sm text-gray-500">
+                                {{ dmd_decaissmt_hist|length }} demande(s)
+                            </span>
+                        </th>
+                    </tr>
+                </tfoot>
+            </table>
+        </div>
         
-        {% for hist in dmd_decaissmt_hist %}
-       <tr id="table">
-            <td>{{hist.nom}}</td>
-            <td>{{hist.montant}} </td>
-            <td>{{hist.chantier}}</td>
-            <td>{{hist.motif}} </td>
-            <td>{{hist.status}} </td>
-            <td>{{hist.approuve_par}} </td>
-            <td>{{hist.decaisse}} </td>
-            <td>{{hist.date_demande}} </td>
-            <td>{{hist.date_approbation}} </td>
-            <td>{{hist.date_decaissement}}</td>
-</tr>
-
-        {% endfor %}
-            
-    </tbody>
-</table>
-
+        <!-- Pagination -->
+        {% if dmd_decaissmt_hist.has_other_pages %}
+        <div class="card-actions justify-center p-6 border-t">
+            <div class="join">
+                {% if dmd_decaissmt_hist.has_previous %}
+                    <a class="join-item btn"
+                       hx-get="{% url 'secretaire_app:hist-demande-decaisse' %}?page={{ dmd_decaissmt_hist.previous_page_number }}"
+                       hx-target="#dmd_list">&laquo;</a>
+                {% endif %}
+                
+                {% for i in dmd_decaissmt_hist.paginator.page_range %}
+                    {% if dmd_decaissmt_hist.number == i %}
+                        <a class="join-item btn btn-active">{{ i }}</a>
+                    {% else %}
+                        <a class="join-item btn"
+                           hx-get="{% url 'secretaire_app:hist-demande-decaisse' %}?page={{ i }}"
+                           hx-target="#dmd_list">{{ i }}</a>
+                    {% endif %}
+                {% endfor %}
+                
+                {% if dmd_decaissmt_hist.has_next %}
+                    <a class="join-item btn"
+                       hx-get="{% url 'secretaire_app:hist-demande-decaisse' %}?page={{ dmd_decaissmt_hist.next_page_number }}"
+                       hx-target="#dmd_list">&raquo;</a>
+                {% endif %}
+            </div>
+        </div>
+        {% endif %}
+    </div>
 </div>
 
-
-
-    
-
+<script>
+    function showDetails(id) {
+        // Récupérer les détails complets via HTMX ou modal
+        fetch(`/api/demande/${id}/`)
+            .then(response => response.json())
+            .then(data => {
+                // Afficher modal avec détails
+                alert(`Détails demande ${id}:\nMontant: ${data.montant} FCFA\nMotif: ${data.motif}`);
+            });
+    }
+</script>

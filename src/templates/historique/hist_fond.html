@@ -1,59 +1,81 @@
-{% extends 'base.html' %}
+{% load static %}
+{% load tailwind_tags %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"> 
+    <title>  {% block title %} {% endblock title %}</title>
+    <link rel="stylesheet" href="{% static 'css/base_style.css' %}">
+    <link rel="stylesheet" href="{% static 'css/hist_fond_style.css' %}">
+    <script src="{% static 'js/htmx.min.js' %}"></script>
+    {% tailwind_css %}
+</head>
+    <body>
+        <nav>
+            Historique des fonds
+        </nav>
+        <header>
+            <h1> A SANBA GESTION FINFLOW</h1>
+            <h3>Historique des fonds</h3>
 
-{% block title %}🔍 Audit des Fonds - Sanba{% endblock %}
+            <div class="statistique grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
 
-{% block content %}
-<div class="container-fluid mt-4">
+                <div class="each_stat">
+                             <div class="card bg-white shadow">
+                        <div class="card-body p-4 text-center">
+                            <div class="text-2xl font-bold text-primary">{{ hist_fond.first.date_ajout|date:"d/m/Y" }}</div>
+                            <div class="text-sm text-gray-500">📅 Dernier ajout</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="each_stat">
+                         <div class="card bg-white shadow">
+                        <div class="card-body p-4 text-center">
+                            <div class="text-2xl font-bold text-primary">{{ total_ajoutes|floatformat:0 }} FCFA</div>
+                            <div class="text-sm text-gray-500">💰 Total ajouté</div>
+                        </div>
+                    </div>
+                </div>
+                <div class="each_stat">
+                         <div class="card bg-white shadow">
+                        <div class="card-body p-4 text-center">
+                            <div class="text-2xl font-bold text-primary">{{ hist_fond.count }}</div>
+                            <div class="text-sm text-gray-500">👤 Nombre d'ajouts</div>
+                        </div>
+                    </div>
+                </div>
+                <div class="each_stat">
+                      <div class="card bg-white shadow">
+                        <div class="card-body p-4 text-center">
+                            <div class="text-2xl font-bold text-primary">{{ moyenne_ajout|floatformat:0 }} FCFA</div>
+                            <div class="text-sm text-gray-500">📈 Moyenne par ajout</div>
+                        </div>
+                    </div>
+
+                </div>
+                   
+            </div>
+                
+        </header>
+
+        <main>
+            <div class="container-fluid mt-4">
     <h1 class="mb-4">💰 <strong>HISTORIQUE COMPLET DES FONDS</strong></h1>
     <p class="text-muted">
         <i class="fas fa-info-circle"></i> 
         Chaque ajout d'argent est tracé, horodaté et signé. Transparence totale.
     </p>
-
-    <!-- CARD STATS RAPIDES -->
-    <div class="row mb-4">
-        <div class="col-md-3">
-            <div class="card bg-primary text-white">
-                <div class="card-body">
-                    <h6 class="card-title">📅 Dernier ajout</h6>
-                    <h4>{{ hist_fond.first.date_ajout|date:"d/m/Y" }}</h4>
-                </div>
-            </div>
-        </div>
-        <div class="col-md-3">
-            <div class="card bg-success text-white">
-                <div class="card-body">
-                    <h6 class="card-title">💰 Total ajouté</h6>
-                    <h4>{{ total_ajoutes|floatformat:0 }} FCFA</h4>
-                </div>
-            </div>
-        </div>
-        <div class="col-md-3">
-            <div class="card bg-info text-white">
-                <div class="card-body">
-                    <h6 class="card-title">👤 Nombre d'ajouts</h6>
-                    <h4>{{ hist_fond.count }}</h4>
-                </div>
-            </div>
-        </div>
-        <div class="col-md-3">
-            <div class="card bg-warning text-white">
-                <div class="card-body">
-                    <h6 class="card-title">📈 Moyenne par ajout</h6>
-                    <h4>{{ moyenne_ajout|floatformat:0 }} FCFA</h4>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <!-- TABLE AUDIT DÉTAILLÉ -->
-    <div class="card shadow">
-        <div class="card-header bg-dark text-white">
+                 <!-- TABLE AUDIT DÉTAILLÉ -->
+                 <div class="card-header bg-dark text-white">
             <h5 class="mb-0">
                 <i class="fas fa-history"></i> Journal des Mouvements de Fonds
                 <span class="badge bg-light text-dark float-end">{{ hist_fond.count }} entrées</span>
             </h5>
         </div>
+    <div class="card shadow table_container">
+        
         <div class="card-body p-0">
             <div class="table-responsive">
                 <table class="table table-hover mb-0">
@@ -117,26 +139,36 @@
                 </table>
             </div>
         </div>
-        <div class="card-footer text-muted">
+       
+    </div>
+     <div class="card-footer text-muted">
             <small>
                 <i class="fas fa-shield-alt"></i> 
-                Système d'audit sécurisé - Toutes les modifications sont permanentes.
+                Système Gestion chantier sécurisé - Toutes les modifications sont permanentes.
             </small>
-            <a href="{% url 'directeur_app:directeur-view' %}" class="btn btn-sm btn-outline-primary float-end">
+            
+            {% if user.is_authenticated and user.post.nom == 'Directeur' %}
+                 <a href="{% url 'directeur_app:directeur-view' %}" class="btn btn-sm btn-outline-primary float-end">
                 <i class="fas fa-arrow-left"></i> Retour au Dashboard
-            </a>
+                 </a>
+                {% elif user.is_authenticated and user.post.nom == 'Comptable' %}
+                 <a href="{% url 'comptable_app:comptable-view' %}" class="btn btn-sm btn-outline-primary float-end">
+                <i class="fas fa-arrow-left"></i> Retour au Dashboard
+                 </a>
+            {% endif %}
+                
         </div>
-    </div>
 
-    <!-- GRAPHIQUE TIMELINE (optionnel avec Chart.js) -->
-    <div class="row mt-4">
+
+        <!-- GRAPHIQUE TIMELINE (optionnel avec Chart.js) -->
+    <div class="row mt-4 grah">
         <div class="col-md-8">
             <div class="card">
                 <div class="card-header">
                     <h5 class="mb-0"><i class="fas fa-chart-line"></i> Évolution des Ajouts de Fonds</h5>
                 </div>
                 <div class="card-body">
-                    <canvas id="fondChart" height="150"></canvas>
+                    <canvas id="fondChart" height="250"></canvas>
                 </div>
             </div>
         </div>
@@ -162,6 +194,32 @@
         </div>
     </div>
 </div>
+
+
+        </main>
+       
+             <!-- Footer -->
+<footer class="bg-gray-900 text-white mt-12">
+        <div class="container mx-auto px-4 py-8">
+            <div class="flex flex-col md:flex-row justify-between items-center">
+                <div class="mb-4 md:mb-0">
+                    <p class="font-bold text-lg">SANBA GESTION FINFLOW</p>
+                    <p class="text-gray-400 text-sm">Historique des Fonds</p>
+                </div>
+                
+                <div class="text-center md:text-right">
+                    <p class="text-gray-400">© {% now "Y" %} - Tous droits réservés</p>
+                    <p class="text-gray-500 text-sm mt-1">
+                        Généré le {% now "d/m/Y à H:i" %}
+                    </p>
+                </div>
+            </div>
+        </div>
+</footer>
+    </body>
+
+</html>
+
 
 <!-- SCRIPT POUR LE GRAPHIQUE -->
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
@@ -202,21 +260,3 @@ document.addEventListener('DOMContentLoaded', function() {
 });
 </script>
 
-<!-- STYLE SUPPLEMENTAIRE -->
-<style>
-.avatar-sm {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    font-weight: bold;
-}
-.table tbody tr:hover {
-    background-color: rgba(52, 152, 219, 0.05);
-    transition: background-color 0.2s;
-}
-.badge.fs-6 {
-    font-size: 0.9em;
-    padding: 0.4em 0.8em;
-}
-</style>
-{% endblock %}

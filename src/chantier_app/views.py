@@ -1,4 +1,4 @@
-from django.shortcuts import render, redirect
+from django.shortcuts import render, redirect, get_object_or_404
 from formtools.wizard.views import SessionWizardView
 from django.urls import reverse_lazy
 from django.contrib.auth.mixins import LoginRequiredMixin
@@ -7,6 +7,7 @@ from django.contrib import messages
 from django.utils import timezone
 from chantier_app import models
 from django.db.models import Q
+from django.contrib.auth.decorators import login_required
 
 from chantier_app.models import Chantier
 from .forms import ChantierInfoForm, ChantierLocalisationForm, ChantierCaracteristiquesForm, ChantierPlanningForm, ChantierBudgetForm
@@ -77,7 +78,8 @@ class ChantierListeView(LoginRequiredMixin, ListView):
                Q(nom_chantier__icontains=search_query)|
                Q(client__nom__icontains=search_query)|
                Q(client__prenom__icontains=search_query)|
-               Q(client__raison_sociale__icontains=search_query)
+               Q(client__raison_sociale__icontains=search_query)|
+               Q(reference__icontains=search_query)
            )
            
        ########################__ #  4️⃣ FILTRE AUTO PAR RÔLE (SÉCURITÉ + UX) __############################
@@ -97,7 +99,17 @@ class ChantierListeView(LoginRequiredMixin, ListView):
         #STATS pour affichage(en-tete, badges)
         context['total_chantiers'] = self.get_queryset().count()
         #compte tous les chantiers filtres
+        context['chantiers_en_cours'] = self.get_queryset().filter(
+            status_chantier="en_cours"
+        ).count()
         
+        context['chantiers_termines'] = self.get_queryset().filter(
+            status_chantier="termine"
+        ).count()
+        
+        context['chantiers_paye'] = self.get_queryset().filter(
+            status_chantier="paye"
+        ).count()
         context['chantiers_en_retard']=self.get_queryset().filter(
             status_chantier='en_cours',
             date_fin_prevue__lt=timezone.now().date()
@@ -105,10 +117,10 @@ class ChantierListeView(LoginRequiredMixin, ListView):
         #compte slmt ceux en retard
         
         #OPTIONS pour les selects html
-        context['status_choices']=Chantier.STATUS_CHANTIER_CHOICES
+        context['STATUS_CHANTIER_CHOICES']=Chantier.STATUS_CHANTIER_CHOICES
         #EX: [('en_cours', 'En cours'), ('termine', 'Terminé')...]
         
-        context['type_travaux_choices']=Chantier.TYPE_TRAVAUX_CHOICES
+        context['TYPE_TRAVAUX_CHOICES']=Chantier.TYPE_TRAVAUX_CHOICES
         
         return context # Retourne tout au template
           
@@ -316,34 +328,160 @@ class ChantierDeleteView(LoginRequiredMixin, DeleteView):
         messages.success(request, f"🗑️ Chantier '{chantier.nom_chantier}' supprimé avec succès")
         return super().delete(request, *args, **kwargs)
     
-    
 
-#FILTRER_CHANTIERS_HTMX-Filtre en temps réel avec htmx
-def filter_chantiers_htmx(request):
-    """Cette vue est appelée par HTMX quand on change un filtre
-        Elle retourne Juste la liste des chantiers filtrés
+from django.contrib.auth.decorators import login_required
+from django.contrib import messages
+from django.shortcuts import redirect, get_object_or_404
+from django.utils import timezone
+
+
+@login_required
+def planifier_chantier_view(request, chantier_id):
+    """Remet un chantier en planification (change son status à 'planification')"""
+    try:
+        chantier = get_object_or_404(Chantier, pk=chantier_id)
     
-    """
-    
-    # 1. Récupère tous les chantiers
-    all_chantiers = Chantier.objects.all()
-    
-    # 2. on regarde les filter dans l'URL
-    #EX: /?status=en_cours&client_id = 5
-    
-    #Filter par status
-    status = request.GET.get('status_chantier') #récupère 'statut du chantier depuis l'URL
-    if status:
-        chantiers = all_chantiers.filter(status_chantier=status) #Filtre les chantiers par leur status
+        # Vérifier si le chantier peut être replanifié
+        if chantier.status_chantier == 'annule':
+            messages.error(request, f"❌ Impossible de replanifier le chantier '{chantier.nom_chantier}' car il est annulé.")
+        elif chantier.status_chantier == 'termine':
+            messages.error(request, f"❌ Impossible de replanifier le chantier '{chantier.nom_chantier}' car il est déjà terminé.")
+        elif chantier.status_chantier == 'planification':
+            messages.info(request, f"ℹ️ Le chantier '{chantier.nom_chantier}' est déjà en planification.")
+        else:
+            # Remettre en planification
+            chantier.status_chantier = "planification"
+            chantier.date_debut_reelle = None  # Réinitialiser la date de début
+            chantier.date_modification = timezone.now()
+            chantier.save()
+            
+            messages.info(request, f"📋 Le chantier '{chantier.nom_chantier}' a été remis en planification.")
         
-    #Filtre par client
-    client_id = request.GET.get("client_id") #récupère 'client_id' depuis l'URL
-    if client_id:
-        chantiers = all_chantiers.filter(client_id=client_id) #Filtre les chantiers par leur clients
-    
-    # 3. on retourne JUSTE le html de la liste (pas toute la page)
-    return render(request, 'partials/liste_chantier_partial.html',{
-        "chantiers": chantiers
-    })
+        return redirect("chantier_app:detail-chantier", pk=chantier.id)
+        
+    except Exception as e:
+        messages.error(request, f"❌ Erreur lors de la replanification du chantier: {str(e)}")
+        return redirect("chantier_app:liste-chantier")
     
 
+
+@login_required
+def commencer_chantier_view(request, chantier_id):
+    """Démarre un chantier (change son status à 'en_cours')"""
+    try:
+        chantier = get_object_or_404(Chantier, pk=chantier_id)
+        
+        # Vérifier si le chantier peut être démarré
+        if chantier.status_chantier == 'termine':
+            messages.error(request, f"❌ Impossible de démarrer le chantier '{chantier.nom_chantier}' car il est déjà terminé.")
+        elif chantier.status_chantier == 'annule':
+            messages.error(request, f"❌ Impossible de démarrer le chantier '{chantier.nom_chantier}' car il est annulé.")
+        elif chantier.status_chantier == 'en_cours':
+            messages.info(request, f"ℹ️ Le chantier '{chantier.nom_chantier}' est déjà en cours.")
+        else:
+            # Démarrer le chantier
+            chantier.status_chantier = "en_cours"
+            chantier.date_debut_reelle = timezone.now().date()
+            chantier.date_modification = timezone.now()
+            chantier.save()
+            
+            messages.success(request, f"✅ Le chantier '{chantier.nom_chantier}' a été démarré avec succès!")
+        
+        # Rediriger vers le détail du chantier avec le paramètre
+        return redirect("chantier_app:detail-chantier", pk=chantier.id)
+        
+    except Exception as e:
+        messages.error(request, f"❌ Erreur lors du démarrage du chantier: {str(e)}")
+        return redirect("chantier_app:liste-chantier")
+    
+    
+@login_required
+def terminer_chantier_view(request, chantier_id):
+    """Termine un chantier (change son status à 'termine')"""
+    try:
+        chantier = get_object_or_404(Chantier, pk=chantier_id)
+        
+        # Vérifier si le chantier peut être terminé
+        if chantier.status_chantier == 'annule':
+            messages.error(request, f"❌ Impossible de terminer le chantier '{chantier.nom_chantier}' car il est annulé.")
+        elif chantier.status_chantier == 'termine':
+            messages.info(request, f"ℹ️ Le chantier '{chantier.nom_chantier}' est déjà terminé.")
+        elif chantier.status_chantier not in ['en_cours', 'suspendu']:
+            messages.error(request, f"❌ Le chantier '{chantier.nom_chantier}' doit être en cours ou suspendu pour être terminé.")
+        else:
+            # Terminer le chantier
+            chantier.status_chantier = "termine"
+            chantier.date_fin_reelle = timezone.now().date()
+            chantier.date_modification = timezone.now()
+            chantier.save()
+            
+            messages.success(request, f"✅ Le chantier '{chantier.nom_chantier}' a été terminé avec succès!")
+        
+        return redirect("chantier_app:detail-chantier", pk=chantier.id)
+        
+    except Exception as e:
+        messages.error(request, f"❌ Erreur lors de la terminaison du chantier: {str(e)}")
+        return redirect("chantier_app:liste-chantier")
+
+
+@login_required
+def suspendre_chantier_view(request, chantier_id):
+    """Suspend un chantier (change son status à 'suspendu')"""
+    try:
+        chantier = get_object_or_404(Chantier, pk=chantier_id)
+        
+        # Vérifier si le chantier peut être suspendu
+        if chantier.status_chantier == 'annule':
+            messages.error(request, f"❌ Impossible de suspendre le chantier '{chantier.nom_chantier}' car il est annulé.")
+        elif chantier.status_chantier == 'termine':
+            messages.error(request, f"❌ Impossible de suspendre le chantier '{chantier.nom_chantier}' car il est déjà terminé.")
+        elif chantier.status_chantier == 'suspendu':
+            messages.info(request, f"ℹ️ Le chantier '{chantier.nom_chantier}' est déjà suspendu.")
+        elif chantier.status_chantier != 'en_cours':
+            messages.error(request, f"❌ Le chantier '{chantier.nom_chantier}' doit être en cours pour être suspendu.")
+        else:
+            # Suspendre le chantier
+            chantier.status_chantier = "suspendu"
+            chantier.date_modification = timezone.now()
+            chantier.save()
+            
+            messages.warning(request, f"⚠️ Le chantier '{chantier.nom_chantier}' a été suspendu.")
+        
+        return redirect("chantier_app:detail-chantier", pk=chantier.id)
+        
+    except Exception as e:
+        messages.error(request, f"❌ Erreur lors de la suspension du chantier: {str(e)}")
+        return redirect("chantier_app:liste-chantier")
+    
+
+@login_required
+def annuler_chantier_view(request, chantier_id):
+    """Annule un chantier (change son status à 'annule')"""
+    try:
+        chantier = get_object_or_404(Chantier, pk=chantier_id)
+        
+        # Vérifier si le chantier peut être annulé
+        if chantier.status_chantier == 'annule':
+            messages.info(request, f"ℹ️ Le chantier '{chantier.nom_chantier}' est déjà annulé.")
+        elif chantier.status_chantier == 'termine':
+            messages.error(request, f"❌ Impossible d'annuler le chantier '{chantier.nom_chantier}' car il est déjà terminé.")
+        else:
+            # Annuler le chantier
+            ancien_status = chantier.status_chantier
+            chantier.status_chantier = "annule"
+            chantier.date_modification = timezone.now()
+            chantier.save()
+            
+            messages.error(request, f"❌ Le chantier '{chantier.nom_chantier}' a été annulé (ancien statut: {ancien_status}).")
+        
+        return redirect("chantier_app:detail-chantier", pk=chantier.id)
+        
+    except Exception as e:
+        messages.error(request, f"❌ Erreur lors de l'annulation du chantier: {str(e)}")
+        return redirect("chantier_app:liste-chantier")
+    
+
+def get_status_modal(request, chantier_id):
+    """Vue pour charger le modal de changement de statut"""
+    chantier = get_object_or_404(Chantier, id=chantier_id)
+    return render(request, 'modal/status_chantier.html', {'chantier': chantier})

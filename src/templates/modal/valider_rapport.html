@@ -1,10 +1,73 @@
-<!-- directeur_templates/valider_rapport.html -->
-<h2>📋 Valider le rapport de {{ rapport.employee.username }}</h2>
-<p>Type : {{ rapport.type_depense.nom }}</p>
-<p>Montant : {{ rapport.total_affichage }}</p>
 
-<form method="post">
-    {% csrf_token %}
-    {{ form.as_p }}
-    <button type="submit">Valider</button>
-</form>
+<!-- Modal -->
+<dialog id="validationModal" class="modal">
+  <div class="modal-box max-w-2xl">
+    <!-- Header -->
+    <div class="flex justify-between items-center mb-6 pb-4 border-b">
+      <h3 class="text-xl font-bold">
+        📋 Validation du rapport
+      </h3>
+      <form method="dialog">
+        <button class="btn btn-sm btn-circle btn-ghost">✕</button>
+      </form>
+    </div>
+    
+    <!-- Informations du rapport -->
+    <div class="p-4 rounded-lg mb-6">
+      <div class="grid grid-cols-2 gap-3 text-sm">
+        <div class="detail-row">
+          <span class="font-semibold">Employé :</span>
+          <span>{{ rapport.employee.username }}</span>
+        </div>
+        <div class="detail-row">
+          <span class="font-semibold">Type :</span>
+          <span>{{ rapport.type_depense.nom }}</span>
+        </div>
+        <div class="detail-row">
+          <span class="font-semibold">Montant :</span>
+          <span class="font-bold text-green-600">{{ rapport.total_affichage }}</span>
+        </div>
+        <div class="detail-row">
+          <span class="font-semibold">Article :</span>
+          <span>{{ rapport.materiau_article }}</span>
+        </div>
+      </div>
+    </div>
+    
+    <!-- Formulaire -->
+    <form method="post" action="{% url 'directeur_app:validation-rapports' rapport.id %}">
+      {% csrf_token %}
+      
+      <!-- Choix d'action -->
+      <div class="mb-6">
+        <label class="block font-semibold mb-3">Action :</label>
+        <div class="space-y-3">
+          {% for choice in validation_form.action %}
+            <div class="flex items-center p-3 bg-base-200 rounded-lg hover:bg-base-300">
+              {{ choice.tag }}
+              <label for="{{ choice.id_for_label }}" class="ml-3 cursor-pointer">
+                {{ choice.choice_label }}
+              </label>
+            </div>
+          {% endfor %}
+        </div>
+      </div>
+      
+      <!-- Commentaire -->
+      <div class="mb-6">
+        <label class="block font-semibold mb-2">Commentaire :</label>
+        {{ validation_form.commentaire_validation }}
+      </div>
+      
+   
+        <button type="submit" class="btn btn-primary">
+          Confirmer la décision
+        </button>
+    </form>
+  </div>
+  
+  <!-- Fermeture en cliquant à l'extérieur -->
+  <form method="dialog" class="modal-backdrop">
+    <button>close</button>
+  </form>
+</dialog>

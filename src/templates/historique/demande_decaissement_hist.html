@@ -1,82 +1,245 @@
-{% extends 'base.html' %}
+{% load static %}
+{% load tailwind_tags %}
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Historique des Demandes de Décaissement</title>
+    <link rel="stylesheet" href="{% static 'css/secretaire_style.css' %}">
+    <link rel="stylesheet" href="{% static 'css/hist_dmd_style.css' %}">
+    <script src="{% static 'js/htmx.min.js' %}"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    {% tailwind_css %}
+    <style>
+       
+    </style>
+</head>
+<body class="bg-gray-50 min-h-screen">
+    <nav>
+        Historique Demande Daicaissement
+    </nav>
+    <header>
+
+               <!-- Statistiques rapides -->
+        <div class="stats-grid statistique grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
+            <div class="stats-card card bg-white shadow-md">
+                <div class="card-body">
+                    <h3 class="card-title text-gray-500">Total Demande</h3>
+                    <p class="total-amount">{{ total_general.tota_general_decaisse|default:"0" }} FCFA</p>
+                    <div class="text-sm text-gray-400">Sur toutes les demandes</div>
+                </div>
+            </div>
+            
+            <div class="stats-card card bg-white shadow-md">
+                <div class="card-body">
+                    <h3 class="card-title text-gray-500">Demandes Approuvées</h3>
+                    <p class="text-2xl font-bold text-green-600">{{ total_general.total_general_approuve|default:"0" }}</p>
+                    <div class="text-sm text-gray-400">En attente de décaissement</div>
+                </div>
+            </div>
+            
+            <div class="stats-card card bg-white shadow-md">
+                <div class="card-body">
+                    <h3 class="card-title text-gray-500">Demandes Refusées</h3>
+                    <p class="text-2xl font-bold text-red-600">{{ total_general.total_general_refuse|default:"0" }}</p>
+                    <div class="text-sm text-gray-400">Non approuvées</div>
+                </div>
+            </div>
+            
+            <div class="stats-card card bg-white shadow-md">
+                <div class="card-body">
+                    <h3 class="card-title text-gray-500">Décaissements Effectués</h3>
+                    <p class="text-2xl font-bold text-blue-600">{{ total_general.total_general_effectue|default:"0" }}</p>
+                    <div class="text-sm text-gray-400">Déjà traitées</div>
+                </div>
+            </div>
+        </div>
+    </header>
+    <main>
+            
+   <div class="flex en_tete">
+            <div>
+                <h1 class="text-3xl font-bold text-gray-800">📊 Historique des Demandes de Décaissement</h1>
+                <p class="text-gray-600 mt-2">Consultez et filtrez toutes les demandes passées</p>
+            </div>
+            <div class="flex gap-4">
+                {% if user.is_authenticated and  user.post.nom == 'Directeur' %}
+                 <a href="{% url 'directeur_app:directeur-view' %}" class="btn btn-primary no-print">
+                    ← Retour au tableau de bord
+                </a>
+                {% elif user.is_authenticated and user.post.nom == 'Sécretaire' %}
+                <a href="{% url 'secretaire_app:secretaire-view' %}" class="btn btn-primary no-print">
+                    ← Retour au tableau de bord
+                </a>
+                {% elif user.is_authenticated and user.post.nom == 'Comptable' %}
+                 <a href="{% url 'comptable_app:comptable-view' %}" class="btn btn-primary no-print">
+                    ← Retour au tableau de bord
+                </a>
+                {% endif %}
+                <button onclick="window.print()" class="btn btn-outline no-print">
+                    📄 Imprimer
+                </button>
+            </div>
+        </div>
 
 
-{% block title %}
-    Historique des demande de decaissement
-{% endblock title %}
-
-
-
-{% block content %}
-
-    <label for="st">filtre les demande par status</label>
-<select 
-            hx-get="{% url 'secretaire_app:filter-demande-decaisse' %}"
-            hx-target="#dmd_list"
-            hx-trigger="change"
-            name="status" 
-            id="st">
-    
-    <option value="en_attente">En attente</option>
-    <option value="approuvee_directeur">Approuvé par directeur</option>
-    <option value="approuvee_comptable">Apporouvé par comptable</option>
-    <option value="refusee_directeur">Refusée par directeur</option>
-    <option value="refusee_comptable">Refusée par comtable</option>
-    <option value="decaisse">Décaissé</option>
-    
-</select>
-
-
-
-<!-- 3️⃣ RECHERCHE TEXTE -->
-                <div class="col-md-4">
-                    <label class="form-label">🔍 Recherche</label>
-                    <input type="search"
-                           name="q"
-                           class="form-control"
-                           placeholder="Nom demandeur, Approuvee/refuser..."
-                           hx-get="{% url 'chantier_app:liste-chantier' %}"
-                           hx-trigger="keyup changed delay:400ms"
-                    >
-                        
+        <!-- Filtres -->
+        <div class="filtre_container = shadow-lg p-6 mb-8 no-print">
+            <h2 class=" filter text-xl font-bold mb-6 text-gray-700">🔍 Filtres de recherche</h2>
+            
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                <!-- Filtre par statut -->
+                <div class="form-control">
+                    <label class="label">
+                        <span class="label-text font-semibold">📋 Filtre par statut</span>
+                    </label>
+                    <select 
+                        class="select select-bordered w-full"
+                        hx-get="{% url 'secretaire_app:hist-demande-decaisse' %}"
+                        hx-target="#dmd_list"
+                        hx-trigger="change"
+                        name="status" 
+                        id="st">
+                        <option value="">Tous les statuts</option>
+                        <option value="en_attente">⏳ En attente</option>
+                        <option value="approuvee_directeur">✅ Approuvé par directeur</option>
+                        <option value="approuvee_comptable">✅ Approuvé par comptable</option>
+                        <option value="refusee_directeur">❌ Refusé par directeur</option>
+                        <option value="refusee_comptable">❌ Refusé par comptable</option>
+                        <option value="decaisse">💰 Décaissé</option>
+                    </select>
                 </div>
 
+                <!-- Recherche texte -->
+                <div class="form-control">
+                    <label class="label">
+                        <span class="label-text font-semibold">🔎 Recherche texte</span>
+                    </label>
+                    <input type="search"
+                           name="q"
+                           class="input input-bordered"
+                           placeholder="Nom, motif, chantier..."
+                           hx-get="{% url 'secretaire_app:hist-demande-decaisse' %}"
+                           hx-trigger="keyup changed delay:400ms"
+                           hx-target="#dmd_list">
+                </div>
 
-<br>
-<br>
-<br>
-<div id="dmd_list">
-{% include 'partials/filter_demande.html' %}
-</div>
-<br>
-<br>
-<br>
+                <!-- Filtre par date (optionnel) -->
+                <div class="form-control">
+                    <label class="label">
+                        <span class="label-text font-semibold">📅 Période</span>
+                    </label>
+                    <div class="flex gap-2">
+                        <input type="date" name="start_date" class="input input-bordered flex-1" placeholder="Début">
+                        <input type="date" name="end_date" class="input input-bordered flex-1" placeholder="Fin">
+                    </div>
+                </div>
+            </div>
 
+            <!-- Boutons d'action filtres -->
+            <div class="flex justify-end gap-3 mt-6">
+                <button type="button"
+                        class="btn btn-outline"
+                        hx-get="{% url 'secretaire_app:hist-demande-decaisse' %}"
+                        hx-target="#dmd_list">
+                    🔄 Réinitialiser filtres
+                </button>
+                <button type="button" class="btn btn-primary">
+                    📊 Exporter Excel
+                </button>
+            </div>
+        </div>
 
-<h3>Liste des employés avec le total de somme décaissé</h3>
-<table border=1>
-    <thead>
-        <tr>
-            <th>Nom</th>
-            <th>Somme Total décaisse</th>
-            <th>nombre total de demande</th>
-            <th>Total de demande approuvée</th>
-            <th>Total de demande refusée</th>
-        </tr>
-    </thead>
-    <tbody>
-        
-        {% for decaisse in total_decaisse %}
-            <tr>
-                <td>{{decaisse.nom__username}}</td>
-                <td>{{ decaisse.total_decaisse }}</td>
-                <td>{{decaisse.nombre_total}}</td>
-                <td>{{decaisse.total_approuve}}</td>
-                <td>{{ decaisse.total_refuse }}</td>
-            </tr>
-        {% endfor %}
+        <!-- Liste des demandes -->
+        <div class="mb-12" id="dmd_list">
+            {% include 'partials/filter_demande.html' %}
+        </div>
+
+        <!-- Statistiques employés -->
+        <div class="shadow-lg p-6 stat_by_employe mb-12">
+            <h2 class="text-2xl font-bold mb-6 text-gray-800">
+                👥 Statistiques par Employé
+                <span class="text-sm font-normal text-gray-500 ml-2">(Sommes décaissées)</span>
+            </h2>
             
-    </tbody>
-</table>
-<script src="https://unpkg.com/htmx.org@1.9.6"></script>
-{% endblock content %}
+            <div class="overflow-x-auto table_container">
+                <table class="table  table-zebra w-full">
+                    <thead>
+                        <tr >
+                            <th class="font-bold">Nom Employé</th>
+                            <th class="text-right">Total Décaissé</th>
+                            <th class="text-right">Demandes Total</th>
+                            <th class="text-right">Approuvées</th>
+                            <th class="text-right">Refusées</th>
+                            <th class="text-right">Taux Approuvé</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for decaisse in total_decaisse %}
+                        <tr class="employee-stats">
+                            <td class="font-semibold">
+                                <div class="flex items-center">
+                                    <div class="avatar placeholder mr-3">
+                                        <div class="bg-blue-100 text-blue-800 rounded-full w-8 h-8 flex items-center justify-center">
+                                            {{ decaisse.demandeur__username|first|upper }}
+                                        </div>
+                                    </div>
+                                    {{ decaisse.demandeur__username }}
+                                </div>
+                            </td>
+                            <td class="text-right font-bold text-green-600">
+                                {{ decaisse.total_decaisse|default:"0" }} FCFA
+                            </td>
+                            <td class="text-right">
+                                <span class="badge badge-outline">{{ decaisse.nombre_total|default:"0" }}</span>
+                            </td>
+                            <td class="text-right">
+                                <span class="badge badge-success">{{ decaisse.total_approuve|default:"0" }}</span>
+                            </td>
+                            <td class="text-right">
+                                <span class="badge badge-error">{{ decaisse.total_refuse|default:"0" }}</span>
+                            </td>
+                            <td class="text-right">
+                                {% if decaisse.nombre_total > 0 %}
+                                    {% widthratio decaisse.total_approuve decaisse.nombre_total 100 %}%
+                                {% else %}
+                                    0%
+                                {% endif %}
+                            </td>
+                        </tr>
+                        {% empty %}
+                        <tr>
+                            <td colspan="6" class="text-center py-8 text-gray-500">
+                                📭 Aucune donnée disponible
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                   
+                </table>
+            </div>
+
+
+    </main>
+
+        <!-- Footer -->
+<footer class="bg-gray-900 text-white mt-12">
+        <div class="container mx-auto px-4 py-8">
+            <div class="flex flex-col md:flex-row justify-between items-center">
+                <div class="mb-4 md:mb-0">
+                    <p class="font-bold text-lg">SANBA GESTION FINFLOW</p>
+                    <p class="text-gray-400 text-sm">Historique des Demandes</p>
+                </div>
+                
+                <div class="text-center md:text-right">
+                    <p class="text-gray-400">© {% now "Y" %} - Tous droits réservés</p>
+                    <p class="text-gray-500 text-sm mt-1">
+                        Généré le {% now "d/m/Y à H:i" %}
+                    </p>
+                </div>
+            </div>
+        </div>
+</footer>
+</body>
+</html>

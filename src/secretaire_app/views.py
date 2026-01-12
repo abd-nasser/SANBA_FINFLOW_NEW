@@ -7,10 +7,11 @@ import django_htmx
 from django.db.models import Sum, Count, Q
 from django.core.mail import send_mail
 
-
+from client_app.forms import ClientForm
 from .forms import DemandeDecaissementForm
 from .models import DemandeDecaissement
 from directeur_app.models import FondDisponible
+from auth_app.form import ChangeCredentialsForm
 
 
 import logging
@@ -21,7 +22,7 @@ logger = logging.getLogger(__name__)
 
 def demande_decaissement_view(request):
     fond = get_object_or_404(FondDisponible, id=1)
-    list_demande = DemandeDecaissement.objects.all().order_by("-date_demande")[:3]
+    list_demande = DemandeDecaissement.objects.all().order_by("-date_demande")
     
     if request.method == 'POST':
         try:
@@ -47,18 +48,26 @@ def demande_decaissement_view(request):
                 
             
             else:
-                ctx = {"form":form,
-                       "fond": fond.montant}
+                ctx = {"dmd_form":form,
+                       "fond": fond.montant,
+                       "ch_form":ChangeCredentialsForm(request.user),
+                       "form": ClientForm()
+                       }
                 return render(request, "secretaire_templates/secretaire.html",ctx)
             
         except Exception as e:
             logger.error(f'erreur {e}')
     
     
-    ctx =  {"form":DemandeDecaissementForm(),
+    ctx =  {"dmd_form":DemandeDecaissementForm(),
             "list_demande":list_demande,
-            "fond": fond.montant} 
+            "fond": fond.montant,
+            "ch_form":ChangeCredentialsForm(request.user),
+            "form":ClientForm()
+            } 
     return render(request, "secretaire_templates/secretaire.html",ctx)
+            
+            
             
 def valider_decaissement_view(request, decaissement_id):
     
@@ -119,16 +128,18 @@ class HistoriqueDemandeView(LoginRequiredMixin, ListView):
         )
         #################__FILTRER LES DEMANDE PAR STATUS__################################
         status = self.request.GET.get('status')
-        queryset = queryset.filter(status=status)
+        if status:
+            queryset = queryset.filter(status=status)
         
         #########################__FILTRER PAR RECHERCHE__############################
         search = self.request.GET.get('q')
-        queryset = queryset.filter(
-            Q(demandeur__username__icontains=search)|
-            Q(demandeur__prenom__icontains=search)|
-            Q(approuve_par__post__nom__icontains=search)|
-            Q(reference_demande__icontains=search)
-        )
+        if search:
+            queryset = queryset.filter(
+                Q(demandeur__username__icontains=search)|
+                Q(demandeur__prenom__icontains=search)|
+                Q(approuve_par__post__nom__icontains=search)|
+                Q(reference_demande__icontains=search)
+            )
         
         return queryset
     
@@ -146,6 +157,13 @@ class HistoriqueDemandeView(LoginRequiredMixin, ListView):
                                                             total_refuse=Count('id',filter=Q(decaisse=False))
                                                             ).order_by("-total_decaisse")
         
+        context["total_general"]= DemandeDecaissement.objects.aggregate(
+            tota_general_decaisse=Sum("montant"),
+            total_general_approuve =Count('id',filter=Q(status='approuvee_directeur') | Q(status="approuvee_comptable")),
+            total_general_refuse = Count('id',filter=Q(status='refusee_directeur') | Q(status="Refusée par Comptable")),
+            total_general_effectue =Sum("montant", filter=Q(decaisse=True))
+        )
+        
         return context
-     
+      
 

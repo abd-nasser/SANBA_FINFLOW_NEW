@@ -46,8 +46,9 @@ INSTALLED_APPS = [
     'formtools',
     
     #Tailwind_app
-    #'tailwind',
-    #'theme',
+    'tailwind',
+    'crispy_forms',
+    'theme',
     
     #other_app
     'auth_app',
@@ -127,12 +128,15 @@ AUTH_PASSWORD_VALIDATORS = [
 # https://docs.djangoproject.com/en/5.2/topics/i18n/
 
 LANGUAGE_CODE = 'fr-fr'
-
-TIME_ZONE = 'UTC'
-
+TIME_ZONE = 'Africa/Lagos'  # ou ton fuseau
 USE_I18N = True
+USE_L10N = True
+USE_TZ = True  # TRÈS IMPORTANT !
 
-USE_TZ = True
+# Format d'affichage par défaut
+DATETIME_FORMAT = 'd/m/Y H:i:s'
+DATE_FORMAT = 'd/m/Y'
+TIME_FORMAT = 'H:i:s'
 
 
 # Static files (CSS, JavaScript, Images)
@@ -159,9 +163,12 @@ AUTH_USER_MODEL= "auth_app.Personnel"
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 
-#TAILWIND_APP_NAME = "theme"
-#INTERNAL_IPS = [
-    #"127.0.0.1"
-                #]
+TAILWIND_APP_NAME = "theme"
+INTERNAL_IPS = [
+    "127.0.0.1"
+                ]
+
+CRISPY_ALLOWED_TEMPLATE_PACKS = "tailwind"
+CRISPY_TEMPLATE_PACK = "tailwind"
 
 NPM_BIN_PATH = r'C:\Program Files\nodejs\npm.cmd'

@@ -1,13 +1,181 @@
-{% extends 'base.html' %}
+<dialog id="registerModal" class="modal">
+  <div class="modal-box max-w-lg">
+    
+    <!-- En-tête -->
+    <div class="text-center mb-6">
+      <div class="inline-flex items-center justify-center w-12 h-12 rounded-full bg-neutral/10 mb-3">
+        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z"/>
+        </svg>
+      </div>
+      <h3 class="text-2xl font-bold">Créer un compte</h3>
+      <p class="text-sm opacity-70">Enregistrement d'un nouvel employé</p>
+    </div>
 
-{% block title %} Register page{% endblock title %}
+    <!-- Formulaire -->
+    <form method="post" action="{% url 'auth_app:register' %}" class="space-y-4">
+      {% csrf_token %}
+      
+      <!-- Ligne 1: Prénom & Nom -->
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <!-- Prénom -->
+        <div class="form-control">
+          <label class="label">
+            <span class="label-text font-medium">{{ form.first_name.label }}</span>
+          </label>
+          <div class="input input-bordered {% if form.first_name.errors %}input-error{% endif %}">
+            {{ form.first_name }}
+          </div>
+          
+          {% if form.first_name.errors %}
+          <label class="label">
+            <span class="label-text-alt text-error">
+              {{ form.first_name.errors.0 }}
+            </span>
+          </label>
+          {% endif %}
+        </div>
 
-{% block content %}
-    <form 
-    method='post'
-    action="{% url 'auth_app:register' %}">
-     {% csrf_token %}
-        {{form.as_p}}
-        <input type="submit" value="Enregister">
+        <!-- Nom -->
+        <div class="form-control">
+          <label class="label">
+            <span class="label-text font-medium">{{ form.last_name.label_tag }}</span>
+          </label>
+          <input type="text" name="last_name" 
+                 class="input input-bordered {% if form.last_name.errors %}input-error{% endif %}"
+                 value="{{ form.last_name.value|default:'' }}">
+          {% if form.last_name.errors %}
+          <label class="label">
+            <span class="label-text-alt text-error">
+              {{ form.last_name.errors.0 }}
+            </span>
+          </label>
+          {% endif %}
+        </div>
+      </div>
+
+      <!-- Email -->
+      <div class="form-control">
+        <label class="label">
+          <span class="label-text font-medium">{{ form.email.label_tag }}</span>
+        </label>
+        <input type="email" name="email" 
+               class="input input-bordered {% if form.email.errors %}input-error{% endif %}"
+               value="{{ form.email.value|default:'' }}">
+        {% if form.email.errors %}
+        <label class="label">
+          <span class="label-text-alt text-error">
+            {{ form.email.errors.0 }}
+          </span>
+        </label>
+        {% endif %}
+      </div>
+
+      <!-- Ligne 2: Poste & Téléphone -->
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <!-- Poste -->
+        <div class="form-control">
+          <label class="label">
+            <span class="label-text font-medium">{{ form.post.label }}</span>
+          </label>
+          <div class="input input-bordered {% if form.post.errors %}input-error{% endif %}">
+            {{ form.post }}
+          </div>
+          {% if form.post.errors %}
+          <label class="label">
+            <span class="label-text-alt text-error">
+              {{ form.post.errors.0 }}
+            </span>
+          </label>
+          {% endif %}
+        </div>
+
+        <!-- Téléphone -->
+        <div class="form-control">
+          <label class="label">
+            <span class="label-text font-medium">{{ form.telephone.label_tag }}</span>
+          </label>
+          <input type="tel" name="telephone" 
+                 class="input input-bordered {% if form.telephone.errors %}input-error{% endif %}"
+                 value="{{ form.telephone.value|default:'' }}">
+          {% if form.telephone.errors %}
+          <label class="label">
+            <span class="label-text-alt text-error">
+              {{ form.telephone.errors.0 }}
+            </span>
+          </label>
+          {% endif %}
+        </div>
+      </div>
+
+      <!-- Ligne 3: Date & Lieu de naissance -->
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <!-- Date de naissance -->
+        <div class="form-control">
+          <label class="label">
+            <span class="label-text font-medium">{{ form.date_de_naissance.label_tag }}</span>
+          </label>
+          <input type="date" name="date_de_naissance" 
+                 class="input input-bordered {% if form.date_de_naissance.errors %}input-error{% endif %}"
+                 value="{{ form.date_de_naissance.value|default:'' }}">
+          {% if form.date_de_naissance.errors %}
+          <label class="label">
+            <span class="label-text-alt text-error">
+              {{ form.date_de_naissance.errors.0 }}
+            </span>
+          </label>
+          {% endif %}
+        </div>
+
+        <!-- Lieu de naissance -->
+        <div class="form-control">
+          <label class="label">
+            <span class="label-text font-medium">{{ form.lieu_de_naissance.label_tag }}</span>
+          </label>
+          <input type="text" name="lieu_de_naissance" 
+                 class="input input-bordered {% if form.lieu_de_naissance.errors %}input-error{% endif %}"
+                 value="{{ form.lieu_de_naissance.value|default:'' }}">
+          {% if form.lieu_de_naissance.errors %}
+          <label class="label">
+            <span class="label-text-alt text-error">
+              {{ form.lieu_de_naissance.errors.0 }}
+            </span>
+          </label>
+          {% endif %}
+        </div>
+      </div>
+
+      <!-- Personne à prévenir -->
+      <div class="form-control">
+        <label class="label">
+          <span class="label-text font-medium">{{ form.personne_a_prevenir_en_cas.label_tag }}</span>
+        </label>
+        <textarea name="personne_a_prevenir_en_cas" 
+                  class="textarea textarea-bordered h-24 {% if form.personne_a_prevenir_en_cas.errors %}textarea-error{% endif %}">{{ form.personne_a_prevenir_en_cas.value|default:'' }}</textarea>
+        {% if form.personne_a_prevenir_en_cas.errors %}
+        <label class="label">
+          <span class="label-text-alt text-error">
+            {{ form.personne_a_prevenir_en_cas.errors.0 }}
+          </span>
+        </label>
+        {% endif %}
+      </div>
+
+      <!-- Boutons -->
+      <div class="modal-action">
+        <button type="button" onclick="registerModal.close()" class="btn btn-ghost">
+          Annuler
+        </button>
+        <button type="submit" class="btn btn-enregistrer">
+          Enregistrer
+        </button>
+      </div>
     </form>
-{% endblock content %}
+
+  </div>
+  
+  <!-- Backdrop -->
+  <form method="dialog" class="modal-backdrop">
+    <button>close</button>
+  </form>
+</dialog>

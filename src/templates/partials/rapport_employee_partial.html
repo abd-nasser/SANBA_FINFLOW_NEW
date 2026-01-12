@@ -1,0 +1,166 @@
+      <!-- Vue Tableau -->
+            <div id="tableView" class="table-container bg-white rounded-lg">
+                <table class="table table-zebra w-full">
+                    <thead class="bg-gray-100">
+                        <tr>
+                            <th class="font-bold text-gray-700">Employé</th>
+                            <th class="font-bold text-gray-700">Type Dépense</th>
+                            <th class="font-bold text-gray-700">Chantier</th>
+                            <th class="font-bold text-gray-700">Demande Décaissement</th>
+                            <th class="font-bold text-gray-700">Article</th>
+                            <th class="font-bold text-gray-700 text-right">Prix Unitaire</th>
+                            <th class="font-bold text-gray-700 text-right">Quantité</th>
+                            <th class="font-bold text-gray-700 text-right">Total</th>
+                            <th class="font-bold text-gray-700">Fournisseur</th>
+                            <th class="font-bold text-gray-700">Facture</th>
+                            <th class="font-bold text-gray-700">Statut</th>
+                            <th class="font-bold text-gray-700 no-print">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for rapport in list_rapport_depense %}
+                        <tr>
+                            <!-- Employé -->
+                            <td>
+                                <div class="flex items-center">
+                                    <div class="avatar placeholder mr-2">
+                                        <div class="bg-blue-100 text-blue-800 rounded-full w-8 h-8 flex items-center justify-center font-semibold">
+                                            {{ rapport.employee.username|first|upper }}
+                                        </div>
+                                    </div>
+                                    <div>
+                                        <div class="font-medium">{{ rapport.employee.username }}</div>
+                                        <div class="text-xs text-gray-500">{{ rapport.date_creation|date:"d/m/Y" }}</div>
+                                    </div>
+                                </div>
+                            </td>
+                            
+                            <!-- Type Dépense -->
+                            <td>
+                                <span class="badge badge-outline badge-info">
+                                    {{ rapport.type_depense|default:"-" }}
+                                </span>
+                            </td>
+                           
+                            <!-- Chantier -->
+                            <td>
+                                {% if rapport.chantier %}
+                                    <span class="badge badge-success">
+                                        {{ rapport.chantier|truncatechars:15 }}
+                                    </span>
+                                {% else %}
+                                    <span class="text-gray-400 italic">-</span>
+                                {% endif %}
+                            </td>
+                            
+                            <!-- Demande Décaissement -->
+                            <td>
+                                {% if rapport.demande_decaissement %}
+                                    <div class="tooltip" data-tip="{{ rapport.demande_decaissement.motif|default:'' }}">
+                                        <span class="font-mono text-sm">
+                                            {{ rapport.demande_decaissement.reference_demande|default:"-" }}
+                                        </span>
+                                    </div>
+                                {% else %}
+                                    <span class="text-gray-400 italic">-</span>
+                                {% endif %}
+                            </td>
+                            
+                            <!-- Article -->
+                            <td class="max-w-xs">
+                                <div class="tooltip" data-tip="{{ rapport.materiau_article }}">
+                                    {{ rapport.materiau_article|truncatechars:20|default:"-" }}
+                                </div>
+                            </td>
+                            
+                            <!-- Prix Unitaire -->
+                            <td class="text-right font-semibold">
+                                {{ rapport.prix_unitaire|floatformat:0 }} FCFA
+                            </td>
+                            
+                            <!-- Quantité -->
+                            <td class="text-right font-semibold">
+                                {{ rapport.quantité }}
+                            </td>
+                            
+                            <!-- Total -->
+                            <td class="text-right">
+                                <span class="font-bold text-green-600">
+                                    {% widthratio rapport.prix_unitaire 1 rapport.quantité as total %}
+                                    {{ total|floatformat:0 }} FCFA
+                                </span>
+                            </td>
+                            
+                            <!-- Fournisseur -->
+                            <td>
+                                {% if rapport.fournisseur %}
+                                    <span class="badge badge-primary">
+                                        {{ rapport.fournisseur.nom|truncatechars:15 }}
+                                    </span>
+                                {% elif rapport.fournisseur_not_db %}
+                                    <div class="tooltip" data-tip="Nouveau fournisseur - à ajouter en base">
+                                        <span class="badge badge-warning">
+                                            {{ rapport.fournisseur_not_db|truncatechars:15 }}
+                                        </span>
+                                        <br>
+                                        <br>
+                                        
+                                <button onclick="document.getElementById('modalFournisseur').showModal()" class="btn btn-sm">
+                                Ajouter fournisseur
+                                </button>
+                                {% include 'modal/modifier_rapport_fournisseur.html' %}
+                                    </div>
+                                {% else %}
+                                    <span class="text-red-500 font-semibold">❌ Inconnu</span>
+                                {% endif %}
+                            </td>
+                            
+                            <!-- Facture -->
+                            <td>
+                                {% if rapport.facture %}
+                                    <span class="badge badge-success tooltip" data-tip="{{ rapport.facture }}">
+                                        ✅ {{ rapport.facture|truncatechars:10 }}
+                                    </span>
+                                {% else %}
+                                    <span class="text-red-500 font-semibold tooltip" data-tip="Pas de facture fournie">
+                                        ❌ Sans facture
+                                    </span>
+                                {% endif %}
+                            </td>
+                            
+                            <!-- Statut -->
+                            <td>
+                                {% if rapport.status == 'valide' %}
+                                    <span class="status-badge status-valide">✅ Validé</span>
+                                {% elif rapport.status == 'rejete' %}
+                                    <span class="status-badge status-rejete">❌ Rejeté</span>
+                                {% else %}
+                                    <span class="status-badge status-soumis">⏳ En attente</span>
+                                {% endif %}
+                            </td>
+                            
+                            <!-- Actions -->
+                            <td class="no-print">
+                                <div class="flex gap-2">
+                                     {% include 'modal/valider_rapport.html' %}
+                                   <button onclick="document.getElementById('validationModal').showModal()" class="btn btn-primary">
+                                        Valider le rapport
+                                        </button>
+                                           
+                                </div>
+                            </td>
+                        </tr>
+                        {% empty %}
+                        <tr>
+                            <td colspan="12" class="text-center py-12">
+                                <div class="flex flex-col items-center justify-center">
+                                    <div class="text-6xl mb-4 text-gray-300">📭</div>
+                                    <h3 class="text-xl font-semibold text-gray-500 mb-2">Aucun rapport trouvé</h3>
+                                    <p class="text-gray-400">Aucun employé n'a encore soumis de rapport</p>
+                                </div>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>     

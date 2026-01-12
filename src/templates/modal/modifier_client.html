@@ -1,172 +1,264 @@
-{% extends 'base.html' %}
-
-{% block content %}
-<div>
-    <h2>Ajouter un Nouveau Client</h2>
+<dialog id="modifclientModal" class="modal">
+  <div class="modal-box max-w-2xl max-h-[90vh] overflow-y-auto">
     
-    <form method="post" novalidate>
-
-        {% csrf_token %}
-        
-        <!-- Messages d'erreur globaux -->
-        {% if form.non_field_errors %}
+    <!-- En-tête -->
+    <div class="sticky top-0 bg-base-100 pb-4 mb-6">
+      <div class="flex justify-between items-start mb-4">
         <div>
-            {% for error in form.non_field_errors %}
-            <p>{{ error }}</p>
-            {% endfor %}
+          <h2 class="text-2xl font-bold">Modifier le Client</h2>
+          <p class="text-sm opacity-70">Mettre à jour les Informations de {{ client.nom|upper }}</p>
+        </div>
+        <button onclick="modifclientModal.close()" class="btn btn-sm btn-circle btn-ghost">✕</button>
+      </div>
+      
+      <!-- Messages d'erreur globaux -->
+      {% if form.non_field_errors %}
+      <div class="alert alert-error mb-4">
+    
+        <div>
+          {% for error in form.non_field_errors %}
+          <p>{{ error }}</p>
+          {% endfor %}
+        </div>
+      </div>
+      {% endif %}
+    </div>
+
+    <!-- Formulaire -->
+    <form method="post" action="{% url 'client_app:modifier-client' client.id %}" novalidate class="space-y-8">
+      {% csrf_token %}
+      
+      <!-- Type de client -->
+      <div class="form-control">
+        <label class="label">
+          <span class="label-text font-bold text-lg">Type de client *</span>
+        </label>
+        {{ form.type_client }}
+        {% if form.type_client.errors %}
+        <div class="mt-2 text-error text-sm">
+          {% for error in form.type_client.errors %}
+          <p>⚠️ {{ error }}</p>
+          {% endfor %}
         </div>
         {% endif %}
+      </div>
+
+      <!-- Section 1: Identité -->
+      <div class="card bg-base-200 p-6">
+        <h3 class="text-lg font-bold mt-4 flex items-center gap-2">
+          Identité
+        </h3>
         
-        <!-- Type de client -->
-        <div>
-            <label>Type de client *</label>
-            {{ form.type_client }}
-            {% if form.type_client.errors %}
-            <div>
-                {% for error in form.type_client.errors %}
-                <p>{{ error }}</p>
-                {% endfor %}
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <!-- Raison sociale (conditionnelle) -->
+          <div id="raison-sociale-field" class="form-control md:col-span-2">
+            <label class="label">
+              <span class="label-text font-medium">Raison sociale</span>
+            </label>
+            {{ form.raison_sociale }}
+            {% if form.raison_sociale.errors %}
+            <div class="mt-1 text-error text-sm">
+              {% for error in form.raison_sociale.errors %}
+              <p>{{ error }}</p>
+              {% endfor %}
             </div>
             {% endif %}
+          </div>
+          
+          <div class="form-control">
+            <label class="label">
+              <span class="label-text font-medium">Nom *</span>
+            </label>
+            {{ form.nom }}
+            {% if form.nom.errors %}
+            <div class="mt-1 text-error text-sm">
+              {% for error in form.nom.errors %}
+              <p>{{ error }}</p>
+              {% endfor %}
+            </div>
+            {% endif %}
+          </div>
+          
+          <div class="form-control">
+            <label class="label">
+              <span class="label-text font-medium">Prénom</span>
+            </label>
+            {{ form.prenom }}
+          </div>
         </div>
-        
-        <!-- Identité -->
-        <fieldset>
-            <legend>Identité</legend>
-            
-            <!-- Raison sociale (conditionnelle) -->
-            <div id="raison-sociale-field">
-                <label>Raison sociale</label>
-                {{ form.raison_sociale }}
-                {% if form.raison_sociale.errors %}
-                <div>
-                    {% for error in form.raison_sociale.errors %}
-                    <p>{{ error }}</p>
-                    {% endfor %}
-                </div>
-                {% endif %}
-            </div>
-            
-            <div>
-                <label>Nom *</label>
-                {{ form.nom }}
-                {% if form.nom.errors %}
-                <div>
-                    {% for error in form.nom.errors %}
-                    <p>{{ error }}</p>
-                    {% endfor %}
-                </div>
-                {% endif %}
-            </div>
-            
-            <div>
-                <label>Prénom</label>
-                {{ form.prenom }}
-            </div>
-        </fieldset>
-        
-        <!-- Coordonnées -->
-        <fieldset>
-            <legend>Coordonnées</legend>
-            
-            <div>
-                <label>Téléphone principal *</label>
-                {{ form.telephone }}
-                {% if form.telephone.errors %}
-                <div>
-                    {% for error in form.telephone.errors %}
-                    <p>{{ error }}</p>
-                    {% endfor %}
-                </div>
-                {% endif %}
-            </div>
-            
-            <div>
-                <label>Téléphone secondaire</label>
-                {{ form.telephone_secondaire }}
-            </div>
-            
-            <div>
-                <label>Email</label>
-                {{ form.email }}
-            </div>
-        </fieldset>
-        
-        <!-- Adresse -->
-        <fieldset>
-            <legend>Adresse</legend>
-            
-            <div>
-                <label>Adresse complète *</label>
-                {{ form.adresse }}
-            </div>
-            
-            <div>
-                <label>Ville *</label>
-                {{ form.ville }}
-            </div>
-            
-            <div>
-                <label>Quartier</label>
-                {{ form.quartier }}
-            </div>
-        </fieldset>
-        
-        <!-- Informations métier -->
-        <fieldset>
-            <legend>Informations métier</legend>
-            
-            <div>
-                <label>Secteur d'activité</label>
-                {{ form.secteur_activite }}
-            </div>
-            
-            <div>
-                <label>Comment nous a-t-il connu ? *</label>
-                {{ form.source_client }}
-            </div>
-            
-            <div>
-                <label>Potentiel du client</label>
-                {{ form.potentiel_client }}
-            </div>
-        </fieldset>
-        
-        <!-- Notes -->
-        <div>
-            <label>Notes internes</label>
-            {{ form.notes_internes }}
-            <small>Informations confidentielles sur le client</small>
-        </div>
-        
-        <!-- Boutons -->
-        <div>
-            <a href="{% url 'client_app:liste-client' %}">Retour à la liste</a>
-            <button type="submit">Modifier le client</button>
-        </div>
-    </form>
-</div>
+      </div>
 
-<!-- JavaScript pour la raison sociale conditionnelle -->
+      <!-- Section 2: Coordonnées -->
+      <div class="card bg-base-200 p-6">
+        <h3 class="text-lg font-bold mt-4 flex items-center gap-2">
+          Coordonnées
+        </h3>
+        
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div class="form-control">
+            <label class="label">
+              <span class="label-text font-medium">Téléphone principal *</span>
+            </label>
+            {{ form.telephone }}
+            {% if form.telephone.errors %}
+            <div class="mt-1 text-error text-sm">
+              {% for error in form.telephone.errors %}
+              <p>{{ error }}</p>
+              {% endfor %}
+            </div>
+            {% endif %}
+          </div>
+          
+          <div class="form-control">
+            <label class="label">
+              <span class="label-text font-medium">Téléphone secondaire</span>
+            </label>
+            {{ form.telephone_secondaire }}
+          </div>
+          
+          <div class="form-control md:col-span-2">
+            <label class="label">
+              <span class="label-text font-medium">Email</span>
+            </label>
+            {{ form.email }}
+          </div>
+        </div>
+      </div>
+
+      <!-- Section 3: Adresse -->
+      <div class="card bg-base-200 p-6">
+        <h3 class="text-lg font-bold mt-4 flex items-center gap-2">
+          Adresse
+        </h3>
+        
+        <div class="space-y-4">
+          <div class="form-control">
+            <label class="label">
+              <span class="label-text font-medium">Adresse complète *</span>
+            </label>
+            {{ form.adresse }}
+          </div>
+          
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div class="form-control">
+              <label class="label">
+                <span class="label-text font-medium">Ville *</span>
+              </label>
+              {{ form.ville }}
+            </div>
+            
+            <div class="form-control">
+              <label class="label">
+                <span class="label-text font-medium">Quartier</span>
+              </label>
+              {{ form.quartier }}
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Section 4: Informations métier -->
+      <div class="card bg-base-200 p-6">
+        <h3 class="text-lg font-bold mt-4 flex items-center gap-2">
+          Informations métier
+        </h3>
+        
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div class="form-control">
+            <label class="label">
+              <span class="label-text font-medium">Secteur d'activité</span>
+            </label>
+            {{ form.secteur_activite }}
+          </div>
+          
+          <div class="form-control">
+            <label class="label">
+              <span class="label-text font-medium">Comment nous a-t-il connu ? *</span>
+            </label>
+            {{ form.source_client }}
+          </div>
+          
+          <div class="form-control md:col-span-2">
+            <label class="label">
+              <span class="label-text font-medium">Potentiel du client</span>
+            </label>
+            {{ form.potentiel_client }}
+          </div>
+        </div>
+      </div>
+
+      <!-- Section 5: Notes -->
+      <div class="form-control">
+        <label class="label">
+          <span class="label-text font-bold text-lg">Notes internes</span>
+        </label>
+        {{ form.notes_internes }}
+        <label class="label">
+          <span class="label-text-alt opacity-70">Informations confidentielles sur le client</span>
+        </label>
+      </div>
+
+      <!-- Boutons -->
+      <div class="modal-action sticky bottom-0 bg-base-100 pt-4 border-t">
+        <div class="flex w-full justify-between">
+          <button type="button" onclick="modifclientModal.close()" class="btn btn-ghost">
+            Annuler
+          </button>
+          <button type="submit" class="btn btn-modifclient">
+            Modifier
+          </button>
+        </div>
+      </div>
+    </form>
+  </div>
+  
+  <!-- Backdrop -->
+  <form method="dialog" class="modal-backdrop">
+    <button>close</button>
+  </form>
+</dialog>
+
+<!-- Script pour ouvrir et gérer la raison sociale -->
 <script>
-document.addEventListener('DOMContentLoaded', function() {
-    const typeClientSelect = document.getElementById('{{ form.type_client.id_for_label }}');
-    const raisonSocialeField = document.getElementById('raison-sociale-field');
-    
-    function toggleRaisonSociale() {
-        if (typeClientSelect.value === 'entreprise') {
-            raisonSocialeField.style.display = 'block';
-        } else {
-            raisonSocialeField.style.display = 'none';
-        }
+function openModifClientModal() {
+  document.getElementById('modifclientModal').showModal();
+  // Initialiser la visibilité de la raison sociale
+  toggleRaisonSociale();
+}
+
+function toggleRaisonSociale() {
+  const typeClientSelect = document.querySelector('[name="type_client"]');
+  const raisonSocialeField = document.getElementById('raison-sociale-field');
+  
+  if (typeClientSelect && raisonSocialeField) {
+    if (typeClientSelect.value === 'entreprise') {
+      raisonSocialeField.style.display = 'block';
+    } else {
+      raisonSocialeField.style.display = 'none';
     }
     
-    // Au chargement
-    toggleRaisonSociale();
-    
-    // Quand le type change
-    typeClientSelect.addEventListener('change', toggleRaisonSociale);
-});
+    // Écouter les changements
+    typeClientSelect.addEventListener('change', function() {
+      if (this.value === 'entreprise') {
+        raisonSocialeField.style.display = 'block';
+      } else {
+        raisonSocialeField.style.display = 'none';
+      }
+    });
+  }
+}
+
+// Initialiser au chargement si le modal est déjà ouvert
+document.addEventListener('DOMContentLoaded', toggleRaisonSociale);
 </script>
 
-{% endblock %}
+
+{% if open_upd_client_modal %}
+    <script>
+    document.addEventListener('DOMContentLoaded', function(){
+        openModifClientModal();
+    })
+    </script>
+
+{% endif %}
+    

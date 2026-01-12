@@ -6,21 +6,274 @@ Modèle: Contrat
 Contexte: objet "contrat" avec tous ses attributs
 Ce template est utilisé pour tous les types de chantier sauf 'decoration' et 'toiture_tole'
 {% endcomment %}
-
+{% load static %}
+{% load tailwind_tags %}
 <!DOCTYPE html>
 <html lang="fr">
 <head>
     <meta charset="UTF-8">
-    <title>Contrat {{ contrat.reference_contrat }}</title>
+    <title>Contrat - {{ contrat.reference_contrat }}</title>
+     <script src="{% static 'js/htmx.min.js' %}"></script>
+    <style>
+        /* Styles pour écran */
+        body {
+            font-family: Arial, sans-serif;
+            margin: 40px;
+            line-height: 1.6;
+        }
+
+        .screen-only {
+            background: url('{% static "images/ssm_logo.jpg" %}');
+            background-size: contain;
+            background-position: center;
+            background-repeat: no-repeat;
+            background-attachment: fixed;
+        }
+        
+         
+        header {
+            text-align: center;
+            padding-bottom: 25px;
+            margin-bottom: 35px;
+            border-bottom: 4px solid #C91A1A;
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 12px;
+            padding: 30px;
+            box-shadow: 0 6px 20px rgba(0, 0, 0, 0.15);
+        }
+        
+       .logo {
+            width: 100%;
+            height: 35vh;
+            margin: 0 auto 20px;
+            object-fit: cover;
+        }
+        
+        h1 {
+            color: #C91A1A;
+            margin-bottom: 10px;
+            font-size: 2.2em;
+            text-shadow: 1px 1px 2px rgba(0,0,0,0.1);
+        }
+        
+        h2 {
+            color: #444;
+            font-weight: 600;
+            margin-bottom: 15px;
+            font-size: 1.3em;
+        }
+        
+        .contract-date {
+            color: #666;
+            font-size: 1.1em;
+            margin-top: 10px;
+        }
+        
+        section {
+            margin-bottom: 35px;
+            padding: 30px;
+            border: 3px solid #C91A1A;
+            border-radius: 15px;
+            background: rgba(255, 255, 255, 0.92);
+            backdrop-filter: blur(10px);
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
+            transition: transform 0.3s ease;
+        }
+        
+        section:hover {
+            transform: translateY(-5px);
+        }
+        
+        h3 {
+            color: #C91A1A;
+            border-bottom: 3px solid #C91A1A;
+            padding-bottom: 12px;
+            margin-bottom: 25px;
+            font-size: 1.4em;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        h3::before {
+            content: "📄";
+            font-size: 1.2em;
+        }
+        
+        p {
+            margin: 12px 0;
+            color: #333;
+            font-size: 1.05em;
+        }
+        
+        strong {
+            color: #000;
+            font-weight: 700;
+        }
+        
+        .financial-info {
+            background: rgba(201, 26, 26, 0.05);
+            padding: 20px;
+            border-radius: 10px;
+            border-left: 4px solid #C91A1A;
+            margin: 15px 0;
+        }
+        
+        .payment-link {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            background: #C91A1A;
+            color: white !important;
+            padding: 12px 20px;
+            border-radius: 8px;
+            text-decoration: none !important;
+            font-weight: bold;
+            margin-top: 15px;
+            transition: all 0.3s ease;
+        }
+        
+        .payment-link:hover {
+            background: #A81515;
+            transform: scale(1.05);
+            box-shadow: 0 4px 12px rgba(201, 26, 26, 0.3);
+        }
+        
+        button {
+            display: block;
+            margin: 50px auto;
+            padding: 16px 32px;
+            background: linear-gradient(135deg, #C91A1A, #A81515);
+            color: white;
+            border: none;
+            border-radius: 10px;
+            font-size: 18px;
+            cursor: pointer;
+            font-weight: bold;
+            box-shadow: 0 6px 15px rgba(201, 26, 26, 0.4);
+            transition: all 0.3s ease;
+        }
+        
+        button:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 20px rgba(201, 26, 26, 0.5);
+            background: linear-gradient(135deg, #A81515, #8C1212);
+        }
+        
+        /* Styles pour IMPRESSION */
+        @media print {
+            button, .payment-link, a {
+                display: none !important;
+            }
+            
+            body {
+                margin: 15px !important;
+                background: white !important;
+                background-image: none !important;
+            }
+            
+            /* Supprime les effets pour impression */
+            header {
+                background: white !important;
+                border-bottom: 3px solid #000 !important;
+                box-shadow: none !important;
+                border-radius: 0 !important;
+                padding: 20px !important;
+            }
+            
+            section {
+                background: white !important;
+                border: 1px solid #ccc !important;
+                border-radius: 0 !important;
+                backdrop-filter: none !important;
+                box-shadow: none !important;
+                page-break-inside: avoid;
+                break-inside: avoid;
+                padding: 20px !important;
+                margin-bottom: 25px !important;
+                transform: none !important;
+            }
+            
+            section:hover {
+                transform: none !important;
+            }
+            
+            .logo {
+                max-width: 180px !important;
+                filter: none !important;
+            }
+            
+            h1 {
+                color: #000 !important;
+                font-size: 1.8em !important;
+                text-shadow: none !important;
+            }
+            
+            h2, h3 {
+                color: #000 !important;
+                page-break-after: avoid;
+            }
+            
+            h3 {
+                border-bottom: 2px solid #000 !important;
+            }
+            
+            h3::before {
+                content: "" !important;
+            }
+            
+            p {
+                color: #000 !important;
+                page-break-inside: avoid;
+            }
+            
+            .financial-info {
+                background: #f5f5f5 !important;
+                border-left: 3px solid #000 !important;
+                padding: 15px !important;
+            }
+            
+            /* Ajoute pied de page pour impression */
+            footer {
+                margin-top: 80px;
+                page-break-before: always;
+            }
+            
+            .signature-section {
+                border-top: 2px solid #000;
+                padding-top: 40px;
+                margin-top: 60px;
+            }
+            
+            .signatures {
+                display: flex;
+                justify-content: space-around;
+                margin-top: 60px;
+            }
+            
+            .signature-box {
+                text-align: center;
+                width: 40%;
+            }
+            
+            .signature-line {
+                width: 100%;
+                height: 1px;
+                background: #000;
+                margin: 50px 0 10px;
+            }
+        }
+    </style>
+    {% tailwind_css %}
 </head>
-<body>
-    {% comment %} En-tête du contrat avec référence et dates {% endcomment %}
+<body class="screen-only">
     <header>
+        <img src="{% static 'images/en_tete.jpg' %}" alt="En-tête" class="logo">
         <h1>CONTRAT DE TRAVAUX</h1>
         <h2>Référence : {{ contrat.reference_contrat }}</h2>
+        <p class="contract-date"><strong>Date :</strong> {{ contrat.date_signature|date:"d/m/Y"|default:"Non signé" }}</p>
     </header>
     
-    {% comment %} Section informations du chantier {% endcomment %}
     <section>
         <h3>INFORMATIONS DU CHANTIER</h3>
         <p><strong>Chantier :</strong> {{ contrat.chantier.nom_chantier }}</p>
@@ -30,7 +283,6 @@ Ce template est utilisé pour tous les types de chantier sauf 'decoration' et 't
         <p><strong>Adresse :</strong> {{ contrat.chantier.adresse_chantier }}</p>
     </section>
     
-    {% comment %} Section informations client {% endcomment %}
     <section>
         <h3>INFORMATIONS CLIENT</h3>
         <p><strong>Client :</strong> {{ contrat.chantier.client.nom_complet }}</p>
@@ -38,25 +290,30 @@ Ce template est utilisé pour tous les types de chantier sauf 'decoration' et 't
         <p><strong>Email :</strong> {{ contrat.chantier.client.email|default:"Non renseigné" }}</p>
     </section>
     
-    {% comment %} Section conditions financières {% endcomment %}
     <section>
         <h3>CONDITIONS FINANCIÈRES</h3>
-        <p><strong>Montant total :</strong> {{ contrat.montant_total }} FCFA</p>
-        <p><strong>Mode de paiement :</strong> {{ contrat.get_mode_paiement_display }}</p>
+        <div class="financial-info">
+            <p><strong>Montant total :</strong> {{ contrat.montant_total }} FCFA</p>
+            <p><strong>Mode de paiement :</strong> {{ contrat.get_mode_paiement_display }}</p>
+            
+            {% if contrat.mode_paiement == 'tranche' %}
+            <p><strong>Acompte :</strong> {{ contrat.acompte_pourcentage }}% ({{ contrat.montant_acompte }} FCFA)</p>
+            <p><strong>Nombre de tranches :</strong> {{ contrat.nombre_tranches }}</p>
+            {% endif %}
+            
+            <p><strong>Montant déjà encaissé :</strong> {{ contrat.montant_encaisse }} FCFA</p>
+            <p><strong>Solde restant :</strong> {{ contrat.solde_restant }} FCFA</p>
+            <p><strong>Pourcentage payé :</strong> {{ contrat.pourcentage_encaisse|floatformat:2 }}%</p>
+        </div>
         
-        {% if contrat.mode_paiement == 'tranche' %}
-        <p><strong>Acompte :</strong> {{ contrat.acompte_pourcentage }}% ({{ contrat.montant_acompte }} FCFA)</p>
-        <p><strong>Nombre de tranches :</strong> {{ contrat.nombre_tranches }}</p>
-        {% endif %}
-        
-        <p><strong>Montant déjà encaissé :</strong> {{ contrat.montant_encaisse }} FCFA</p>
-        <p><strong>Solde restant :</strong> {{ contrat.solde_restant }} FCFA</p>
-        <p><strong>Pourcentage payé :</strong> {{ contrat.pourcentage_encaisse|floatformat:2 }}%</p>
-
-        <a href="{% url 'contrat_app:nouveau-paiement' contrat.id %}">Mettre à jour nouveau paiement</a>
+         <button onclick="openPaiementModal()" class="btn btn-success btn-sm">
+  <svg style="width: 16px; height: 16px;" class="mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+  </svg>
+  Nouveau paiement
+</button>
     </section>
     
-    {% comment %} Section date de signature {% endcomment %}
     {% if contrat.est_signed %}
     <section>
         <h3>SIGNATURE</h3>
@@ -65,7 +322,6 @@ Ce template est utilisé pour tous les types de chantier sauf 'decoration' et 't
     </section>
     {% endif %}
     
-    {% comment %} Section garantie et clauses {% endcomment %}
     <section>
         <h3>GARANTIE ET CLAUSES</h3>
         <p><strong>Garantie :</strong> {{ contrat.garantie_mois }} mois</p>
@@ -74,7 +330,38 @@ Ce template est utilisé pour tous les types de chantier sauf 'decoration' et 't
         {% endif %}
     </section>
     
-    {% comment %} Bouton d'impression {% endcomment %}
-    <button onclick="window.print()">Imprimer ce contrat</button>
+    <!-- Section signatures (visible seulement à l'impression) -->
+    <div class="signature-section" style="display: none;">
+        <h3>SIGNATURES</h3>
+        <div class="signatures">
+            <div class="signature-box">
+                <div class="signature-line"></div>
+                <p><strong>LE CLIENT</strong></p>
+                <p>{{ contrat.chantier.client.nom_complet }}</p>
+                <p style="margin-top: 20px;">Date : _________________</p>
+            </div>
+            
+            <div class="signature-box">
+                <div class="signature-line"></div>
+                <p><strong>LE PRESTATAIRE</strong></p>
+                <p>SANBA FinFlow</p>
+                <p style="margin-top: 20px;">Date : _________________</p>
+            </div>
+        </div>
+    </div>
+    
+    <button onclick="window.print()">🖨️ Imprimer ce contrat</button>
+
+    <script>
+        // Affiche la section signature seulement pour l'impression
+        window.addEventListener('beforeprint', function() {
+            document.querySelector('.signature-section').style.display = 'block';
+        });
+        
+        window.addEventListener('afterprint', function() {
+            document.querySelector('.signature-section').style.display = 'none';
+        });
+    </script>
+    {% include 'modal/enregistrer_paiement.html' %}
 </body>
 </html>

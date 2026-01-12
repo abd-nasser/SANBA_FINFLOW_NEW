@@ -1,64 +1,320 @@
-{% comment %}
-Template: detail_contrat_deco.html
-Vue: ContratDetaiView (DetailView)
-Type de travaux: 'decoration' uniquement
-Contexte: objet "contrat" avec accès au chantier et client
-{% endcomment %}
-
+{% load static %}
+{% load tailwind_tags %}
 <!DOCTYPE html>
 <html lang="fr">
 <head>
     <meta charset="UTF-8">
-    <title>Contrat Décoration {{ contrat.reference_contrat }}</title>
+    <title>Contrat Décoration - {{ contrat.reference_contrat }}</title>
+     <script src="{% static 'js/htmx.min.js' %}"></script>
+    <style>
+        /* Styles pour écran */
+         body {
+            font-family: Arial, sans-serif;
+            margin: 40px;
+            line-height: 1.6;
+        }
+
+        .screen-only {
+            background: url('{% static "images/logo_deco.png" %}');
+            background-size: contain;
+            background-position: center;
+            background-repeat: no-repeat;
+            background-attachment: fixed;
+        }
+
+        header {
+            text-align: center;
+            padding-bottom: 20px;
+            margin-bottom: 30px;
+            border-bottom: 3px solid #C91A1A;
+        }
+        
+        .logo {
+            width: 100%;
+            height: 35vh;
+            margin: 0 auto 20px;
+            object-fit: cover;
+        }
+        
+        h1 {
+            color: #C91A1A;
+            margin-bottom: 5px;
+        }
+        
+        h2 {
+            color: #666;
+            font-weight: normal;
+            margin-bottom: 10px;
+        }
+        
+        section {
+            margin-bottom: 30px;
+            padding: 25px;
+            border: 2px solid #C91A1A;
+            border-radius: 12px;
+            background: rgba(255, 255, 255, 0.92);
+            backdrop-filter: blur(8px);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+        }
+        
+        h3 {
+            color: #C91A1A;
+            border-bottom: 2px solid #C91A1A;
+            padding-bottom: 8px;
+            margin-bottom: 20px;
+            font-size: 1.3em;
+        }
+        
+        p {
+            margin: 10px 0;
+            color: #333;
+        }
+        
+        strong {
+            color: #000;
+        }
+        
+        .payment-link {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            background: #C91A1A;
+            color: white !important;
+            padding: 12px 20px;
+            border-radius: 8px;
+            text-decoration: none !important;
+            font-weight: bold;
+            margin-top: 15px;
+            transition: all 0.3s ease;
+        }
+        
+        .payment-link:hover {
+            background: #A81515;
+            transform: scale(1.05);
+            box-shadow: 0 4px 12px rgba(201, 26, 26, 0.3);
+        }
+
+
+
+        button {
+            display: block;
+            margin: 40px auto;
+            padding: 14px 28px;
+            background: #C91A1A;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            cursor: pointer;
+            font-weight: bold;
+            box-shadow: 0 4px 8px rgba(201, 26, 26, 0.3);
+        }
+        
+        button:hover {
+            background: #A81515;
+            transform: translateY(-2px);
+            transition: all 0.2s ease;
+        }
+        
+        footer {
+            margin-top: 60px;
+            padding: 30px;
+            background: rgba(255, 255, 255, 0.95);
+            border: 2px dashed #C91A1A;
+            border-radius: 10px;
+        }
+        
+        .signatures {
+            display: flex;
+            justify-content: space-around;
+            margin-top: 40px;
+        }
+        
+        .signature-box {
+            text-align: center;
+        }
+        
+        .signature-line {
+            width: 250px;
+            height: 2px;
+            background: #000;
+            margin: 60px auto 10px;
+        }
+        
+        /* Styles pour IMPRESSION */
+        @media print {
+            button, .no-print {
+                display: none !important;
+            }
+            
+            button, .payment-link, a {
+                display: none !important;
+            }
+
+
+            body {
+                margin: 20px !important;
+                background: white !important;
+                background-image: none !important;
+            }
+            
+            /* Supprime les effets pour impression */
+            section {
+                background: white !important;
+                border: 1px solid #ccc !important;
+                border-radius: 0 !important;
+                backdrop-filter: none !important;
+                box-shadow: none !important;
+                page-break-inside: avoid;
+                break-inside: avoid;
+            }
+            
+            /* Header optimisé pour impression */
+            header {
+                border-bottom: 3px solid #000 !important;
+            }
+            
+            .logo {
+                width: 150px !important;
+                height: auto !important;
+            }
+            
+            /* Améliore la lisibilité */
+            h1, h2, h3 {
+                color: #000 !important;
+                page-break-after: avoid;
+            }
+            
+            h3 {
+                border-bottom: 2px solid #000 !important;
+            }
+            
+            p {
+                color: #000 !important;
+                page-break-inside: avoid;
+            }
+            
+            /* Footer pour impression */
+            footer {
+                background: white !important;
+                border: 1px solid #000 !important;
+                margin-top: 80px !important;
+                page-break-before: always;
+            }
+            
+            .signature-line {
+                background: #000 !important;
+                margin: 50px auto 10px !important;
+            }
+            
+            /* Évite les coupures */
+            section:last-child {
+                page-break-after: avoid;
+            }
+        }
+    </style>
+    {% tailwind_css %}
 </head>
-<body>
+<body class="screen-only">
     <header>
+        <img src="{% static 'images/en_tete.jpg' %}" alt="En-tête" class="logo">
         <h1>CONTRAT DE DÉCORATION INTÉRIEURE</h1>
-        <h2>Réf. : {{ contrat.reference_contrat }}</h2>
+        <h2>Référence : {{ contrat.reference_contrat }}</h2>
+        <p><strong>Date :</strong> {{ contrat.date_signature|date:"d/m/Y"|default:"Non signé" }}</p>
     </header>
     
-    <section>
-        <h3>DESCRIPTIF DES TRAVAUX DE DÉCORATION</h3>
-        <p><strong>Nature des travaux :</strong> {{ contrat.chantier.description_detaille|default:"Décoration non détaillée" }}</p>
-        <p><strong>Surface à décorer :</strong> {{ contrat.chantier.surface_totale|default:"Non spécifiée" }} m²</p>
-        <p><strong>Type de bâtiment :</strong> {{ contrat.chantier.get_type_batiment_display }}</p>
-    </section>
-    
-    <section>
-        <h3>MATÉRIAUX DE DÉCORATION (À TITRE INDICATIF)</h3>
-        <p>Les matériaux utilisés seront de qualité conforme aux normes en vigueur.</p>
-        <p>Les échantillons et coloris sont à valider par le client avant réalisation.</p>
-    </section>
-    
-    <section>
-        <h3>CONDITIONS SPÉCIFIQUES DÉCORATION</h3>
-        <p>1. Le client devra libérer les pièces avant intervention.</p>
-        <p>2. Les travaux de préparation (rebouchage, lissage) sont inclus.</p>
-        <p>3. Les finitions (peinture, papiers peints, etc.) sont garanties contre les défauts d'application.</p>
-        <p><strong>Garantie spécifique :</strong> 24 mois sur les travaux de décoration</p>
-    </section>
+    <main>
+        <section>
+            <h3>DESCRIPTIF DES TRAVAUX</h3>
+            <p><strong>Client :</strong> {{ contrat.chantier.client.nom_complet }}</p>
+            <p><strong>Adresse :</strong> {{ contrat.chantier.adresse_chantier }}</p>
+            <p><strong>Surface :</strong> {{ contrat.chantier.surface_totale|default:"-" }} m²</p>
+            <p><strong>Type de bâtiment :</strong> {{ contrat.chantier.get_type_batiment_display }}</p>
+        </section>
+        
+        <section>
+            <h3>DÉTAIL DES TRAVAUX DE DÉCORATION</h3>
+            <p><strong>Nature des travaux :</strong> {{ contrat.chantier.description_detaille|default:"Décoration non détaillée" }}</p>
+            <p><strong>Surface à décorer :</strong> {{ contrat.chantier.surface_totale|default:"Non spécifiée" }} m²</p>
+        </section>
+        
+        <section>
+            <h3>MATÉRIAUX DE DÉCORATION</h3>
+            <p><em>(À titre indicatif)</em></p>
+            <p>Les matériaux utilisés seront de qualité conforme aux normes en vigueur.</p>
+            <p>Les échantillons et coloris sont à valider par le client avant réalisation.</p>
+        </section>
+        
+        <section>
+            <h3>CONDITIONS SPÉCIFIQUES</h3>
+            <p>1. Le client devra libérer les pièces avant intervention.</p>
+            <p>2. Les travaux de préparation (rebouchage, lissage) sont inclus.</p>
+            <p>3. Les finitions (peinture, papiers peints, etc.) sont garanties contre les défauts d'application.</p>
+            <p><strong>Garantie spécifique :</strong> 24 mois sur les travaux de décoration</p>
+        </section>
 
-    <section>
-        <h3>GARANTIE ET CLAUSES</h3>
-        <p><strong>Garantie :</strong> {{ contrat.garantie_mois }} mois</p>
-        {% if contrat.notes_contractuelles %}
-        <p><strong>Notes :</strong> {{ contrat.notes_contractuelles }}</p>
-        {% endif %}
-    </section>
+        <section>
+            <h3>GARANTIE ET CLAUSES</h3>
+            <p><strong>Garantie contractuelle :</strong> {{ contrat.garantie_mois }} mois</p>
+            {% if contrat.notes_contractuelles %}
+            <p><strong>Notes contractuelles :</strong> {{ contrat.notes_contractuelles }}</p>
+            {% endif %}
+        </section>
+        
+        <section>
+            <h3>CONDITIONS FINANCIÈRES</h3>
+            <p><strong>Montant total :</strong> {{ contrat.montant_total }} FCFA</p>
+            <p><strong>Acompte :</strong> {{ contrat.acompte_pourcentage }}% à la signature</p>
+            <p><strong>Solde :</strong> À la réception des travaux</p>
+            {% if contrat.mode_paiement == 'tranche' %}
+            <p><strong>Mode de paiement :</strong> {{ contrat.get_mode_paiement_display }} ({{ contrat.nombre_tranches }} tranches)</p>
+            {% endif %}
+        </section>
+
+        <section>
+            <h3>ÉTAT DES PAIEMENTS</h3>
+            <p><strong>Montant déjà encaissé :</strong> {{ contrat.montant_encaisse }} FCFA</p>
+            <p><strong>Solde restant :</strong> {{ contrat.solde_restant }} FCFA</p>
+            <p><strong>Pourcentage payé :</strong> {{ contrat.pourcentage_encaisse|floatformat:2 }}%</p>
+            {% if contrat.date_du_dernier_paiement %}
+            <p><strong>Dernier paiement :</strong> {{ contrat.date_du_dernier_paiement }}</p>
+            {% endif %}
+
+           <button onclick="openPaiementModal()" class="btn btn-success btn-sm">
+  <svg style="width: 16px; height: 16px;" class="mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+  </svg>
+  Nouveau paiement
+</button>
+        </section>
+        
+        <section>
+            <h3>LIEU ET DATE DE SIGNATURE</h3>
+            <p>Fait à {{ contrat.chantier.ville_chantier|default:"Ouagadougou" }}, le {{ contrat.date_signature|default:"__________" }}</p>
+        </section>
+    </main>
     
-    {% comment %} Section financière standard {% endcomment %}
-    <section>
-        <h3>CONDITIONS FINANCIÈRES</h3>
-        <p><strong>Montant total :</strong> {{ contrat.montant_total }} FCFA</p>
-        <p><strong>Acompte :</strong> {{ contrat.acompte_pourcentage }}% à la signature</p>
-        <p><strong>Solde :</strong> À la réception des travaux</p>
-    </section>
+    <footer>
+        <h3 style="text-align: center; margin-bottom: 40px;">SIGNATURES</h3>
+        <div class="signatures">
+            <div class="signature-box">
+                <div class="signature-line"></div>
+                <p><strong>LE CLIENT</strong></p>
+                <p>{{ contrat.chantier.client.nom_complet }}</p>
+                <p style="margin-top: 20px;">Date : _________________</p>
+            </div>
+            
+            <div class="signature-box">
+                <div class="signature-line"></div>
+                <p><strong>LE PRESTATAIRE</strong></p>
+                <p>SANBA FinFlow - Décoration</p>
+                <p style="margin-top: 20px;">Date : _________________</p>
+            </div>
+        </div>
+    </footer>
     
-    <section>
-        <h3>LIEU DE SIGNATURE</h3>
-        <p>Fait à {{ contrat.chantier.ville_chantier|default:"Ouagadougou" }}, le {{ contrat.date_signature|default:"__________" }}</p>
-    </section>
-    
-    <button onclick="window.print()">Imprimer ce contrat</button>
+    <button onclick="window.print()" class="no-print">🖨️ Imprimer ce contrat</button>
+
+    {% include 'modal/enregistrer_paiement.html' %}
 </body>
 </html>

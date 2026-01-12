@@ -1,21 +1,216 @@
-{% extends 'base.html' %}
+
+{% load static %}
+{% load tailwind_tags %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"> 
+    <title>  {% block title %} {% endblock title %}</title>
+    <link rel="stylesheet" href="{% static 'css/base_style.css' %}">
+    <link rel="stylesheet" href="{% static 'css/client_style.css' %}">
+    <script src="{% static 'js/htmx.min.js' %}"></script>
+    {% tailwind_css %}
+</head>
+    <body>
+       
+        <nav>
+           
+            <div class="container mx-auto px-4 py-3">
+            
+            {% if user.is_authenticated and user.post.nom == 'Directeur' %}
+                <h1 class="text-xl font-bold">Interface Directeur</h1>
+                {% elif user.is_authenticated and user.post.nom == 'Comptable' %}
+                <h1 class="text-xl font-bold">Interface Comptable</h1>
+            {% endif %}
+                 
+        </div>
+        </nav>
+
+        <header>
+            <h1>Liste et recherche de clients</h1>
+        
+        </header>
+
+          
+            
+        <main>
 
 
-{% block title %}
-    Clients
-{% endblock title %}
+  <!-- En-tête -->
+  <div class="en_tete ">
+    <div>
+      <h1 class="text-3xl font-bold text-gray-900">Liste des Clients</h1>
+      <p class="text-gray-600 mt-2">{{ clients|length }} client(s) au total</p>
+    </div>
+
+    <button onclick="openClientModal()" class="btn btn-aj_client">
+      Nouveau Client
+    </button>
+
+  </div>
+
+  
+  <!-- Filtres -->
+  
+    <div class="form-control">
+           <input  
+            class="input input_search input-neutral input-bordered w-full" 
+            type="search" 
+            placeholder="search" 
+            name="q" 
+            hx-trigger="keyup changed delay:1s"
+            hx-get="{% url 'client_app:liste-client' %}"
+            hx-target="#client_table"
+            hx-indicator="#loading"
+            hx-on::before-request="document.getElementById('client_table').style.background=black"
+            hx-on::after-request="document.getElementById('client_table').style.opacity= 1.0"
+            />
+    </div>
+           
+            
+  
+  <div class="filtre_container card bg-base-200 p-6 mb-8">
+    <div class="filter grid grid-cols-1 md:grid-cols-4 gap-4">
+      <div class="form-control">
+        <label class="label">
+          <span class="label-text font-medium">Type de client</span>
+        </label>
+        <select
+        name="type_client"
+        hx-get="{% url 'client_app:liste-client' %}"
+        hx-trigger="change"
+        hx-target="#table_container"
+        class="select select-bordered">
+          <option value="">Tous les types</option>
+          <option value="particulier">Particulier</option>
+          <option value="entreprise">Entreprise</option>
+          <option value="institution">Institution</option>
+          <option value="promoteur">Promoteur</option>
+        </select>
+      </div>
+      
+      <div class="form-control">
+        <label class="label">
+          <span class="label-text font-medium">Ville</span>
+        </label>
+        <select
+         hx-get="{% url 'client_app:liste-client' %}"
+         hx-trigger="change"
+         hx-target="#table_container"
+         name="villes"
+         class="select select-bordered">
+          <option value="">Toutes les villes</option>
+          <option value="Ouagadougou">Ouagadougou</option>
+          <option value="Bobo-Dioulasso">Bobo-Dioulasso</option>
+          <!-- Autres villes -->
+        </select>
+      </div>
+      
+      <div class="form-control">
+        <label class="label">
+          <span class="label-text font-medium">Potentiel</span>
+        </label>
+        <select
+         hx-get="{% url 'client_app:liste-client' %}"
+         hx-trigger="change"
+         hx-target="#table_container"
+         name="potentiel"
+         class="select select-bordered">
+          <option value="">Tous</option>
+          <option value="faible">Faible</option>
+          <option value="moyen">Moyen</option>
+          <option value="élevé">Élevé</option>
+        </select>
+      </div>
+      
+      <div class="form-control">
+        <label class="label">
+          <span class="label-text font-medium">Fidélité</span>
+        </label>
+        <select 
+        class="select select-bordered"
+        hx-get="{% url 'client_app:liste-client' %}"
+        hx-trigger="change"
+        hx-target="#table_container"
+        name="fidelite"
+        >
+          <option value="">Tous</option>
+          <option value="fidel">Client fidèle</option>
+          <option value="nouveau">Nouveau client</option>
+        </select>
+      </div>
+    </div>
+  </div>
+
+  
+         {% include 'partials/liste_client_partial.html' %}
+   
+   
+    <!-- Pagination -->
+    {% if is_paginated %}
+    <div class="border-t px-6 py-4">
+      <div class="flex justify-center">
+        <div class="join">
+          {% if page_obj.has_previous %}
+          <a href="?page={{ page_obj.previous_page_number }}" class="join-item btn">«</a>
+          {% endif %}
+          <span class="join-item btn">Page {{ page_obj.number }} sur {{ page_obj.paginator.num_pages }}</span>
+          {% if page_obj.has_next %}
+          <a href="?page={{ page_obj.next_page_number }}" class="join-item btn">»</a>
+          {% endif %}
+        </div>
+      </div>
+    </div>
+    {% endif %}
+  </div>
+<!-- Modal pour ajouter un client -->
+{% include 'modal/ajouter_client.html' %}
+
+
+<div class="card-footer text-muted">
+            <small>
+                <i class="fas fa-shield-alt"></i> 
+                Système Gestion chantier client - Toutes les modifications sont permanentes.
+            </small>
+            
+            {% if user.is_authenticated and user.post.nom == 'Directeur' %}
+                 <a href="{% url 'directeur_app:directeur-view' %}" class="btn btn-sm btn-outline-primary float-end">
+                <i class="fas fa-arrow-left"></i> Retour au Dashboard
+                 </a>
+                {% elif user.is_authenticated and user.post.nom == 'Comptable' %}
+                 <a href="{% url 'comptable_app:comptable-view' %}" class="btn btn-sm btn-outline-primary float-end">
+                <i class="fas fa-arrow-left"></i> Retour au Dashboard
+                 </a>
+            {% endif %}
+                
+        </div>
+        </main>
+
+           <!-- Footer -->
+<footer class="bg-gray-900 text-white mt-12">
+        <div class="container mx-auto px-4 py-8">
+            <div class="flex flex-col md:flex-row justify-between items-center">
+                <div class="mb-4 md:mb-0">
+                    <p class="font-bold text-lg">SANBA GESTION FINFLOW</p>
+                    <p class="text-gray-400 text-sm"> Gestion des Clients</p>
+                </div>
+                
+                <div class="text-center md:text-right">
+                    <p class="text-gray-400">© {% now "Y" %} - Tous droits réservés</p>
+                    <p class="text-gray-500 text-sm mt-1">
+                        Généré le {% now "d/m/Y à H:i" %}
+                    </p>
+                </div>
+            </div>
+        </div>
+</footer>
+
+         
+    </body>
+
+</html>
     
 
-{% block content %}
-    
-<a href="{% url 'client_app:ajouter-client' %}"> ➕Ajouter un client</a>
 
-    {% for client in clients %}
-    <p> <a href="{% url 'client_app:detail-client' client.id %}">{{ client.nom }} {{ client.prenom }}</a></p>
-
-    {% endfor %}
-
-
-</div>
-{% endblock content %}
     

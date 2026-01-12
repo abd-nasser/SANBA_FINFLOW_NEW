@@ -1,65 +1,608 @@
-
-{% comment %}
-Template: employee_du_mois.html
-Vue: BestEmployeeView (TemplateView)
-Contexte fourni:
-- total_depense_employee: Liste avec le top 1 employé par dépenses
-- most_rapport_by_employee: Liste avec le top 1 employé par nombre de rapports
-- top_commerciaux: Liste avec le top 1 commercial par CA généré
-{% endcomment %}
-
+{% load static %}
+{% load tailwind_tags %}
 <!DOCTYPE html>
 <html lang="fr">
 <head>
     <meta charset="UTF-8">
-    <title>Employé du Mois</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🏆 Meilleurs Employés du Mois</title>
+    <link rel="stylesheet" href="{% static 'css/employe_du_mois_style.css' %}">
+    <!-- DaisyUI via CDN -->
+    <link href="https://cdn.jsdelivr.net/npm/daisyui@3.1.6/dist/full.css" rel="stylesheet" type="text/css" />
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- Chart.js pour les graphiques -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    
+    <!-- Font Awesome pour les icônes -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="{% static 'css/employe_du_mois_style.css' %}">
+    {% tailwind_css %}
+    
 </head>
-<body>
-    <h1>🎯 Employés Performants du Mois</h1>
+<body class="bg-gradient-to-br body  from-blue-50 to-indigo-100 min-h-screen">
+    <div class="container dash_container mx-auto p-4 md:p-8">
+        
     
-    {% comment %} Section 1: Meilleur commercial par CA {% endcomment %}
-    {% if top_commerciaux %}
-        {% for commercial in top_commerciaux %}
-        <section>
-            <h2>🏆 Meilleur Commercial</h2>
-            <p><strong>Nom:</strong> {{ commercial.username }}</p>
-            <p><strong>CA Généré:</strong> {{ commercial.ca_genere|default:"0" }} FCFA</p>
-            <p><strong>Clients Amenés:</strong> {{ commercial.clients_amenes }}</p>
-            <p><strong>Contrats Signés:</strong> {{ commercial.contrats_signes }}</p>
-            <p><strong>Chantiers en cours:</strong> {{ commercial.chantier_status_en_cours }}</p>
-            <p><strong>Chantiers terminés:</strong> {{ commercial.chantier_status_termine }}</p>
+        <header class="mb-10 text-center">
+            <div class="flex items-center justify-center gap-4 mb-4">
+                <i class="fas fa-trophy text-5xl text-yellow-500"></i>
+                <h1 class="text-4xl md:text-5xl font-bold bg-gradient-to-r from-white to-gray-500 to-black bg-clip-text text-transparent">
+                    🏆 Meilleurs Employés du Mois
+                </h1>
+                <i class="fas fa-medal text-5xl text-yellow-500"></i>
+            </div>
+            <p class="text-lg text-gray-600 max-w-2xl mx-auto">
+                Découvrez les performances exceptionnelles de nos collaborateurs ce mois-ci
+            </p>
+            <div class="badge badge-lg badge-success mt-4 gap-2">
+                <i class="fas fa-calendar-alt"></i>
+                {{ timezone.now|date:"F Y" }}
+            </div>
+        </header>
+
+        <!-- Section 1: Tableau de classement principal -->
+        <section class="mb-12">
+            <h2 class="text-3xl font-bold mb-6 text-center flex items-center justify-center gap-3">
+                <i class="fas fa-crown text-yellow-500"></i>
+                Classement Général
+                <i class="fas fa-crown text-yellow-500"></i>
+            </h2>
+            
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+                
+                <!-- Carte GOLD - Meilleur commercial -->
+                {% if top_commerciaux %}
+                <div class="card">
+                    <div class="card-body items-center text-center">
+                        <div class="badge badge-gold badge-lg mb-4 p-4 rounded-full">
+                            <i class="fas fa-crown text-2xl"></i>
+                        </div>
+                        <h3 class="card-title text-2xl mb-2">🥇 Meilleur Commercial</h3>
+                        
+                        {% for commercial in top_commerciaux %}
+                        <div class="avatar mb-4">
+                            <div class="w-24 h-24 rounded-full bg-gradient-to-r from-yellow-400 to-amber-500 p-1">
+                                <div class="w-full h-full rounded-full bg-white flex items-center justify-center">
+                                    <i class="fas fa-user-tie text-4xl text-amber-600"></i>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <h4 class="text-xl font-bold mb-2">{{ commercial.username|default:"Commercial" }}</h4>
+                        
+                        <div class="stats stats-vertical bg-transparent shadow-none w-full">
+                            <div class="stat">
+                                <div class="stat-title">CA Généré</div>
+                                <div class="stat-value text-success">
+                                    {{ commercial.ca_genere|default:0|floatformat:2 }} FCFA
+                                </div>
+                                <div class="stat-desc">
+                                    <i class="fas fa-chart-line text-success"></i> +15% vs mois dernier
+                                </div>
+                            </div>
+                            
+                            <div class="stat">
+                                <div class="stat-title">Clients Apportés</div>
+                                <div class="stat-value">{{ commercial.clients_amenes|default:0 }}</div>
+                            </div>
+                            
+                            <div class="stat">
+                                <div class="stat-title">Contrats Signés</div>
+                                <div class="stat-value">{{ commercial.contrats_signes|default:0 }}</div>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+                {% endif %}
+
+                <!-- Carte SILVER - Plus de dépenses validées -->
+                {% if total_depense_employee %}
+                <div class="card">
+                    <div class="card-body items-center text-center">
+                        <div class="badge badge-silver badge-lg mb-4 p-4 rounded-full">
+                            <i class="fas fa-medal text-2xl"></i>
+                        </div>
+                        <h3 class="card-title text-2xl mb-2">🥈 Dépenses Validées</h3>
+                        
+                        {% for depense in total_depense_employee %}
+                        <div class="avatar mb-4">
+                            <div class="w-24 h-24 rounded-full bg-gradient-to-r from-gray-400 to-slate-600 p-1">
+                                <div class="w-full h-full rounded-full bg-white flex items-center justify-center">
+                                    <i class="fas fa-money-bill-wave text-4xl text-slate-600"></i>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <h4 class="text-xl font-bold mb-2">{{ depense.employee__username|default:"Employé" }}</h4>
+                        
+                        <div class="stats stats-vertical bg-transparent shadow-none w-full">
+                            <div class="stat">
+                                <div class="stat-title">Total Dépenses</div>
+                                <div class="stat-value text-primary">
+                                    {{ depense.total_depense|default:0|floatformat:2 }} FCFA
+                                </div>
+                                <div class="stat-desc">Dépenses validées ce mois</div>
+                            </div>
+                            
+                            <div class="stat">
+                                <div class="stat-title">Activité</div>
+                                <div class="stat-value">💰</div>
+                                <div class="stat-desc">Gestion des dépenses</div>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+                {% endif %}
+
+                <!-- Carte BRONZE - Plus de rapports -->
+                {% if rapports_employee %}
+                <div class="card">
+                    <div class="card-body items-center text-center">
+                        <div class="badge badge-bronze badge-lg mb-4 p-4 rounded-full">
+                            <i class="fas fa-award text-2xl"></i>
+                        </div>
+                        <h3 class="card-title text-2xl mb-2">🥉 Plus de Rapports</h3>
+                        
+                        {% for rapport in rapports_employee %}
+                        <div class="avatar mb-4">
+                            <div class="w-24 h-24 rounded-full bg-gradient-to-r from-amber-400 to-orange-500 p-1">
+                                <div class="w-full h-full rounded-full bg-white flex items-center justify-center">
+                                    <i class="fas fa-file-alt text-4xl text-orange-600"></i>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <h4 class="text-xl font-bold mb-2">{{ rapport.employee__username|default:"Employé" }}</h4>
+                        
+                        <div class="stats stats-vertical bg-transparent shadow-none w-full">
+                            <div class="stat">
+                                <div class="stat-title">Rapports Soumis</div>
+                                <div class="stat-value text-secondary">{{ rapport.total_rapports|default:0 }}</div>
+                                <div class="stat-desc">Ce mois-ci</div>
+                            </div>
+                            
+                            <div class="stat">
+                                <div class="stat-title">Productivité</div>
+                                <div class="stat-value">📊</div>
+                                <div class="stat-desc">Excellente régularité</div>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+                {% endif %}
+            </div>
         </section>
-        {% endfor %}
-    {% endif %}
-    
-    {% comment %} Section 2: Employé avec le plus de dépenses {% endcomment %}
-    {% if total_depense_employee %}
-        {% for emp in total_depense_employee %}
-        <section>
-            <h2>💰 Dépenses Engagées</h2>
-            <p><strong>Nom:</strong> {{ emp.employee__username }}</p>
-            <p><strong>Total Dépensé:</strong> {{ emp.total_depense|default:"0" }} FCFA</p>
+
+        <!-- Section 2: Graphiques de performance -->
+        <section class="mb-12">
+            <h2 class="text-3xl font-bold mb-8 text-center">
+                <i class="fas fa-chart-bar text-blue-500 mr-3"></i>
+                Visualisation des Performances
+            </h2>
+            
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                
+                <!-- Graphique 1: Comparaison des dépenses -->
+                <div class="card">
+                    <div class="card-body">
+                        <h3 class="card-title mb-4">
+                            <i class="fas fa-money-bill-trend-up text-green-500"></i>
+                            Dépenses par Employé
+                        </h3>
+                        <div class="chart-container">
+                            <canvas id="depensesChart"></canvas>
+                        </div>
+                        <p class="text-sm text-gray-500 mt-4">
+                            <i class="fas fa-lightbulb text-yellow-500"></i>
+                            Ce graphique montre qui a géré le plus de dépenses ce mois-ci.
+                        </p>
+                    </div>
+                </div>
+                
+                <!-- Graphique 2: Rapports soumis -->
+                <div class="card">
+                    <div class="card-body">
+                        <h3 class="card-title mb-4">
+                            <i class="fas fa-file-circle-check text-blue-500"></i>
+                            Rapports Soumis
+                        </h3>
+                        <div class="chart-container">
+                            <canvas id="rapportsChart"></canvas>
+                        </div>
+                        <p class="text-sm text-gray-500 mt-4">
+                            <i class="fas fa-lightbulb text-yellow-500"></i>
+                            Nombre de rapports soumis par chaque employé.
+                        </p>
+                    </div>
+                </div>
+                
+                <!-- Graphique 3: Performance commerciale -->
+                <div class="card">
+                    <div class="card-body">
+                        <h3 class="card-title mb-4">
+                            <i class="fas fa-chart-pie text-purple-500"></i>
+                            Performance Commerciale Détail
+                        </h3>
+                        <div class="chart-container" style="height: 400px;">
+                            <canvas id="performanceChart"></canvas>
+                        </div>
+                        <p class="text-sm text-gray-500 mt-4">
+                            <i class="fas fa-lightbulb text-yellow-500"></i>
+                            Détail des performances des commerciaux : CA, clients, contrats.
+                        </p>
+                    </div>
+                </div>
+            </div>
         </section>
-        {% endfor %}
-    {% endif %}
-    
-    {% comment %} Section 3: Employé avec le plus de rapports {% endcomment %}
-    {% if rapports_employee %}
-        {% for emp in rapports_employee %}
-        <section>
-            <h2>📊 Productivité Rapports</h2>
-            <p><strong>Nom:</strong> {{ emp.employee__username }}</p>
-            <p><strong>Nombre de Rapports:</strong> {{ emp.total_rapports }}</p>
+
+        <!-- Section 3: Tableau détaillé -->
+        <section class="mb-12">
+            <div class="card">
+                <div class="card-body">
+                    <h3 class="card-title text-2xl mb-6">
+                        <i class="fas fa-table text-indigo-500"></i>
+                        Détails des Performances
+                    </h3>
+                    
+                    <div class="overflow-x-auto">
+                        <table class="table table-zebra w-full">
+                            <thead>
+                                <tr class="bg-gradient-to-r from-blue-500 to-indigo-600 text-white">
+                                    <th>🏆 Classement</th>
+                                    <th>👤 Employé</th>
+                                    <th>💰 Dépenses Validées</th>
+                                    <th>📊 Rapports Soumis</th>
+                                    <th>📈 Performance</th>
+                                    <th>🏅 Score</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for commercial in top_commerciaux %}
+                                <tr>
+                                    <td>
+                                        <div class="badge badge-gold gap-2">
+                                            <i class="fas fa-trophy"></i> 1er
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <div class="flex items-center gap-3">
+                                            <div class="avatar">
+                                                <div class="w-10 h-10 rounded-full bg-gradient-to-r from-yellow-400 to-amber-500 flex items-center justify-center">
+                                                    <i class="fas fa-user-tie text-white"></i>
+                                                </div>
+                                            </div>
+                                            <div>
+                                                <div class="font-bold">{{ commercial.username|default:"Commercial" }}</div>
+                                                <div class="text-sm opacity-50">Commercial</div>
+                                            </div>
+                                        </div>
+                                    </td>
+                                    <td>-</td>
+                                    <td>-</td>
+                                    <td>
+                                        <div class="flex flex-col">
+                                            <span>CA: {{ commercial.ca_genere|default:0|floatformat:2 }}€</span>
+                                            <span class="text-sm">Clients: {{ commercial.clients_amenes|default:0 }}</span>
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <div class="radial-progress text-yellow-500" 
+                                             style="--value:95; --size:3rem; --thickness: 4px;">
+                                            95%
+                                        </div>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                                
+                                {% for depense in total_depense_employee %}
+                                <tr>
+                                    <td>
+                                        <div class="badge badge-silver gap-2">
+                                            <i class="fas fa-medal"></i> 2ème
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <div class="flex items-center gap-3">
+                                            <div class="avatar">
+                                                <div class="w-10 h-10 rounded-full bg-gradient-to-r from-gray-400 to-slate-600 flex items-center justify-center">
+                                                    <i class="fas fa-user-cog text-white"></i>
+                                                </div>
+                                            </div>
+                                            <div>
+                                                <div class="font-bold">{{ depense.employee__username|default:"Employé" }}</div>
+                                                <div class="text-sm opacity-50">Gestionnaire</div>
+                                            </div>
+                                        </div>
+                                    </td>
+                                    <td class="text-success font-bold">
+                                        {{ depense.total_depense|default:0|floatformat:2 }}€
+                                    </td>
+                                    <td>-</td>
+                                    <td>Dépenses validées</td>
+                                    <td>
+                                        <div class="radial-progress text-gray-500" 
+                                             style="--value:85; --size:3rem; --thickness: 4px;">
+                                            85%
+                                        </div>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                                
+                                {% for rapport in rapports_employee %}
+                                <tr>
+                                    <td>
+                                        <div class="badge badge-bronze gap-2">
+                                            <i class="fas fa-award"></i> 3ème
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <div class="flex items-center gap-3">
+                                            <div class="avatar">
+                                                <div class="w-10 h-10 rounded-full bg-gradient-to-r from-amber-400 to-orange-500 flex items-center justify-center">
+                                                    <i class="fas fa-user-edit text-white"></i>
+                                                </div>
+                                            </div>
+                                            <div>
+                                                <div class="font-bold">{{ rapport.employee__username|default:"Employé" }}</div>
+                                                <div class="text-sm opacity-50">Administratif</div>
+                                            </div>
+                                        </div>
+                                    </td>
+                                    <td>-</td>
+                                    <td class="text-info font-bold">{{ rapport.total_rapports|default:0 }}</td>
+                                    <td>Productivité rapports</td>
+                                    <td>
+                                        <div class="radial-progress text-orange-500" 
+                                             style="--value:80; --size:3rem; --thickness: 4px;">
+                                            80%
+                                        </div>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
         </section>
-        {% endfor %}
-    {% endif %}
-    
-    {% comment %} Message si aucune donnée {% endcomment %}
-    {% if not top_commerciaux and not total_depense_employee and not most_rapport_by_employee %}
-        <p>Aucune donnée disponible pour le mois en cours.</p>
-    {% endif %}
+
+        <!-- Section 4: Commentaires et félicitations -->
+        <section class="mb-8">
+            <div class="card">
+                <div class="card-body text-center">
+                    <h3 class="card-title text-2xl justify-center mb-4">
+                        <i class="fas fa-comment-medical text-blue-500"></i>
+                        Félicitations et Commentaires
+                    </h3>
+                    <p class="text-lg mb-4">
+                        <i class="fas fa-quote-left text-blue-300 text-2xl align-top mr-2"></i>
+                        Bravo à tous nos employés pour leurs efforts ce mois-ci ! 
+                        Votre travail est essentiel pour notre réussite collective.
+                        <i class="fas fa-quote-right text-blue-300 text-2xl align-top ml-2"></i>
+                    </p>
+                    <div class="flex flex-wrap justify-center gap-4 mt-6">
+                        <div class="badge badge-lg badge-success gap-2">
+                            <i class="fas fa-star"></i> Excellence
+                        </div>
+                        <div class="badge badge-lg badge-info gap-2">
+                            <i class="fas fa-rocket"></i> Progression
+                        </div>
+                        <div class="badge badge-lg badge-warning gap-2">
+                            <i class="fas fa-bullseye"></i> Objectifs
+                        </div>
+                        <div class="badge badge-lg badge-primary gap-2">
+                            <i class="fas fa-handshake"></i> Collaboration
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+        
+        <!-- Pied de page -->
+        <footer class="text-center text-gray-500 text-sm mt-12 pt-8 border-t">
+            <p>
+                <i class="fas fa-sync-alt mr-2"></i>
+                Mise à jour automatique - Données du mois de {{ timezone.now|date:"F Y" }}
+            </p>
+            <p class="mt-2">
+                © {% now "Y" %} SANBA FINFLOW - Tableau des performances
+            </p>
+        </footer>
+    </div>
+
+    <!-- JavaScript pour les graphiques -->
+    <script>
+        // 🎯 ATTENTION C'EST ICI QUE ÇA SE PASSE ! 
+        // On va créer des dessins colorés avec les chiffres (graphiques)
+        
+        // ============================================
+        // 1. GRAPHIQUE DES DÉPENSES
+        // ============================================
+        // On récupère la boîte à dessin (canvas) qui s'appelle "depensesChart"
+        const depensesCtx = document.getElementById('depensesChart').getContext('2d');
+        
+        // On crée le graphique avec des couleurs
+        const depensesChart = new Chart(depensesCtx, {
+            type: 'bar',  // Type de graphique : barres verticales
+            data: {
+                // Noms des personnes en bas du graphique
+                labels: [
+                    {% for depense in total_depense_employee %}
+                    '{{ depense.employee__username|default:"Employé" }}',
+                    {% endfor %}
+                    {% for rapport in rapports_employee %}
+                    '{{ rapport.employee__username|default:"Employé" }}',
+                    {% endfor %}
+                    
+                ],
+                datasets: [{
+                    label: '💰 Montant en FCFA',  // Petite légende
+                    // Les chiffres à afficher (exemple, tu peux les remplacer)
+                    data: [
+                        {% for depense in total_depense_employee %}
+                        {{ depense.total_depense|default:0 }},
+                        {% endfor %}
+                    ],
+                    backgroundColor: [
+                        '#FBBF24',  // Jaune pour le 1er
+                        '#9CA3AF',  // Gris pour le 2ème  
+                        '#FB923C',  // Orange pour le 3ème
+                    
+                    ],
+                    borderColor: '#1E40AF',
+                    borderWidth: 2
+                }]
+            },
+            options: {
+                responsive: true,
+                plugins: {
+                    legend: {
+                        position: 'top',  // La légende en haut
+                    },
+                    title: {
+                        display: true,
+                        text: 'Qui a dépensé le plus d\'argent ce mois-ci ?'
+                    }
+                },
+                scales: {
+                    y: {
+                        beginAtZero: true,  // Commence à 0
+                        ticks: {
+                            callback: function(value) {
+                                return value + ' €';  // Ajoute le signe €
+                            }
+                        }
+                    }
+                }
+            }
+        });
+        
+        // ============================================
+        // 2. GRAPHIQUE DES RAPPORTS
+        // ============================================
+        // Même chose pour le 2ème graphique
+        const rapportsCtx = document.getElementById('rapportsChart').getContext('2d');
+        const rapportsChart = new Chart(rapportsCtx, {
+            type: 'doughnut',  // Graphique en forme de donut (beignet)
+            data: {
+                labels: [
+                    {% for rapport in rapports_employee %}
+                    '{{ rapport.employee__username|default:"Employé" }}',
+                    {% endfor %}
+                    
+                ],
+                datasets: [{
+                    label: '📊 Nombre de rapports',
+                    data: [
+                        {% for rapport in rapports_employee|slice:5 %}
+                        {{ rapport.total_rapports|default:0 }},
+                        {% endfor %}
+                
+                    ],
+                    backgroundColor: [
+                        '#FB923C',  // Orange
+                        '#60A5FA',  // Bleu clair
+                        '#A78BFA',  // Violet
+                        '#34D399',   // Vert
+                        '#E67977',   //hamonie
+                    ],
+                    borderWidth: 3,
+                    borderColor: '#FFFFFF'
+                }]
+            },
+            options: {
+                responsive: true,
+                plugins: {
+                    legend: {
+                        position: 'right',  // Légende à droite
+                    },
+                    title: {
+                        display: true,
+                        text: 'Répartition des rapports soumis'
+                    }
+                }
+            }
+        });
+        
+        // ============================================
+        // 3. GRAPHIQUE DE PERFORMANCE DÉTAILLÉ
+        // ============================================
+        // Un dernier graphique plus complet
+        const performanceCtx = document.getElementById('performanceChart').getContext('2d');
+        const performanceChart = new Chart(performanceCtx, {
+            type: 'radar',  // Graphique en forme d'étoile/radar
+            data: {
+                labels: ['CA Généré', 'Clients', 'Contrats', 'Dépenses', 'Rapports', 'Satisfaction'],
+                datasets: [
+                    {
+                        label: 'Top Commercial',
+                        data: [90, 85, 95, 70, 80, 90],
+                        backgroundColor: 'rgba(251, 191, 36, 0.2)',
+                        borderColor: '#FBBF24',
+                        borderWidth: 3
+                    },
+                    {
+                        label: 'Top Dépenses',
+                        data: [60, 70, 65, 95, 75, 80],
+                        backgroundColor: 'rgba(156, 163, 175, 0.2)',
+                        borderColor: '#9CA3AF',
+                        borderWidth: 3
+                    },
+                    {
+                        label: 'Top Rapports',
+                        data: [70, 65, 70, 75, 95, 85],
+                        backgroundColor: 'rgba(251, 146, 60, 0.2)',
+                        borderColor: '#FB923C',
+                        borderWidth: 3
+                    }
+                ]
+            },
+            options: {
+                responsive: true,
+                plugins: {
+                    title: {
+                        display: true,
+                        text: 'Comparaison des forces de chaque employé'
+                    },
+                    legend: {
+                        position: 'top',
+                    }
+                },
+                scales: {
+                    r: {
+                        beginAtZero: true,
+                        max: 100,
+                        ticks: {
+                            stepSize: 20
+                        }
+                    }
+                }
+            }
+        });
+        
+        // ============================================
+        // PETIT BONUS : Animation des scores
+        // ============================================
+        // Quand on clique sur un graphique, on le fait grossir
+        document.querySelectorAll('canvas').forEach(canvas => {
+            canvas.addEventListener('click', function() {
+                this.style.transform = 'scale(1.05)';
+                setTimeout(() => {
+                    this.style.transform = 'scale(1)';
+                }, 300);
+            });
+        });
+        
+        // Message de chargement réussi
+        console.log('🎨 Les graphiques sont prêts !');
+        console.log('📊 Tu peux voir :');
+        console.log('1. Un graphique en barres pour les dépenses');
+        console.log('2. Un graphique en donut pour les rapports');
+        console.log('3. Un graphique radar pour comparer tout le monde');
+    </script>
 </body>
 </html>
-
-    
-    

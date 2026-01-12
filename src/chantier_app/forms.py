@@ -43,6 +43,29 @@ class ChantierInfoForm(forms.ModelForm):
             # 🎯 CRÉATION : champ normal
             self.fields['reference'].help_text = "Référence unique du chantier"
     
+    
+        # Classes DaisyUI pour tous les champs
+        base_classes = "input input-bordered w-300"
+        
+        for field_name, field in self.fields.items():
+            # Classes de base
+            field.widget.attrs['class'] = base_classes
+            
+            # Classes spécifiques par type
+            if isinstance(field.widget, forms.Select):
+                field.widget.attrs['class'] = "select select-bordered w-300"
+            elif isinstance(field.widget, forms.Textarea):
+                field.widget.attrs['class'] = "textarea textarea-bordered w-full"
+            elif isinstance(field.widget, forms.CheckboxInput):
+                field.widget.attrs['class'] = "checkbox"
+            
+            # Ajoute input-error si le champ a des erreurs (géré dans le template)
+    
+    
+    
+    
+    
+    
     def clean_reference(self):
         """Validation intelligente qui gère création ET modification"""
         reference = self.cleaned_data.get('reference')
@@ -98,6 +121,21 @@ class ChantierLocalisationForm(forms.ModelForm):
         for field in ["adresse_chantier","pays_chantier","ville_chantier","quartier_chantier"]:
             self.fields[field].required= True #Obligatoite   
 
+     # Classes DaisyUI pour tous les champs
+        base_classes = "input input-bordered w-300"
+        
+        for field_name, field in self.fields.items():
+            # Classes de base
+            field.widget.attrs['class'] = base_classes
+            
+            # Classes spécifiques par type
+            if isinstance(field.widget, forms.Select):
+                field.widget.attrs['class'] = "select select-bordered w-full"
+            elif isinstance(field.widget, forms.Textarea):
+                field.widget.attrs['class'] = "textarea textarea-bordered w-full"
+            elif isinstance(field.widget, forms.CheckboxInput):
+                field.widget.attrs['class'] = "checkbox"
+            
 
 class ChantierCaracteristiquesForm(forms.ModelForm):
     """Carateristique technique du chnatier"""
@@ -128,6 +166,22 @@ class ChantierCaracteristiquesForm(forms.ModelForm):
         #
         for field in self.fields:
             self.fields[field].required = False #auccun champs n'est obligatoire   
+            
+         # Classes DaisyUI pour tous les champs
+        base_classes = "input input-bordered w-300 mb-4"
+        
+        for field_name, field in self.fields.items():
+            # Classes de base
+            field.widget.attrs['class'] = base_classes
+            
+            # Classes spécifiques par type
+            if isinstance(field.widget, forms.Select):
+                field.widget.attrs['class'] = "select select-bordered w-300 mb-4 center"
+            elif isinstance(field.widget, forms.Textarea):
+                field.widget.attrs['class'] = "textarea textarea-bordered w-300"
+            elif isinstance(field.widget, forms.CheckboxInput):
+                field.widget.attrs['class'] = "checkbox"
+            
     
     
 class ChantierPlanningForm(forms.ModelForm):
@@ -137,23 +191,38 @@ class ChantierPlanningForm(forms.ModelForm):
         model = Chantier
         fields = [
             "date_debut_prevue","date_fin_prevue",
-            "date_debut_reelle","date_fin_reelle",
             "chef_de_chantier", "equipe_affectee",
+            "duree_estimee"
         ]
         
         labels = {
             "date_debut_prevue": "Date de début prévue",
             "date_fin_prevue": "Date de fin prévue",
-            "date_debut_reelle": "Date de début réelle",
-            "date_fin_reelle": "Date de fin réelle",
             "chef_de_chantier": "Chef de chantier",
             "equipe_affectee": "Équipe affectée",
+            "duree_estimee" : "Durée estimé en jour"
         }
         
     def __init__(self, *args, **kwargs ):
         super().__init__(*args, **kwargs)
         for field in self.fields:
             self.fields[field].required = False
+            
+         # Classes DaisyUI pour tous les champs
+        base_classes = "input input-bordered w-300"
+        
+        for field_name, field in self.fields.items():
+            # Classes de base
+            field.widget.attrs['class'] = base_classes
+            
+            # Classes spécifiques par type
+            if isinstance(field.widget, forms.Select):
+                field.widget.attrs['class'] = "select select-bordered w-300"
+            elif isinstance(field.widget, forms.Textarea):
+                field.widget.attrs['class'] = "textarea textarea-bordered w-300"
+            elif isinstance(field.widget, forms.CheckboxInput):
+                field.widget.attrs['class'] = "checkbox"
+            
             
 
 class ChantierBudgetForm(forms.ModelForm): 
@@ -179,7 +248,22 @@ class ChantierBudgetForm(forms.ModelForm):
         for field in self.fields:
             self.fields["budget_total"].required = True
             self.fields[field].required = False
-    
+
+         # Classes DaisyUI pour tous les champs
+        base_classes = "input input-bordered w-300"
+        
+        for field_name, field in self.fields.items():
+            # Classes de base
+            field.widget.attrs['class'] = base_classes
+            
+            # Classes spécifiques par type
+            if isinstance(field.widget, forms.Select):
+                field.widget.attrs['class'] = "select select-bordered w-300"
+            elif isinstance(field.widget, forms.Textarea):
+                field.widget.attrs['class'] = "textarea textarea-bordered w-300"
+            elif isinstance(field.widget, forms.CheckboxInput):
+                field.widget.attrs['class'] = "checkbox"
+            
     
     
     

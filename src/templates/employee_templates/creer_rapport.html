@@ -1,48 +1,492 @@
-{% extends 'base.html' %}
+{% load static %}
+{% load tailwind_tags %}
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Rapport de Dépense - {{ user.username }}</title>
+    <link rel="stylesheet" href="{% static 'css/base_style.css' %}">
+    <link rel="stylesheet" href="{% static 'css/rapport_style.css' %}">
+    <script src="{% static 'js/htmx.min.js' %}"></script>
+    {% tailwind_css %}
+   
+</head>
+<body>
+   <nav>
+    <h1>Rapports</h1>
+   </nav>
+    <header>
+       
+                    <h1 class="text-2xl font-bold text-gray-800">📋 Rapport de Dépenses</h1>
+                    {% if user.is_authenticated %}
+                    <p class="text-gray-600 mt-1">
+                        Bonjour <span class="font-semibold text-blue-600">{{ user.username }}</span>, veuillez saisir votre rapport
+                    </p>
+                    {% endif %}
+               
+            <div class="action">
+
+                    <div class="right_actions">
+
+                        <a href="{% url 'employee_app:mes-rapports' %}" 
+                        class="btn btn-rapport ">
+                            📄 Mes Rapports
+                        </a>
+
+                        <a href="{% url 'employee_app:employee-du-mois' %}" 
+                        class="btn btn-scror" 
+                        data-tip="Voir votre score du mois">
+                            🏆 Score du mois
+                        </a>
+
+                        <button onclick="openClientModal()" class="btn btn-aj_client">
+                            👤 Nouveau Client
+                        </button>
+                    
+                     </div>
 
 
-{% block title %}
-    Soumettre un Rapport
-{% endblock title %}
-    
+                    <div class='left_actions'>
 
-{% block content %}
+                        <button onclick="openChangeCredentialsModal()" class="btn ch_identifiant">
+                            🔐 Changer identifiants
+                        </button>
 
+                        <a class="btn deconnexion" href="{% url 'auth_app:logout' %}">
+                            Déconnexion
+                        </a>
+                    </div>
 
-<!-- EN HAUT du template -->
-{% if messages %}
-<div class="messages">
-    {% for message in messages %}
-    <div class="alert alert-{{ message.tags }}">
-        {{ message }}
+            </div>
+         
+    </header>
+
+    <!-- Main Content -->
+    <main class="container mx-auto px-4 py-8">
+
+            <!-- Messages -->
+    {% if messages %}
+    <div class="container mx-auto px-4 mt-4">
+        {% for message in messages %}
+        <div class="alert alert-{{ message.tags }} shadow-lg mb-4">
+            <div>
+                {% if message.tags == 'success' %}
+                    <svg xmlns="http://www.w3.org/2000/svg" class="stroke-current flex-shrink-0 h-6 w-6" fill="none" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                    </svg>
+                {% elif message.tags == 'error' %}
+                    <svg xmlns="http://www.w3.org/2000/svg" class="stroke-current flex-shrink-0 h-6 w-6" fill="none" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                    </svg>
+                {% endif %}
+                <span>{{ message }}</span>
+            </div>
+        </div>
+        {% endfor %}
     </div>
-    {% endfor %}
-</div>
-{% endif %}
+    {% endif %}
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+            <!-- Section Formulaire -->
+            <div class="lg:col-span-2">
+                <div class="card bg-white shadow-lg form-section">
+                    <div class="card-body p-6">
+                        <h2 class="card-title text-2xl font-bold text-gray-800 mb-2">
+                            📝 Nouveau Rapport de Dépense
+                        </h2>
+                        <p class="text-gray-600 mb-6">Remplissez ce formulaire pour enregistrer une dépense</p>
+                        
+                        <form method="post" action="{% url 'employee_app:employee-view' %}" class="space-y-6">
+                            {% csrf_token %}
+                            
+                            <!-- Informations Générales -->
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                <!-- Demande de Décaissement -->
+                                <div class="form-control">
+                                    <label class="label required" for="{{ rapport_form.demande_decaissement.id_for_label }}">
+                                        <span class="label-text font-semibold">Demande de Décaissement</span>
+                                    </label>
+                                    {{ rapport_form.demande_decaissement }}
+                                    {% if rapport_form.demande_decaissement.errors %}
+                                    <label class="label">
+                                        {% for error in rapport_form.demande_decaissement.errors %}
+                                        <span class="label-text-alt text-error">{{ error }}</span>
+                                        {% endfor %}
+                                    </label>
+                                    {% endif %}
+                                    <label class="label">
+                                        <span class="label-text-alt text-gray-500">Sélectionnez la demande décaissée</span>
+                                    </label>
+                                </div>
+                                
+                                <!-- Type de Dépense -->
+                                <div class="form-control">
+                                    <label class="label required" for="{{ rapport_form.type_depense.id_for_label }}">
+                                        <span class="label-text font-semibold">Type de Dépense</span>
+                                    </label>
+                                    {{ rapport_form.type_depense }}
+                                    {% if rapport_form.type_depense.errors %}
+                                    <label class="label">
+                                        {% for error in rapport_form.type_depense.errors %}
+                                        <span class="label-text-alt text-error">{{ error }}</span>
+                                        {% endfor %}
+                                    </label>
+                                    {% endif %}
+                                </div>
+                            </div>
+                            
+                            <!-- Détails du Matériel -->
+                            <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                                <!-- Matériau/Article -->
+                                <div class="form-control">
+                                    <label class="label" for="{{ rapport_form.materiau_article.id_for_label }}">
+                                        <span class="label-text font-semibold">Matériau/Article</span>
+                                    </label>
+                                    {{ rapport_form.materiau_article }}
+                                    {% if rapport_form.materiau_article.errors %}
+                                    <label class="label">
+                                        {% for error in rapport_form.materiau_article.errors %}
+                                        <span class="label-text-alt text-error">{{ error }}</span>
+                                        {% endfor %}
+                                    </label>
+                                    {% endif %}
+                                </div>
+                                
+                                <!-- Prix Unitaire -->
+                                <div class="form-control">
+                                    <label class="label required" for="{{ rapport_form.prix_unitaire.id_for_label }}">
+                                        <span class="label-text font-semibold">Prix Unitaire (FCFA)</span>
+                                    </label>
+                                    {{ rapport_form.prix_unitaire }}
+                                    {% if rapport_form.prix_unitaire.errors %}
+                                    <label class="label">
+                                        {% for error in rapport_form.prix_unitaire.errors %}
+                                        <span class="label-text-alt text-error">{{ error }}</span>
+                                        {% endfor %}
+                                    </label>
+                                    {% endif %}
+                                </div>
+                                
+                                <!-- Quantité -->
+                                <div class="form-control">
+                                    <label class="label required" for="{{ rapport_form.quantité.id_for_label }}">
+                                        <span class="label-text font-semibold">Quantité</span>
+                                    </label>
+                                    {{ rapport_form.quantité }}
+                                    {% if rapport_form.quantité.errors %}
+                                    <label class="label">
+                                        {% for error in rapport_form.quantité.errors %}
+                                        <span class="label-text-alt text-error">{{ error }}</span>
+                                        {% endfor %}
+                                    </label>
+                                    {% endif %}
+                                </div>
+                            </div>
+                            
+                            <!-- Calcul du Total -->
+                            <div class="calculation-box rounded-lg p-4">
+                                <div class="flex justify-between items-center">
+                                    <div>
+                                        <h4 class="font-semibold text-gray-700">Total Calculé</h4>
+                                        <p class="text-sm text-gray-500">Prix unitaire × Quantité</p>
+                                    </div>
+                                    <div id="totalDisplay" class="total-display">
+                                        0 FCFA
+                                    </div>
+                                </div>
+                                {{ rapport_form.total }}
+                            </div>
+                            
+                            <!-- Fournisseur -->
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                <!-- Fournisseur Existants -->
+                                <div class="form-control">
+                                    <label class="label" for="{{ rapport_form.fournisseur.id_for_label }}">
+                                        <span class="label-text font-semibold">Fournisseur (Existant)</span>
+                                    </label>
+                                    {{ rapport_form.fournisseur }}
+                                    {% if rapport_form.fournisseur.errors %}
+                                    <label class="label">
+                                        {% for error in rapport_form.fournisseur.errors %}
+                                        <span class="label-text-alt text-error">{{ error }}</span>
+                                        {% endfor %}
+                                    </label>
+                                    {% endif %}
+                                </div>
+                                
+                                <!-- Nouveau Fournisseur -->
+                                <div class="form-control">
+                                    <label class="label" for="{{ rapport_form.fournisseur_not_db.id_for_label }}">
+                                        <span class="label-text font-semibold">Nouveau Fournisseur</span>
+                                    </label>
+                                    {{ rapport_form.fournisseur_not_db }}
+                                    {% if rapport_form.fournisseur_not_db.errors %}
+                                    <label class="label">
+                                        {% for error in rapport_form.fournisseur_not_db.errors %}
+                                        <span class="label-text-alt text-error">{{ error }}</span>
+                                        {% endfor %}
+                                    </label>
+                                    {% endif %}
+                                    <label class="label">
+                                        <span class="label-text-alt text-gray-500">Si le fournisseur n'est pas en base</span>
+                                    </label>
+                                </div>
+                            </div>
+                            
+                            <!-- Facture et Chantier -->
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                <!-- Facture -->
+                                <div class="form-control">
+                                    <label class="label" for="{{ rapport_form.facture.id_for_label }}">
+                                        <span class="label-text font-semibold">Numéro de Facture</span>
+                                    </label>
+                                    {{ rapport_form.facture }}
+                                    {% if rapport_form.facture.errors %}
+                                    <label class="label">
+                                        {% for error in rapport_form.facture.errors %}
+                                        <span class="label-text-alt text-error">{{ error }}</span>
+                                        {% endfor %}
+                                    </label>
+                                    {% endif %}
+                                </div>
+                                
+                                <!-- Chantier -->
+                                <div class="form-control">
+                                    <label class="label" for="{{ rapport_form.chantier.id_for_label }}">
+                                        <span class="label-text font-semibold">Chantier</span>
+                                        <span class="label-text-alt text-gray-500">Optionnel</span>
+                                    </label>
+                                    {{ rapport_form.chantier }}
+                                    {% if rapport_form.chantier.errors %}
+                                    <label class="label">
+                                        {% for error in rapport_form.chantier.errors %}
+                                        <span class="label-text-alt text-error">{{ error }}</span>
+                                        {% endfor %}
+                                    </label>
+                                    {% endif %}
+                                </div>
+                            </div>
+                            
+                            <!-- Date et Note -->
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                <!-- Date Dépense -->
+                                <div class="form-control">
+                                    <label class="label" for="{{ rapport_form.date_depense.id_for_label }}">
+                                        <span class="label-text font-semibold">Date de la Dépense</span>
+                                    </label>
+                                    {{ rapport_form.date_depense }}
+                                    {% if rapport_form.date_depense.errors %}
+                                    <label class="label">
+                                        {% for error in rapport_form.date_depense.errors %}
+                                        <span class="label-text-alt text-error">{{ error }}</span>
+                                        {% endfor %}
+                                    </label>
+                                    {% endif %}
+                                </div>
+                            </div>
+                            
+                            <!-- Note -->
+                            <div class="form-control mb-7">
+                                <label class="label required" for="{{ rapport_form.note.id_for_label }}">
+                                    <span class="label-text font-semibold">Notes / Détails supplémentaires</span>
+                                </label>
+                                {{ rapport_form.note }}
+                                {% if rapport_form.note.errors %}
+                                <label class="label">
+                                    {% for error in rapport_form.note.errors %}
+                                    <span class="label-text-alt text-error">{{ error }}</span>
+                                    {% endfor %}
+                                </label>
+                                {% endif %}
+                            </div>
+                            
+                            <!-- Boutons de Soumission -->
+                            <div class="flex flex-col soumission_reset sm:flex-row gap-4 pt-6 border-t">
+                                <button type="submit" class="btn btn-rapport btn-lg flex-1">
+                                    <svg xmlns="http://www.w3.org/2000/svg" style="width: 20px; height: 20px;" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8" />
+                                    </svg>
+                                    Soumettre le Rapport
+                                </button>
+                                <button type="reset" class="btn btn-renitial">
+                                    🔄 Réinitialiser
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Sidebar Informations -->
+            <div class="space-y-6">
+                <!-- Info Box -->
+                <div class="info-box rounded-lg p-6 shadow">
+                    <h3 class="font-bold text-lg text-gray-800 mb-3">ℹ️ Instructions</h3>
+                    <ul class="space-y-2 text-sm text-gray-600">
+                        <li class="flex items-start">
+                            <span class="text-green-500 mr-2">✓</span>
+                            <span>Remplissez tous les champs marqués d'un *</span>
+                        </li>
+                        <li class="flex items-start">
+                            <span class="text-green-500 mr-2">✓</span>
+                            <span>Le total est calculé automatiquement</span>
+                        </li>
+                        <li class="flex items-start">
+                            <span class="text-green-500 mr-2">✓</span>
+                            <span>Joignez la facture si disponible</span>
+                        </li>
+                        <li class="flex items-start">
+                            <span class="text-green-500 mr-2">✓</span>
+                            <span>Le rapport sera vérifié par la comptabilité</span>
+                        </li>
+                    </ul>
+                </div>
+                
+                <!-- Statistiques Rapides -->
+                <div class="card bg-white shadow">
+                    <div class="card-body">
+                        <h3 class="card-title text-gray-700">📊 Vos Rapports</h3>
+                        <div class="stats shadow mt-4">
+                            <div class="stat">
+                                <div class="stat-title">Ce mois-ci</div>
+                                <div class="stat-value text-primary">{{ total_rapport }}</div>
+                                <div class="stat-desc">rapports soumis</div>
+                            </div>
+                        </div>
+                        <a href="{% url 'employee_app:mes-rapports' %}" class="btn btn-sm btn-voir_rapport w-full mt-4">
+                            Voir tous mes rapports
+                        </a>
+                    </div>
+                </div>
+                
+                <!-- Conseils -->
+                <div class="card bg-yellow-50 border border-yellow-200">
+                    <div class="card-body">
+                        <h3 class="card-title text-yellow-700">💡 Conseils</h3>
+                        <ul class="space-y-2 text-sm text-yellow-600">
+                            <li>• Gardez vos factures pour vérification</li>
+                            <li>• Remplissez le formulaire rapidement après achat</li>
+                            <li>• Décrivez clairement l'article acheté</li>
+                            <li>• Vérifiez les prix unitaires</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        {% if user.is_authenticated and not user.post.nom == "Employé" %}
 
-<div style="border: 1px, solid, black;">
-<a href="{% url 'employee_app:employee-du-mois' %}">🏆</a>
-</div>
+         <div class="card-footer text-muted">
+            <small>
+                <i class="fas fa-shield-alt"></i> 
+                Système Gestion SANBA FinFlow - Toutes les modifications sont permanentes.
+            </small>
+            
+            {% if user.is_authenticated and user.post.nom == 'Directeur' %}
+                 <a href="{% url 'directeur_app:directeur-view' %}" class="btn btn-sm btn-outline-primary float-end">
+                <i class="fas fa-arrow-left"></i> Retour au Dashboard
+                 </a>
+                {% elif user.is_authenticated and user.post.nom == 'Comptable' %}
+                 <a href="{% url 'comptable_app:comptable-view' %}" class="btn btn-sm btn-outline-primary float-end">
+                <i class="fas fa-arrow-left"></i> Retour au Dashboard
+                 </a>
+                 {% elif user.is_authenticated and user.post.nom == 'Sécretaire' %}
+                 <a href="{% url 'secretaire_app:secretaire-view' %}" class="btn btn-sm btn-outline-primary float-end">
+                <i class="fas fa-arrow-left"></i> Retour au Dashboard
+                 </a>
+            {% endif %}
+                
+        </div>
+            
+        {% endif %}
+            
+       
+    </main>
 
+    <!-- Footer -->
+        <!-- Footer -->
+<footer class="bg-gray-900 text-white mt-12">
+        <div class="container mx-auto px-4 py-8">
+            <div class="flex flex-col md:flex-row justify-between items-center">
+                <div class="mb-4 md:mb-0">
+                    <p class="font-bold text-lg">SANBA GESTION FINFLOW</p>
+                    <p class="text-gray-400 text-sm"> Rapports De Depense</p>
+                </div>
+                
+                <div class="text-center md:text-right">
+                    <p class="text-gray-400">© {% now "Y" %} - Tous droits réservés</p>
+                    <p class="text-gray-500 text-sm mt-1">
+                        Généré le {% now "d/m/Y à H:i" %}
+                    </p>
+                </div>
+            </div>
+        </div>
+</footer>
+
+    <!-- Scripts -->
+    <script>
+        // Calcul automatique du total
+        function calculateTotal() {
+            const prix = parseFloat(document.getElementById('{{ rapport_form.prix_unitaire.id_for_label }}').value) || 0;
+            const quantite = parseFloat(document.getElementById('{{ rapport_form.quantité.id_for_label }}').value) || 0;
+            const total = prix * quantite;
+            
+            // Mettre à jour l'affichage
+            document.getElementById('totalDisplay').textContent = total.toLocaleString('fr-FR') + ' FCFA';
+            
+            // Mettre à jour le champ hidden si existant
+            const totalField = document.getElementById('{{ rapport_form.total.id_for_label }}');
+            if (totalField) {
+                totalField.value = total;
+            }
+        }
+        
+        // Écouter les changements sur les champs prix et quantité
+        document.getElementById('{{ rapport_form.prix_unitaire.id_for_label }}').addEventListener('input', calculateTotal);
+        document.getElementById('{{ rapport_form.quantité.id_for_label }}').addEventListener('input', calculateTotal);
+        
+        // Calculer le total au chargement
+        document.addEventListener('DOMContentLoaded', calculateTotal);
+        
+        // Fonction pour ouvrir le modal client
+        function openClientModal() {
+            const modal = document.getElementById('clientModal');
+            if (modal) {
+                modal.showModal();
+            }
+        }
+        
+        // Fonction pour ouvrir le modal changement identifiants
+        function openChangeCredentialsModal() {
+            const modal = document.getElementById('changeCredentialsModal');
+            if (modal) {
+                modal.showModal();
+                const usernameField = document.getElementById('new_username');
+                if (usernameField) {
+                    usernameField.focus();
+                }
+            }
+        }
+        
+        // Toggle password visibility
+        function togglePassword(fieldId) {
+            const field = document.querySelector(`[name="${fieldId}"]`);
+            if (field) {
+                const type = field.getAttribute('type') === 'password' ? 'text' : 'password';
+                field.setAttribute('type', type);
+            }
+        }
+    </script>
     
-<a href="{% url 'client_app:ajouter-client' %}"> ➕Ajouter un client</a>
-<a href="{% url 'auth_app:changer-identifiants' %}" class="btn">🔐 Changer identifiants</a>
-{% if user.is_authenticated %}
-    <h3>Bonjour Mr {{ user.username }} Veillez saisir votre rapport</h3>
-{% endif %}
-
-<div>
-    <h3>Formulaire</h3>
-<form method='post' action="{% url 'employee_app:employee-view' %}">
-     {% csrf_token %}
-     {{form.as_p}}
-     <input type="submit" value="Soumettre">
-</form>
-</div>
-
-
-<a href="{% url 'employee_app:mes-rapports' %}">Mes Rapports</a>
+    {% if open_change_id %}
+    <script>
+        document.addEventListener("DOMContentLoaded", function() {
+            openChangeCredentialsModal();
+        });
+    </script>
+    {% endif %}
     
-
-{% endblock content %}
-    
+    {% include 'modal/ajouter_client.html' %}
+    {% include 'auth_templates/changer_id.html' %}
+</body>
+</html>

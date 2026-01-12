@@ -1,6 +1,6 @@
 from django.db import models
 from django.utils import timezone
-
+from contrat_app.models import Contrat
 from auth_app.models import Personnel
 
 class Client(models.Model):
@@ -95,11 +95,129 @@ class Client(models.Model):
         verbose_name_plural = "Clients"
     
     def __str__(self):
-        """affichage dans l'admin"""
-        if self.type_client == 'Entreprise':
-            return f"{self.raison_sociale} - {self.telephone} -{self.ville} "
+        if self.type_client == 'entreprise':
+            return self.raison_sociale
+        return f"{self.nom} {self.prenom}"
+    @property
+    def contrats_signes(self):
+        """Retourne tous les contrats signés avec ce client"""
+        # Vérifie que le client existe dans la base
+        if not self.pk:  # Si l'objet n'est pas encore sauvegardé
+            return Contrat.objects.none()  # Retourne un queryset vide
+        
+        try:
+            # Traverse: Client → Chantiers → Contrats
+            # Utilise select_related pour optimiser
+            return Contrat.objects.filter(chantier__client=self).select_related('chantier')
+        except Exception as e:
+            # En cas d'erreur (table inexistante, etc.)
+            print(f"Erreur dans contrats_signes: {e}")
+            return Contrat.objects.none()  # Retourne vide
+
+    @property
+    def total_contrats(self):
+        """Nombre total de contrats signés"""
+        try:
+            count = self.contrats_signes.count()
+            return count if count is not None else 0
+        except Exception:
+            return 0  # Retourne 0 en cas d'erreur
+
+    @property
+    def chiffre_daff_total(self):
+        """CA total généré par ce client"""
+        from django.db.models import Sum
+        
+        if self.total_contrats == 0:
+            return 0  # Si pas de contrats, CA = 0
+        
+        try:
+            # Aggregate peut retourner None si pas de données
+            result = self.contrats_signes.aggregate(
+                total=Sum('montant_total')
+            )
+            
+            # Vérifie que 'total' existe et n'est pas None
+            total = result.get('total')
+            
+            # Retourne 0 si total est None ou 0
+            return float(total) if total is not None else 0.0
+            
+        except Exception as e:
+            # Log l'erreur en développement
+            import sys
+            print(f"Erreur dans chiffre_daffaire_total: {e}", file=sys.stderr)
+            return 0.0
+
+    @property
+    def chantiers_actifs(self):
+        """Nombre de chantiers actifs"""
+        # Vérifie que le client existe
+        if not self.pk:
+            return 0
+        
+        try:
+            # Vérifie si le modèle Chantier existe et a le champ status
+            count = self.chantiers.filter(status='en_cours').count()
+            return count if count is not None else 0
+        except Exception as e:
+            # Gère le cas où 'chantiers' n'existe pas
+            # ou où 'status' n'est pas un champ valide
+            print(f"Erreur dans chantiers_actifs: {e}")
+            return 0
+
+    @property
+    def a_des_contrats(self):
+        """Vérifie si le client a au moins un contrat"""
+        return self.total_contrats > 0
+
+    @property
+    def a_des_chantiers(self):
+        """Vérifie si le client a au moins un chantier"""
+        if not self.pk:
+            return False
+        try:
+            return self.chantiers.exists()
+        except Exception:
+            return False
+
+    @property
+    def contrat_moyen(self):
+        """Montant moyen par contrat"""
+        if self.total_contrats > 0:
+            try:
+                return self.chiffre_daffaire_total / self.total_contrats
+            except (ZeroDivisionError, TypeError):
+                return 0
+        return 0
+
+    @property
+    def dernier_contrat(self):
+        """Date du dernier contrat signé"""
+        if self.total_contrats > 0:
+            try:
+                dernier = self.contrats_signes.order_by('-date_signature').first()
+                return dernier.date_signature if dernier else None
+            except Exception:
+                return None
+        return None
+
+    @property
+    def statut_client(self):
+        """Détermine le statut du client"""
+        if not self.pk:
+            return "Nouveau"
+        
+        if self.total_contrats == 0:
+            return "Prospect"
+        elif self.total_contrats == 1:
+            return "Premier contrat"
+        elif self.chiffre_daffaire_total > 1000000:  # Plus d'1 million
+            return "Client premium"
+        elif self.chantiers_actifs > 0:
+            return "Client actif"
         else:
-            return f"{self.nom} -{self.prenom} - {self.telephone} -{self.ville} "
+            return "Client historique"
 
 
     @property

@@ -1,40 +1,121 @@
-{% extends 'base.html' %}
-
-
-{% block title %}
-    Changer Identifiant
-{% endblock title %}
-
-
-{% block content %}
+<dialog id="changeCredentialsModal" class="modal">
+  <div class="modal-box max-w-md">
     
-<h2>Changer identifiants</h2>
-<form method="post">
-    {% csrf_token %}
-    
-    <div>
-        <label>{{ form.new_username.label }}</label>
-        {{ form.new_username }}
+    <!-- En-tête -->
+    <div class="text-center mb-6">
+      <div class="inline-flex items-center justify-center w-12 h-12 rounded-full bg-neutral/10 mb-3">
+        <svg class="w-6 h-6 text-neutral" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 7a2 2 0 012 2m4 0a6 6 0 01-7.743 5.743L11 17H9v2H7v2H4a1 1 0 01-1-1v-2.586a1 1 0 01.293-.707l5.964-5.964A6 6 0 1121 9z"/>
+        </svg>
+      </div>
+      <h3 class="text-2xl font-bold">Changer identifiants</h3>
+      <p class="text-sm opacity-70">Mettez à jour vos informations de connexion</p>
     </div>
-    
-    <div>
-        <label>{{ form.current_password.label }}</label>
-        {{ form.current_password }}
-    </div>
-    
-    <div>
-        <label>{{ form.new_password.label }}</label>
-        {{ form.new_password }}
-    </div>
-    
-    <div>
-        <label>{{ form.confirm_password.label }}</label>
-        {{ form.confirm_password }}
-    </div>
-    
-    <button type="submit">Mettre à jour</button>
-</form>
 
-{% endblock content %}
-    
-    
+            <!-- Formulaire -->
+            <form 
+        
+            method="post" action="{% url 'auth_app:changer-identifiants'  %}" novalidate class="space-y-4">
+            {% csrf_token %}
+            
+            <!-- Nouveau nom d'utilisateur -->
+            <div class="form-control">
+
+
+                {% if ch_form.new_username.errors %}
+                <label class="label">
+                <span class="label-text-alt text-error">{{ ch_form.new_username.errors.0 }}</span>
+                </label>
+                {% endif %}
+                <label class="label">
+                <span class="label-text font-medium">{{ ch_form.new_username.label }}</span>
+                </label>
+                {{ ch_form.new_username }}
+            </div>
+
+            <!-- Mot de passe actuel -->
+            <div class="form-control">
+                <label class="label">
+                <span class="label-text font-medium">{{ ch_form.current_password.label }}</span>
+                </label>
+                <div class="relative">
+                {{ ch_form.current_password }}
+                <button type="button" onclick="togglePassword('current_password')" class="absolute right-3 top-1/2 transform -translate-y-1/2">
+                    <svg class="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/>
+                    </svg>
+                </button>
+                </div>
+                {% if ch_form.current_password.errors %}
+                <label class="label">
+                <span class="label-text-alt text-error">{{ ch_form.current_password.errors.0 }}</span>
+                </label>
+                {% endif %}
+            </div>
+
+            <!-- Nouveau mot de passe -->
+            <div class="form-control">
+                <label class="label">
+                <span class="label-text font-medium">{{ ch_form.new_password.label }}</span>
+                </label>
+                <div class="relative">
+                {{ ch_form.new_password }}
+                <button type="button" onclick="togglePassword('new_password')" class="absolute right-3 top-1/2 transform -translate-y-1/2">
+                    <svg class="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/>
+                    </svg>
+                </button>
+                </div>
+                {% if ch_form.new_password.errors %}
+                <label class="label">
+                <span class="label-text-alt text-error">{{ ch_form.new_password.errors.0 }}</span>
+                </label>
+                {% endif %}
+            </div>
+
+            <!-- Confirmation mot de passe -->
+            <div class="form-control">
+                <label class="label">
+                <span class="label-text font-medium">{{ ch_form.confirm_password.label }}</span>
+                </label>
+                <div class="relative">
+                {{ ch_form.confirm_password}}
+                <button type="button" onclick="togglePassword('confirm_password')" class="absolute right-3 top-1/2 transform -translate-y-1/2">
+                    <svg class="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/>
+                    </svg>
+                </button>
+                </div>
+                {% if ch_form.confirm_password.errors %}
+                <label class="label">
+                <span class="label-text-alt text-error">{{ ch_form.confirm_password.errors.0 }}</span>
+                </label>
+                {% endif %}
+            </div>
+
+            <!-- Boutons -->
+            <div class="modal-action">
+                <button type="button" onclick="changeCredentialsModal.close()" class="btn btn-ghost">
+                Annuler
+                </button>
+                
+                <button type="submit" class="btn btn-maj">
+                <svg style="width: 20px; height: 20px;" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
+                </svg>
+                Mettre à jour
+                </button>
+            </div>
+            </form>
+
+  </div>
+  
+  <!-- Backdrop -->
+  <form method="dialog" class="modal-backdrop">
+    <button>close</button>
+  </form>
+</dialog>
+

@@ -1,27 +1,204 @@
-{% extends 'base.html' %}
+{% load static %}
+{% load tailwind_tags %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"> 
+    <title>  {% block title %} {% endblock title %}</title>
+    <link rel="stylesheet" href="{% static 'css/base_style.css' %}">
+    <link rel="stylesheet" href="{% static 'css/contrat_style.css' %}">
+    <script src="{% static 'js/htmx.min.js' %}"></script>
+    {% tailwind_css %}
+</head>
+    <body>
+        <nav>
+            <div class="container mx-auto px-4 py-3">
+            
+            {% if user.is_authenticated and user.post.nom == 'Directeur' %}
+                <h1 class="text-xl font-bold">Interface Directeur</h1>
+                {% elif user.is_authenticated and user.post.nom == 'Comptable' %}
+                <h1 class="text-xl font-bold">Interface Comptable</h1>
+            {% endif %}
+                 
+        </div>
+        </nav>
+        <header>
+            <h1>Liste et recherche de contrat</h1>
+      <!-- Statistiques -->
+          <div class="statistique grid-cols-1 md:grid-cols-4 gap-6 mb-8">
+            <div class="card bg-white shadow">
+              <div class="card-body p-4 text-center">
+                <div class="text-2xl font-bold text-primary">{{ all_total_contrats }}</div>
+                <div class="text-sm text-gray-500">Total contrats</div>
+              </div>
+            </div>
+            
+            <div class="card bg-white shadow">
+              <div class="card-body p-4 text-center">
+                <div class="text-2xl font-bold text-success">{{ all_montant_total|default:"0"|floatformat:0 }} FCFA</div>
+                <div class="text-sm text-gray-500">Montant total</div>
+              </div>
+            </div>
+            
+            <div class="card bg-white shadow">
+              <div class="card-body p-4 text-center">
+                <div class="text-2xl font-bold text-warning">{{ all_montant_encaisse|default:"0"|floatformat:0 }} FCFA</div>
+                <div class="text-sm text-gray-500">Montant encaissé</div>
+              </div>
+            </div>
+            
+            <div class="card bg-white shadow">
+              <div class="card-body p-4 text-center">
+                <div class="text-2xl font-bold text-error">{{ all_solde_total_rest|default:"0"|floatformat:0 }} FCFA</div>
+                <div class="text-sm text-gray-500">Solde à recevoir</div>
+              </div>
+            </div>
+          </div>
+        </header>
+      <main>
+            <div class="container mx-auto px-4 py-8">
+  <!-- En-tête avec bouton d'ajout -->
+  <div class="flex en_tete justify-between items-center mb-8">
+    <div>
+      <h1 class="text-3xl font-bold">Contrats</h1>
+      <p class="text-gray-600">Gestion des documents contractuels</p>
+    </div>
+    <a href="{% url 'contrat_app:ajouter-contrat' %}" class="btn btn-new_contrat">
+      <svg style="width: 20px; height: 20px;" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
+      </svg>
+      Nouveau contrat
+    </a>
+  </div>
+
+  <!-- Filtres -->
+  <div class="card filter_container bg-base-200 p-6 mb-8">
+    <div class="grid filter grid-cols-1 md:grid-cols-4 gap-4">
+      <!-- Filtre Statut -->
+      <div class="form-control">
+        <label class="label">
+          <span class="label-text">Statut paiement</span>
+        </label>
+        <select
+        hx-get="{% url 'contrat_app:liste-contrats' %}"
+        hx-trigger="change"
+        hx-target="#contrat_table_container"
+         class="select select-bordered w-full">
+          <option value="">Tous les statuts</option>
+          <option value="non_signe">📝 Non signé</option>
+          <option value="acompte">💰 Acompte versé</option>
+          <option value="en_cours">⏳ Paiement en cours</option>
+          <option value="paye">✅ Payé</option>
+        </select>
+      </div>
+      
+      <!-- Filtre Mode paiement -->
+      <div class="form-control">
+        <label class="label">
+          <span class="label-text">Mode de paiement</span>
+        </label>
+        <select 
+        hx-get="{% url 'contrat_app:liste-contrats' %}"
+        hx-trigger="change"
+        hx-target="#contrat_table_container"
+        class="select select-bordered w-full">
+          <option value="">Tous</option>
+          {% for value, label in MODE_PAIEMENT_CHOICES %}
+          <option value="{{ value }}">{{ label }}</option>
+          {% endfor %}
+        </select>
+      </div>
+      
+      <!-- Recherche -->
+      <div class="form-control">
+        <label class="label">
+          <span class="label-text">Recherche</span>
+        </label>
+        <input
+        hx-get="{% url 'contrat_app:liste-contrats' %}"
+        name="q"
+        hx-target="#contrat_table_container"
+        hx-trigger="keyup changed delay:400ms"
+        type="search"
+        class="input input-bordered w-full"
+        placeholder="Référence, client...">
+      </div>
+      
+      <!-- Bouton Reset -->
+      
+      </div>
+      <div style="margin-top: 2rem;" class="form-control">
+        <button class="btn btn-efface ">
+          Effacer
+        </button>
+    </div>
+  </div>
 
 
-{% block title %}
-    Contrats
-{% endblock title %}
+  <div id="contrat_table_container">
+    {% include 'partials/liste_contrat_partial.html' %}
+  </div>
+  
     
-
-
-{% block content %}
-<div class='all_contrats'>
-
-    <a href="{% url 'contrat_app:ajouter-contrat' %}">➕Ajouter nouveau contrat</a>
-    <h3>Liste des Contrats</h3>
-    
-    {% for contrat in contrats  %}
-    <p><strong>Contrat du Chantier:</strong> {{ contrat.chantier }}</p>
-    <p><strong>Référence du contrat:</strong> {{ contrat.reference_contrat}}</p>  
-    <a href="{% url 'contrat_app:detail-contrat' contrat.id %}">Détails du contrat</a>
-    {% endfor %}
-        
+    <!-- Pagination -->
+    {% if is_paginated %}
+    <div class="flex justify-center p-4">
+      <div class="join">
+        {% if page_obj.has_previous %}
+        <a href="?page={{ page_obj.previous_page_number }}" class="join-item btn">«</a>
+        {% endif %}
+        <button class="join-item btn">Page {{ page_obj.number }}</button>
+        {% if page_obj.has_next %}
+        <a href="?page={{ page_obj.next_page_number }}" class="join-item btn">»</a>
+        {% endif %}
+      </div>
+    </div>
+    {% endif %}
+  </div>
 </div>
 
-    
+<div class="card-footer text-muted">
+            <small>
+                <i class="fas fa-shield-alt"></i> 
+                Système Gestion chantier sécurisé - Toutes les modifications sont permanentes.
+            </small>
+            
+            {% if user.is_authenticated and user.post.nom == 'Directeur' %}
+                 <a href="{% url 'directeur_app:directeur-view' %}" class="btn btn-sm btn-outline-primary float-end">
+                <i class="fas fa-arrow-left"></i> Retour au Dashboard
+                 </a>
+                {% elif user.is_authenticated and user.post.nom == 'Comptable' %}
+                 <a href="{% url 'comptable_app:comptable-view' %}" class="btn btn-sm btn-outline-primary float-end">
+                <i class="fas fa-arrow-left"></i> Retour au Dashboard
+                 </a>
+            {% endif %}
+                
+        </div>
 
-{% endblock content %}
-    
+      </main>
+
+           <!-- Footer -->
+<footer class="bg-gray-900 text-white mt-12">
+        <div class="container mx-auto px-4 py-8">
+            <div class="flex flex-col md:flex-row justify-between items-center">
+                <div class="mb-4 md:mb-0">
+                    <p class="font-bold text-lg">SANBA GESTION FINFLOW</p>
+                    <p class="text-gray-400 text-sm">Gestion des Contrats</p>
+                </div>
+                
+                <div class="text-center md:text-right">
+                    <p class="text-gray-400">© {% now "Y" %} - Tous droits réservés</p>
+                    <p class="text-gray-500 text-sm mt-1">
+                        Généré le {% now "d/m/Y à H:i" %}
+                    </p>
+                </div>
+            </div>
+        </div>
+</footer>
+    </body>
+
+</html>
+
+
+

@@ -1,4 +1,4 @@
-from django.shortcuts import render
+from django.shortcuts import render, get_object_or_404
 from django.contrib.auth.mixins import LoginRequiredMixin #Sécurité
 from django.views.generic import ListView, CreateView , DetailView, UpdateView, DeleteView
 from django.urls import reverse_lazy
@@ -9,6 +9,11 @@ from django.db.models import Q
 from chantier_app.models import Chantier
 from .models import Client  # Import the Client model
 from .forms import ClientForm # Import the ClientForm
+from contrat_app.models import Contrat
+from secretaire_app.forms import DemandeDecaissementForm
+from secretaire_app.models import DemandeDecaissement
+from directeur_app.models import FondDisponible
+from auth_app.form import ChangeCredentialsForm
 
 
 
@@ -32,7 +37,10 @@ class ClientListView(LoginRequiredMixin, ListView):
         #requet normale -> retourne la page complète
         return[self.template_name]
     
-    
+    def get_context_data(self, **kwargs):
+        context= super().get_context_data(**kwargs)
+        context["form"]= ClientForm()
+        return context
     
     def get_queryset(self):
       """FILTRAGE INTELLIGENT AVEC OPTIMISATION DB"""
@@ -46,26 +54,31 @@ class ClientListView(LoginRequiredMixin, ListView):
           queryset = queryset.filter(type_client=type_client)
           
           
-    #########################__ # 2️⃣ FILTRE TYPE TRAVAUX __############################
-      type_travaux = self.request.GET.get("type_travaux")
-      if type_travaux:
-          queryset = queryset.filter(secteur_activite=type_travaux)
+    #########################__ # 2️⃣ FILTRE VILLE __############################
+      ville = self.request.GET.get("villes")
+      if ville:
+          queryset = queryset.filter(ville=ville)
           
-     ########################__ # 3️⃣ FILTRER PAR SOURCE CLIENT __############################     
-      source_client = self.request.GET.get("source_client")
-      if source_client:
-          queryset = queryset.filter(source_client=source_client)
+     ########################__ # 3️⃣ FILTRER PAR POTENTIEL CLIENT __############################     
+      potentiel = self.request.GET.get("potentiel")
+      if potentiel:
+          queryset = queryset.filter(potentiel_client=potentiel)
           
+     ########################__ # 3️⃣ FILTRER PAR CLIENT FIDEL __############################
+      fidelite = self.request.GET.get("fidelite")
+      if fidelite:
+         queryset = queryset.filter(est_fidel=fidelite)
+         
     ########################__ # 3️⃣ RECHERCHE TEXTE (nom chantier Ou client) __############################
       search_query = self.request.GET.get('q')
       if search_query:
           queryset = queryset.filter(
               
-              Q(chantiers__nom_chantie__icontains=search_query)|
+              Q(chantiers__nom_chantier__icontains=search_query)|
               Q(chantiers__reference__icontains=search_query)|
               Q(ville__icontains=search_query)|
               Q(quartier__icontains=search_query)|
-              Q(pays__incontains=search_query)|
+              Q(pays__icontains=search_query)|
               Q(nom__icontains=search_query)|
               Q(prenom__icontains=search_query)|
               Q(total_contrats__icontains=search_query)
@@ -87,8 +100,9 @@ class ClientCreateView(LoginRequiredMixin, CreateView):
     
     model = Client
     form_class = ClientForm 
-    template_name = "modal/ajouter_client.html"
+    template_name = "client_templates/client.html"
     success_url = reverse_lazy("client_app:liste-client")
+    
     
     def form_valid(self, form):
         """
@@ -103,7 +117,41 @@ class ClientCreateView(LoginRequiredMixin, CreateView):
         
         #Sauvegarde le client et redirige
         return super().form_valid(form)
+    
+    def form_invalid(self, form):
+        return super().form_invalid(form)
+    
+    def get_template_names(self) -> list[str]:
+        if self.form_invalid:
+            if self.request.user.is_superuser or self.request.user.post.nom == "Directeur":
+                return ["client_templates/client.html"]
+         
+            elif self.request.user.post.nom == "Sécretaire":
+                return ["secretaire_templates/secretaire.html"]
+            
+            elif self.request.user.post.nom == "Comptable":
+                return ["comptable_templates/comptable.html"]
+      
+            elif self.request.user.post.nom == "Employé":
+                return ["employee_templates/creer_rapport.html"]
+    
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context["clients"]= Client.objects.all().select_related(
+          'commercial_attache'
+      )
+        context["dmd_form"] = DemandeDecaissementForm()
+        context["list_demande"]= DemandeDecaissement.objects.all().order_by("-date_demande")[:3]
+        context["fond"]=get_object_or_404(FondDisponible, id=1).montant
+        context["ch_form"]=ChangeCredentialsForm(self.request.user)
+        if self.form_invalid:
+            context["open_client_modal"] = True
+        return context
+       
         
+    
+      
+      
     
 class ClientDetailView(LoginRequiredMixin, DetailView):
     """
@@ -117,14 +165,20 @@ class ClientDetailView(LoginRequiredMixin, DetailView):
     
     def get_context_data(self, **kwargs):
         """On peut ajouter des données supplémentaires au template"""
-        
         #Récupère le contexte de base (le client)
         context = super().get_context_data(**kwargs)
+        client = self.object
+
+        # AJOUTEZ cette ligne :
+        context['form'] = ClientForm(instance=self.object)
         
-        #Ajoute les chantiers de ce client
-        context["client_all_chantiers"]=self.object.chantiers.all()
-        context["client_all_contrats"]=self.object.chantiers.contrats.all()
+        # Récupérer tous les contrats des chantiers de ce client
+        context["client_all_contrats"] = Contrat.objects.filter(
+            chantier__client=client
+        )
+        context["client_all_chantiers"] = client.chantiers.all()
         return context
+       
     
 
 class ClientUpdateView(LoginRequiredMixin, UpdateView):
@@ -132,8 +186,19 @@ class ClientUpdateView(LoginRequiredMixin, UpdateView):
     """
     model = Client
     form_class = ClientForm
-    template_name = "modal/modifier_client.html"
-    success_url = reverse_lazy("client_app:liste-client")
+    template_name = "client_templates/detail_client.html"
+    def get_success_url(self):
+        return reverse_lazy("client_app:detail-client", args=[self.object.pk])
+    
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        # NE PAS recréer le form, il est déjà dans context['form']
+        # Juste ajouter 'client' si nécessaire
+        context['client'] = self.object
+        if self.form_invalid:
+            context["open_upd_client_modal"]=True
+        return context
+    
     
     def form_valid(self, form):
         """Méthode appelée quand le formulaire est valide

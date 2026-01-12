@@ -1,84 +1,363 @@
-{% extends 'base.html' %}
-
-
-{% block title %}
-    Rapport des dépense
-{% endblock title %}
-
-
-
-
-{% block content %}
-
-<!-- EN HAUT du template -->
-{% if messages %}
-<div class="messages">
-    {% for message in messages %}
-    <div class="alert alert-{{ message.tags }}">
-        {{ message }}
-    </div>
-    {% endfor %}
-</div>
-{% endif %}
-
-<h1>Rapport des dépenses des employés</h1>
-<a href="{% url 'directeur_app:ajouter-fournisseur' %}">Enregister nouveau fournissuer</a>
-    <table border='1' style="max-width: 100%;">
-        <thead>
-            <tr>
-            <th>Nom</th>
-            <th>Type depense </th>
-            <th>Chantier</th>
-            <th>demande de decaissement</th>
-            <th>Matériaux/Articles</th>
-            <th>Prix unitaire</th>
+{% load static %}
+{% load tailwind_tags %}
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Rapports de Dépenses - Directeur</title>
+    <link rel="stylesheet" href="{% static 'css/base_style.css' %}">
+    <link rel="stylesheet" href="{% static 'css/rapport_employee_style.css'%}">
+    <script src="{% static 'js/htmx.min.js' %}"></script>
+    {% tailwind_css %}
+    <!-- Scripts -->
+    <script>
+        // Variables globales
+        let currentView = 'table';
+        
+        // Fonction pour changer de vue
+        function changeView(view) {
+            currentView = view;
+            const tableView = document.getElementById('tableView');
+            const cardsView = document.getElementById('cardsView');
             
-            <th>Quantité</th>
-            <th>Fournisseur</th>
-            <th>Facture</th>
-            <th>Actions</th>
-            </tr>
+            if (view === 'table') {
+                tableView.classList.remove('hidden');
+                cardsView.classList.add('hidden');
+            } else {
+                tableView.classList.add('hidden');
+                cardsView.classList.remove('hidden');
+            }
+        }
+        
+        // Fonction pour appliquer les filtres
+        function applyFilters() {
+            const status = document.getElementById('statusFilter').value;
+            const employee = document.getElementById('employeeFilter').value;
+            const startDate = document.getElementById('startDate').value;
+            const endDate = document.getElementById('endDate').value;
+            const search = document.getElementById('searchInput').value;
             
-        </thead>
-         
-   
-        <tbody>
-            {% for rapport_depense in list_rapport_depense  %}
-<tr>
-
-            <td>{{rapport_depense.employee}}</td>
-            <td>{{rapport_depense.type_depense}}</td>
-            <td>{{rapport_depense.chantier}}</td>
-            <td>{{ rapport_depense.demande_decaissement }}</td>
-            <td>{{rapport_depense.materiau_article}}</td>
-            <td>{{rapport_depense.prix_unitaire}}</td>
+            // Construire l'URL avec les paramètres
+            let url = window.location.pathname + '?';
+            const params = [];
             
-            <td>{{rapport_depense.quantité}}</td>
+            if (status) params.push(`status=${status}`);
+            if (employee) params.push(`employee=${employee}`);
+            if (startDate) params.push(`start_date=${startDate}`);
+            if (endDate) params.push(`end_date=${endDate}`);
+            if (search) params.push(`search=${encodeURIComponent(search)}`);
             
-            {% if rapport_depense.fournisseur %}
-            <td>{{ rapport_depense.fournisseur.nom }}</td>
-            {% elif rapport_depense.fournisseur_not_db %}
-            <td>{{ rapport_depense.fournisseur_not_db }} <br><a href="{% url 'directeur_app:modifier-rapport-fournisseur' rapport_depense.id %}"><em style='color:green'>Ajouter dans DB✏️</em></a></td>
-            {% else %}
-            <td>Unknow</td>
-            {% endif %}
-
+            if (params.length > 0) {
+                url += params.join('&');
+                window.location.href = url;
+            }
+        }
+        
+        // Fonction pour réinitialiser les filtres
+        function resetFilters() {
+            document.getElementById('statusFilter').value = '';
+            document.getElementById('employeeFilter').value = '';
+            document.getElementById('startDate').value = '';
+            document.getElementById('endDate').value = '';
+            document.getElementById('searchInput').value = '';
+            window.location.href = window.location.pathname;
+        }
+        
+        // Fonction pour exporter en CSV
+        function exportToCSV() {
+            let csv = [];
+            // En-têtes
+            const headers = [
+                'Employé', 'Type Dépense', 'Chantier', 'Demande Décaissement', 
+                'Article', 'Prix Unitaire', 'Quantité', 'Total', 
+                'Fournisseur', 'Facture', 'Statut', 'Date Création'
+            ];
+            csv.push(headers.join(','));
             
-            {% if rapport_depense.fature %}
-            <td>{{ rapport_depense.fature }}</td>
-            {% else %}
-            <td><em style='color:red'>"Pas de facture"</em></td>
-            {% endif %}
-
-            <td>
-                <a href= "{% url 'directeur_app:validation-rapports' rapport_depense.id %}">
-        Valider/Rejeter
-    </>"></a>
-            </td>
-</tr>
+            // Données
+            document.querySelectorAll('tbody tr').forEach(row => {
+                const cells = row.querySelectorAll('td');
+                if (cells.length >= 11) {
+                    const rowData = [
+                        cells[0].textContent.trim(),
+                        cells[1].textContent.trim(),
+                        cells[2].textContent.trim(),
+                        cells[3].textContent.trim(),
+                        cells[4].textContent.trim(),
+                        cells[5].textContent.trim(),
+                        cells[6].textContent.trim(),
+                        cells[7].textContent.trim(),
+                        cells[8].textContent.trim(),
+                        cells[9].textContent.trim(),
+                        cells[10].textContent.trim(),
+                        new Date().toLocaleDateString('fr-FR')
+                    ];
+                    csv.push(rowData.map(d => `"${d.replace(/"/g, '""')}"`).join(','));
+                }
+            });
+            
+            const csvContent = csv.join('\n');
+            const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+            const link = document.createElement('a');
+            const url = URL.createObjectURL(blob);
+            link.setAttribute('href', url);
+            link.setAttribute('download', `rapports_employes_${new Date().toISOString().slice(0,10)}.csv`);
+            link.style.visibility = 'hidden';
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+        }
+        
+        // Fonction pour afficher les détails
+        function showDetails(rapportId) {
+            // Ici, vous pourriez faire une requête AJAX pour récupérer les détails
+            // Pour l'instant, redirige vers la page de validation
+            window.location.href = `/directeur/validation-rapports/${rapportId}/`;
+        }
+        
+        // Fonction pour afficher les statistiques
+        function showStatistics() {
+            alert('Fonctionnalité statistiques à implémenter');
+        }
+        
+        // Initialiser les tooltips
+        document.addEventListener('DOMContentLoaded', function() {
+            // Initialiser les tooltips DaisyUI
+            if (typeof tippy !== 'undefined') {
+                tippy('[data-tip]', {
+                    content: (reference) => reference.getAttribute('data-tip'),
+                });
+            }
+            
+            // Calculer le total général
+            let totalGeneral = 0;
+            document.querySelectorAll('tbody tr').forEach(row => {
+                const totalCell = row.querySelector('td:nth-child(8)');
+                if (totalCell) {
+                    const totalText = totalCell.textContent.trim();
+                    const totalValue = parseFloat(totalText.replace(/[^0-9.]/g, ''));
+                    if (!isNaN(totalValue)) {
+                        totalGeneral += totalValue;
+                    }
+                }
+            });
+            
+            // Mettre à jour l'affichage du total
+            const totalDisplay = document.querySelector('tfoot th:nth-child(2)');
+            if (totalDisplay) {
+                totalDisplay.textContent = totalGeneral.toLocaleString('fr-FR') + ' FCFA';
+            }
+        });
+    </script>
+</head>
+<body>
+    <nav>
+    
            
-   {% endfor %}
-</tbody> 
-{% endblock content %}
-    
-    
+            <div class="container mx-auto px-4 py-3">
+            
+            {% if user.is_authenticated and user.post.nom == 'Directeur' %}
+                <h1 class="text-xl font-bold">Interface Directeur</h1>
+                {% elif user.is_authenticated and user.post.nom == 'Comptable' %}
+                <h1 class="text-xl font-bold">Interface Comptable</h1>
+            {% endif %}
+                 
+        </div>
+        
+    </nav>
+
+
+ <header>
+    <h1>
+        Gestion des Rapports
+    </h1>
+
+          <div class="statistique grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
+            
+                <div class="card bg-white shadow">
+                    <div class="card-body p-4 text-center">
+                        <div class="text-2xl font-bold text-primary">{{ list_rapport_depense|length }}</div>
+                        <div class="text-sm text-gray-500">Total Rapports</div>
+                    </div>
+                </div>
+
+            
+                <div class="card bg-white shadow">
+                        <div class="card-body p-4 text-center">
+                                <div class="text-2xl font-bold ">
+                                   {{total_general_depenses}} FCFA
+                                </div>
+                                <div class="text-sm text-gray-500">Total Dépensé</div>
+                        </div>
+                </div>
+            
+                <div class="bg-white shadow">
+                        <div class="card-body p-4 text-center">
+                            <!-- À adapter selon votre logique de statut -->
+                                <div class="text-2xl font-bold">
+                                     {{rapport_soumis}}
+                                </div>
+                                <div class="text-sm text-gray-500">En Attente</div>
+                        </div>
+                </div> <!-- DIV MANQUANTE AJOUTÉE ICI -->
+            
+                <div class="bg-white  shadow">
+                    <div class="card-body p-4 text-center">
+                        <div class="text-2xl font-bold">
+                        {{fournisseur}}
+                        </div>
+                        <div class="text-sm text-gray-500">Fournisseurs</div>
+                    </div>
+                </div>
+           </div>  
+    </header>
+   
+   
+<main>
+
+    <!-- Messages -->
+    {% if messages %}
+    <div class="container mx-auto px-4 mt-4">
+        {% for message in messages %}
+        <div class="alert alert-{{ message.tags }} shadow-lg mb-4">
+            <div>
+                {% if message.tags == 'success' %}
+                    <svg xmlns="http://www.w3.org/2000/svg" class="stroke-current flex-shrink-0 h-6 w-6" fill="none" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                    </svg>
+                {% elif message.tags == 'error' %}
+                    <svg xmlns="http://www.w3.org/2000/svg" class="stroke-current flex-shrink-0 h-6 w-6" fill="none" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                    </svg>
+                {% endif %}
+                <span>{{ message }}</span>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+    {% endif %}
+        
+
+            <div class="head_btn flex-wrap gap-4 mt-4">
+                    
+                    {% include 'modal/ajouter_fournisseur.html' %}
+                <button onclick="document.getElementById('ajouterFournisseurModal').showModal()" class="btn btn-primary">
+                + Ajouter fournisseur
+                </button>
+
+                    <button onclick="window.print()" class="btn btn-outline btn-sm bg-white/10 border-white/20 hover:bg-white/20 no-print">
+                        🖨️ Imprimer
+                    </button>
+                   
+                </div>
+                
+         <!-- Filtres -->
+        <div class="filter_container card bg-base-200 p-6 mb-8">
+            <div class="filter grid grid-cols-1 md:grid-cols-4 gap-4">
+                <!-- Filtre Statut -->
+                <div class="form-control">
+                    <label class="label">
+                        <span class="label-text">Statut</span>
+                    </label>
+                    <select name="status" 
+                            class="select select-bordered w-full"
+                            hx-get="{% url 'directeur_app:rapport-depense-employee' %}"
+                            hx-target="#rapport_table"
+                            hx-trigger="change">
+                        <option value="">Tous les statuts</option>
+                        {% for value, label in STATUS_RAPPORT_CHOICES %}
+                        <option value="{{ value }}">{{ label }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                
+                <!-- Filtre Type travaux -->
+                <div class="form-control">
+                    <label class="label">
+                        <span class="label-text">Type de depense</span>
+                    </label>
+                    <select name="type_depense"
+                            class="select select-bordered w-full"
+                            hx-get="{% url 'directeur_app:rapport-depense-employee' %}"
+                            hx-target="#rapport_table"
+                            hx-trigger="change">
+                        <option value="">Tous les types</option>
+                        {% for value, label in TYPE_DEPENSE_CHOICES %}
+                        <option value="{{ value }}">{{ label }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                
+                <!-- Recherche -->
+                <div class="form-control">
+                    <label class="label">
+                        <span class="label-text">Recherche</span>
+                    </label>
+                    <input type="search"
+                           name="q"
+                           class="input input-bordered w-full"
+                           placeholder="Nom chantier, client..."
+                           hx-get="{% url 'directeur_app:rapport-depense-employee' %}"
+                           hx-target="#rapport_table"
+                           hx-trigger="keyup changed delay:400ms">
+                </div>
+                
+               
+            </div>
+
+             <!-- Bouton Reset -->
+                <div style="margin-top:1rem;" class="form-control">
+                    <button class="btn btn-efface"
+                            hx-get="{% url 'directeur_app:rapport-depense-employee' %}"
+                            hx-target="#tableView"
+                            hx-trigger="click">
+                        Effacer
+                    </button>
+                </div>
+        </div>
+         <!-- Vue Tableau -->
+         <div id="rapport_table">
+                 {% include 'partials/rapport_employee_partial.html' %}      
+         </div>
+        
+     <div class="card-footer text-muted">
+            <small>
+                <i class="fas fa-shield-alt"></i> 
+                Système Gestion chantier client - Toutes les modifications sont permanentes.
+            </small>
+            
+            {% if user.is_authenticated and user.post.nom == 'Directeur' %}
+                 <a href="{% url 'directeur_app:directeur-view' %}" class="btn btn-sm btn-outline-primary float-end">
+                <i class="fas fa-arrow-left"></i> Retour au Dashboard
+                 </a>
+                {% elif user.is_authenticated and user.post.nom == 'Comptable' %}
+                 <a href="{% url 'comptable_app:comptable-view' %}" class="btn btn-sm btn-outline-primary float-end">
+                <i class="fas fa-arrow-left"></i> Retour au Dashboard
+                 </a>
+            {% endif %}
+                
+        </div>
+
+</main>
+      
+    <!-- Footer -->
+<footer class="bg-gray-900 text-white mt-12">
+        <div class="container mx-auto px-4 py-8">
+            <div class="flex flex-col md:flex-row justify-between items-center">
+                <div class="mb-4 md:mb-0">
+                    <p class="font-bold text-lg">SANBA GESTION FINFLOW</p>
+                    <p class="text-gray-400 text-sm">Interface Directeur - Gestion des Rapports</p>
+                </div>
+                
+                <div class="text-center md:text-right">
+                    <p class="text-gray-400">© {% now "Y" %} - Tous droits réservés</p>
+                    <p class="text-gray-500 text-sm mt-1">
+                        Généré le {% now "d/m/Y à H:i" %}
+                    </p>
+                </div>
+            </div>
+        </div>
+</footer>
+</body>
+</html>

@@ -1,14 +1,74 @@
-{% extends 'base.html' %}
+{% load static %}
+{% load tailwind_tags %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"> 
+    <title>  {% block title %} {% endblock title %}</title>
+    <link rel="stylesheet" href="{% static 'css/base_style.css' %}">
+    <link rel="stylesheet" href="{% static 'css/home_style.css' %}">
+    <script src="{% static 'js/htmx.min.js' %}"></script>
+    {% tailwind_css %}
+</head>
+    <body>
+       <header>
 
-{% block title%}
-    Acceuil
-{% endblock title  %}
+       </header>
+
+       <main>
+             {% include 'auth_templates/login.html' %}
+            <button class="btn cent" onclick="openLoginModal()">Ouvrir le modal de connexion</button>
+
+       </main>
+
+       <footer class="bg-gray-900 text-white mt-12">
+        <div class="container mx-auto px-4 py-8">
+            <div class="flex flex-col md:flex-row justify-between items-center">
+                <div class="mb-4 md:mb-0">
+                    <p class="font-bold text-lg">SANBA GESTION FINFLOW</p>
+                    <p class="text-gray-400 text-sm"> Connexion </p>
+                </div>
+                
+                <div class="text-center md:text-right">
+                    <p class="text-gray-400">© {% now "Y" %} - Tous droits réservés</p>
+                    <p class="text-gray-500 text-sm mt-1">
+                        Généré le {% now "d/m/Y à H:i" %}
+                    </p>
+                </div>
+            </div>
+        </div>
+</footer>
+   
+    <script>
+
+    function openLoginModal() {
+        document.getElementById('loginModal').showModal();
+    };
+    </script>
+
+    {% if open_login_modal %}
+    <script>
+    document.addEventListener('DOMContentLoaded', function(){
+        // ouvrir le modal automatiquement quand le serveur signale une erreur de login
+        openLoginModal();
+    });
+    </script>
+    {% endif %}
+
+
+    </body>
+
+    <style>
+    body{
+        height: 100vh;
+        background: linear-gradient(-900deg,rgba(201, 26, 26, 1) 0%, rgba(235, 230, 231, 1) 50%, rgba(0, 0, 0, 1) 99%);
+    }
+
     
-    {% block content %}
-        <h1>SANBA FINFLOW HOME PAGE</h1>
+    </style>
+</html>
 
-{% include 'auth_templates/login.html' %}
-  <button class="btn" onclick="my_modal_1.showModal()">Se Connecter</button>
-    {% endblock content %}
 
-        
+<!-- Script pour ouvrir/fermer -->
+

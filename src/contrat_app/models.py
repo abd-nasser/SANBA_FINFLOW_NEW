@@ -13,7 +13,7 @@ class Contrat(models.Model):
     
     #LIEN AVEC LE CHANTIER
     #chantier= à quel chantier ce contrat est lié
-    chantier = models.OneToOneField(Chantier,related_name="contrats", on_delete=models.CASCADE)
+    chantier = models.OneToOneField(Chantier, related_name="contrats", on_delete=models.CASCADE)
     
     #numéro unique pour contrat 
     reference_contrat = models.CharField(max_length=50, unique=True)
@@ -60,7 +60,7 @@ class Contrat(models.Model):
         
     def __str__(self):
         """affichage dans l'admin"""
-        return f"Contrat {self.referenre_contrat} pour Chantier {self.chantier.nom_chantier}"
+        return f"Contrat {self.reference_contrat}"
     
     @property
     def solde_restant(self):
@@ -101,6 +101,35 @@ class Contrat(models.Model):
             # Contrat entièrement payé
             self.chantier.status_chantier = 'paye'
             self.chantier.save()
+            
+    def save(self, *args, **kwargs):
+        # Vérifier si on doit changer le statut du chantier
+        if not self._state.adding:  # Si c'est une modification (pas une création)
+            try:
+                # Récupérer l'ancienne version depuis la base
+                ancien_contrat = Contrat.objects.get(pk=self.pk)
+                
+                # Vérifier si la date de paiement vient d'être ajoutée
+                if not ancien_contrat.date_du_dernier_paiement and self.date_du_dernier_paiement:
+                    # La date de paiement vient d'être ajoutée → facturer le chantier
+                    self.chantier.status_chantier = "facturee"
+                    self.chantier.date_modification = timezone.now()
+                    self.chantier.save()
+                    
+                # Vérifier si la date de paiement vient d'être retirée
+                elif ancien_contrat.date_du_dernier_paiement and not self.date_du_dernier_paiement:
+                    # La date de paiement vient d'être supprimée → dé-facturer le chantier
+                    if self.chantier.status_chantier == 'facturee':
+                        self.chantier.status_chantier = "termine"
+                        self.chantier.date_modification = timezone.now()
+                        self.chantier.save()
+                        
+            except Contrat.DoesNotExist:
+                # Cas rare: l'objet n'existe pas encore dans la base
+                pass
+        
+        # Sauvegarder le contrat
+        super().save(*args, **kwargs)
      
      
             

@@ -2,6 +2,7 @@ from django.db import models
 from auth_app.models import Personnel
 from chantier_app.models import Chantier
 from django.core.validators import MinValueValidator, MaxValueValidator
+from secretaire_app.models import DemandeDecaissement
 
 
 
@@ -119,13 +120,16 @@ class Fournisseur(models.Model):
     email = models.EmailField(null=True, blank=True)
     specialite = models.CharField(max_length=100, blank=True)
     
+    def __str__(self):
+    
+        return str(self.nom) if self.nom else "Fournisseur sans nom"
+   
     class Meta:
         verbose_name_plural = "Fournisseurs"
         ordering = ["nom"]
         
     
-    def __str__(self):
-        return self.nom
+    
     
     @property
     def total_achats(self):
@@ -138,17 +142,23 @@ class Fournisseur(models.Model):
 
 
 class RapportDepense(models.Model):
-    employee = models.ForeignKey(Personnel, on_delete=models.CASCADE, related_name="rapports_depense")
     
+    STATUS_RAPPORT_CHOICES =[
+            ("brouillon", 'Brouillon'),
+            ("soumis", 'Soumis'),
+            ('valide','validé'),
+            ('rejete', "Rejeté")
+                 ]
     demande_decaissement = models.ForeignKey(
-        'secretaire_app.DemandeDecaissement',  # Assure-toi que c'est le bon chemin
-        on_delete=models.SET_NULL,
+        DemandeDecaissement,  # Assure-toi que c'est le bon chemin
+        on_delete=models.CASCADE,
         null=True,
         blank=True,
         related_name='rapports_depense',
         verbose_name="Demande de décaissement liée",
         help_text="Lien avec la demande d'argent préalable"
     )
+    employee = models.ForeignKey(Personnel, on_delete=models.CASCADE, related_name="rapports_depense")
     
     type_depense = models.ForeignKey(TypeDepense, on_delete=models.CASCADE, related_name='rapports')
     chantier = models.ForeignKey(Chantier, on_delete=models.CASCADE, related_name="depenses", null=True, blank=True)
@@ -179,12 +189,7 @@ class RapportDepense(models.Model):
     
     status = models.CharField(
         max_length=20,
-        choices=[
-            ("brouillon", 'Brouillon'),
-            ("soumis", 'Soumis'),
-            ('valide','validé'),
-            ('rejete', "Rejeté")
-                 ],
+        choices=STATUS_RAPPORT_CHOICES,
         default='brouillon'
     )
     

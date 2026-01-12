@@ -1,67 +1,238 @@
-{% comment %}
-Template: detail_contrat_toiture.html
-Vue: ContratDetaiView (DetailView)
-Type de travaux: 'toiture_tole' uniquement
-Utilise uniquement les champs des modèles Contrat et Chantier
-{% endcomment %}
-
+{% load static %}
+{% load tailwind_tags %}
 <!DOCTYPE html>
 <html lang="fr">
 <head>
     <meta charset="UTF-8">
     <title>Contrat Toiture - {{ contrat.reference_contrat }}</title>
+    <style>
+        /* Styles pour écran */
+        body {
+            font-family: Arial, sans-serif;
+            margin: 40px;
+            line-height: 1.6;
+        }
+
+           .payment-link {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            background: #C91A1A;
+            color: white !important;
+            padding: 12px 20px;
+            border-radius: 8px;
+            text-decoration: none !important;
+            font-weight: bold;
+            margin-top: 15px;
+            transition: all 0.3s ease;
+        }
+        
+        .payment-link:hover {
+            background: #A81515;
+            transform: scale(1.05);
+            box-shadow: 0 4px 12px rgba(201, 26, 26, 0.3);
+        }
+
+        .screen-only {
+            background: url('{% static "images/logo_st_sans_fond.png" %}');
+            background-size: contain;
+            background-position: center;
+            background-repeat: no-repeat;
+            background-attachment: fixed;
+        }
+        
+        header {
+            text-align: center;
+            padding-bottom: 20px;
+            margin-bottom: 30px;
+        }
+        
+        .logo {
+            width: 100%;
+            height: 35vh;
+            margin: 0 auto 20px;
+            object-fit: cover;
+        }
+        
+        h1 {
+            color: #C91A1A;
+            text-align: center;
+            margin-bottom: 5px;
+        }
+        
+        h2 {
+            color: #666;
+            font-weight: normal;
+            text-align: center;
+        }
+        
+        section {
+            margin-bottom: 30px;
+            padding: 20px;
+            border: 2px solid #C91A1A;
+            border-radius: 10px;
+            background: rgba(255, 255, 255, 0.9); /* Blanc semi-transparent */
+            backdrop-filter: blur(5px);
+        }
+        
+        h3 {
+            color: #C91A1A;
+            border-bottom: 2px solid #C91A1A;
+            padding-bottom: 5px;
+            margin-bottom: 15px;
+        }
+        
+        p {
+            margin: 8px 0;
+        }
+        
+        strong {
+            color: #333;
+        }
+        
+        button {
+            display: block;
+            margin: 40px auto;
+            padding: 12px 24px;
+            background: #C91A1A;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            font-size: 16px;
+            cursor: pointer;
+        }
+        
+        button:hover {
+            background: #A81515;
+        }
+        
+        /* Styles pour IMPRESSION */
+        @media print {
+            button, a {
+                display: none !important;
+            }
+                button, .payment-link, a {
+                display: none !important;
+            }
+            
+            body {
+                margin: 0 !important;
+                
+            }
+            
+            /* Supprime les effets pour impression
+            .screen-only {
+                background: none !important;
+            } 
+            
+            /* Sections blanches solides pour impression */
+            section {
+                background: white !important;
+                border: 1px solid #ccc !important;
+                border-radius: 0 !important;
+                backdrop-filter: none !important;
+                page-break-inside: avoid; /* Évite de couper les sections */
+                break-inside: avoid;
+            }
+            
+            /* Header optimisé pour impression */
+            header {
+                border-bottom: 3px solid #000 !important;
+            }
+            
+            .logo {
+                height: 20vh !important;
+                object-fit: contain !important;
+            }
+            
+            /* Évite les coupures mal placées */
+            h1, h2, h3 {
+                page-break-after: avoid;
+            }
+            
+            p {
+                page-break-inside: avoid;
+            }
+        }
+    </style>
+     <script src="{% static 'js/htmx.min.js' %}"></script>
+     {% tailwind_css %}
 </head>
-<body>
+<body class="screen-only">
     <header>
+        <img src="{% static 'images/en_tete.jpg' %}" alt="En-tête" class="logo">
         <h1>CONTRAT DE TRAVAUX - TOITURE EN TÔLE</h1>
         <h2>Référence : {{ contrat.reference_contrat }}</h2>
     </header>
     
-    <section>
-        <h3>INFORMATIONS DU CHANTIER</h3>
-        <p><strong>Chantier :</strong> {{ contrat.chantier.nom_chantier }}</p>
-        <p><strong>Type de travaux :</strong> {{ contrat.chantier.get_type_travaux_display }}</p>
-        <p><strong>Type de bâtiment :</strong> {{ contrat.chantier.get_type_batiment_display }}</p>
-        <p><strong>Surface :</strong> {{ contrat.chantier.surface_totale|default:"Non spécifiée" }} m²</p>
-        <p><strong>Hauteur :</strong> {{ contrat.chantier.hauteur_batiment|default:"Non spécifiée" }} m</p>
-        <p><strong>Adresse :</strong> {{ contrat.chantier.adresse_chantier }}</p>
-        <p><strong>Description :</strong> {{ contrat.chantier.description_detaille|default:"Aucune description" }}</p>
-    </section>
-    
-    <section>
-        <h3>INFORMATIONS CLIENT</h3>
-        <p><strong>Client :</strong> {{ contrat.chantier.client.nom_complet}}</p>
-        <p><strong>Contact :</strong> {{ contrat.chantier.client.telephone|default:"Non renseigné" }}</p>
-    </section>
-    
-    <section>
-        <h3>CONDITIONS FINANCIÈRES</h3>
-        <p><strong>Montant total :</strong> {{ contrat.montant_total }} FCFA</p>
-        <p><strong>Mode de paiement :</strong> {{ contrat.get_mode_paiement_display }}</p>
-        <p><strong>Acompte :</strong> {{ contrat.acompte_pourcentage }}% ({{ contrat.montant_acompte }} FCFA)</p>
-        {% if contrat.mode_paiement == 'tranche' %}
-        <p><strong>Nombre de tranches :</strong> {{ contrat.nombre_tranches }}</p>
+    <main>
+        <section>
+            <h3>INFORMATIONS DU CHANTIER</h3>
+            <p><strong>Chantier :</strong> {{ contrat.chantier.nom_chantier }}</p>
+            <p><strong>Type de travaux :</strong> {{ contrat.chantier.get_type_travaux_display }}</p>
+            <p><strong>Type de bâtiment :</strong> {{ contrat.chantier.get_type_batiment_display }}</p>
+            <p><strong>Surface :</strong> {{ contrat.chantier.surface_totale|default:"Non spécifiée" }} m²</p>
+            <p><strong>Hauteur :</strong> {{ contrat.chantier.hauteur_batiment|default:"Non spécifiée" }} m</p>
+            <p><strong>Adresse :</strong> {{ contrat.chantier.adresse_chantier }}</p>
+            <p><strong>Description :</strong> {{ contrat.chantier.description_detaille|default:"Aucune description" }}</p>
+        </section>
+        
+        <section>
+            <h3>INFORMATIONS CLIENT</h3>
+            <p><strong>Client :</strong> {{ contrat.chantier.client.nom_complet }}</p>
+            <p><strong>Contact :</strong> {{ contrat.chantier.client.telephone|default:"Non renseigné" }}</p>
+        </section>
+        
+        <section>
+            <h3>CONDITIONS FINANCIÈRES</h3>
+            <p><strong>Montant total :</strong> {{ contrat.montant_total }} FCFA</p>
+            <p><strong>Mode de paiement :</strong> {{ contrat.get_mode_paiement_display }}</p>
+            <p><strong>Acompte :</strong> {{ contrat.acompte_pourcentage }}% ({{ contrat.montant_acompte }} FCFA)</p>
+            {% if contrat.mode_paiement == 'tranche' %}
+            <p><strong>Nombre de tranches :</strong> {{ contrat.nombre_tranches }}</p>
+            {% endif %}
+            <p><strong>Montant encaissé :</strong> {{ contrat.montant_encaisse }} FCFA</p>
+            <p><strong>Solde restant :</strong> {{ contrat.solde_restant }} FCFA</p>
+             <button onclick="openPaiementModal()" class="btn btn-success btn-sm">
+  Nouveau paiement
+</button>
+        </section>
+        
+        <section>
+            <h3>GARANTIE ET CLAUSES</h3>
+            <p><strong>Garantie :</strong> {{ contrat.garantie_mois }} mois</p>
+            {% if contrat.notes_contractuelles %}
+            <p><strong>Notes :</strong> {{ contrat.notes_contractuelles }}</p>
+            {% endif %}
+        </section>
+        
+        {% if contrat.est_signed %}
+        <section>
+            <h3>SIGNATURE</h3>
+            <p><strong>Date de signature :</strong> {{ contrat.date_signature }}</p>
+            <p><strong>Dernier paiement :</strong> {{ contrat.date_du_dernier_paiement|default:"Aucun" }}</p>
+        </section>
         {% endif %}
-        <p><strong>Montant encaissé :</strong> {{ contrat.montant_encaisse }} FCFA</p>
-        <p><strong>Solde restant :</strong> {{ contrat.solde_restant }} FCFA</p>
-    </section>
+        
+        <!-- Section signature pour impression -->
+        <section style="margin-top: 50px; border-style: dashed !important;">
+            <h3>SIGNATURES</h3>
+            <div style="display: flex; justify-content: space-around; margin-top: 80px;">
+                <div style="text-align: center;">
+                    <p>_________________________</p>
+                    <p><strong>Le Client</strong></p>
+                    <p>{{ contrat.chantier.client.nom_complet }}</p>
+                </div>
+                <div style="text-align: center;">
+                    <p>_________________________</p>
+                    <p><strong>Le Prestataire</strong></p>
+                    <p>SANBA FinFlow</p>
+                </div>
+            </div>
+        </section>
+    </main>
     
-    <section>
-        <h3>GARANTIE ET CLAUSES</h3>
-        <p><strong>Garantie :</strong> {{ contrat.garantie_mois }} mois</p>
-        {% if contrat.notes_contractuelles %}
-        <p><strong>Notes :</strong> {{ contrat.notes_contractuelles }}</p>
-        {% endif %}
-    </section>
-    
-    {% if contrat.est_signed %}
-    <section>
-        <h3>SIGNATURE</h3>
-        <p><strong>Date de signature :</strong> {{ contrat.date_signature }}</p>
-        <p><strong>Dernier paiement :</strong> {{ contrat.date_du_dernier_paiement|default:"Aucun" }}</p>
-    </section>
-    {% endif %}
-    
-    <button onclick="window.print()">Imprimer</button>
+    <button onclick="window.print()">🖨️ Imprimer ce contrat</button>
+     {% include 'modal/enregistrer_paiement.html' %}
 </body>
 </html>

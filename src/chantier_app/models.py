@@ -141,7 +141,7 @@ class Chantier(models.Model):
     
     def __str__(self):
         """affichage dans l'admin"""
-        return f"{self.reference} - {self.nom_chantier} - {self.client}"
+        return f"{self.reference}" 
     
     
     def calculer_progression(self):

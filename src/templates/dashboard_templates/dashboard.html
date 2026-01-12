@@ -1,234 +1,395 @@
-{% extends 'dashboard_templates/dash_base.html' %}
-
-
-{% block title %}
-    Dashbord SSM
-{% endblock title %}
-    
-
-{% block content %}
-    <div class="stat">
-            <h1> Dashbord Sanba structure Metallique</h1>
-            <p>Date: {{ "now"|date:"d/m/Y"}}</p>
-
-            
-            <!-- SECTION ALERTES-->
-            
-            {% if alerts %}
+{% load static  %}
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link href="https://cdn.jsdelivr.net/npm/daisyui@3.1.6/dist/full.css" rel="stylesheet" type="text/css" />
+    <link rel="stylesheet" href="{% static 'css/dashboard_style.css' %}">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <title>Dashboard Sanba Structure Métallique</title>
+    <style>
+        .grid-stats { grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); }
+        .chart-container { height: 400px; position: relative; }
+        @media (max-width: 768px) {
+            .grid-stats { grid-template-columns: 1fr; }
+        }
+    </style>
+</head>
+<body class="bg-base-100 body p-4 md:p-6">
+    <div class="container dash_container mx-auto">
+        <!-- HEADER -->
+        <div class="mb-8 text-center md:text-left">
+            <div class="flex flex-col md:flex-row justify-between items-center gap-4">
                 <div>
-                    <h2>Alertes</h2>
-                    
-                    {% for alert  in alerts %}
-                       <p> aletre : {{ alert.type }}</p>
-                       <strong> ring ring {{ alert.message}}</strong> 
-                       <a href="{{ alert.lien }}">Voir</a>
-                    {% endfor %}
-                        
+                    <h1 class="text-3xl md:text-4xl font-bold ">
+                        Dashboard Sanba Structure Métallique
+                    </h1>
+                    <p class="text-lg opacity-70 mt-2">
+                        <svg style="width:20px; height:20px" class="inline mr-2" fill="currentColor" viewBox="0 0 20 20">
+                            <path fill-rule="evenodd" d="M6 2a1 1 0 00-1 1v1H4a2 2 0 00-2 2v10a2 2 0 002 2h12a2 2 0 002-2V6a2 2 0 00-2-2h-1V3a1 1 0 10-2 0v1H7V3a1 1 0 00-1-1zm0 5a1 1 0 000 2h8a1 1 0 100-2H6z" clip-rule="evenodd"/>
+                        </svg>
+                        Date: {{ "now"|date:"d/m/Y" }}
+                    </p>
                 </div>
-            {% endif %}
+                <div class="flex gap-2">
+                    <button onclick="window.print()" class="btn btn-outline btn-sm">
+                        <svg style="width:20px; height:20px" fill="currentColor" viewBox="0 0 20 20" class="mr-2">
+                            <path fill-rule="evenodd" d="M5 4v3H4a2 2 0 00-2 2v3a2 2 0 002 2h1v2a2 2 0 002 2h6a2 2 0 002-2v-2h1a2 2 0 002-2V9a2 2 0 00-2-2h-1V4a2 2 0 00-2-2H7a2 2 0 00-2 2zm8 0H7v3h6V4zm0 8H7v4h6v-4z" clip-rule="evenodd"/>
+                        </svg>
+                        Imprimer
+                    </button>
+                </div>
+            </div>
+        </div>
 
-            <!--  SECTION KPI CARDS (les chiffres importants)-->
+        <!-- SECTION ALERTES -->
+        {% if alerts %}
+        <div class="alert alert-warning shadow-lg mb-8">
             <div>
-                <h2>Indicateur clé</h2>
-
-                <div class="kpi-and-dash-client">
-                    <div>
-                        <h3> Clients</h3>
-
-                        <p> Nombres de  clients au total:<strong>{{ total_client }}</strong></p>
-                        <p> Nombre de nouveaux clients de ce mois :<strong>{{ nouveaux_clients_mois }}</strong> </p>
-                        <p> Nombre de client fidèle <strong>{{ clients_fideles }}</strong> N</p>
+                <svg style="width:20px; height:20px" fill="currentColor" viewBox="0 0 20 20" class="text-warning">
+                    <path fill-rule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clip-rule="evenodd"/>
+                </svg>
+                <div>
+                    <h3 class="font-bold">Alertes ({{ alerts|length }})</h3>
+                    <div class="text-sm">
+                        {% for alert in alerts %}
+                        <div class="border-b border-warning/30 py-2 last:border-0">
+                            <div class="font-medium">{{ alert.type }}</div>
+                            <div class="opacity-90">{{ alert.message }}</div>
+                            <a href="{{ alert.lien }}" class="link link-hover text-primary mt-1 inline-block">
+                                Voir les détails →
+                            </a>
+                        </div>
+                        {% endfor %}
                     </div>
+                </div>
+            </div>
+        </div>
+        {% endif %}
 
-                <!--SECTION Tableau: top Clients par argent-->
-                <div class='top_Clients'>
-                    <h3> Top 5 Clients par Chiffre d'affaire</h3>
-                    <table border="1" style="width: 100%;">
-                        <thead>
-                            <tr>
-                                <th>Client</th>
-                                <th>Type</th>
-                                <th>Ville</th>
-                                <th>Chiffre d'affaire Total</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {%for client in top_clients_ca %}
-                            <tr>
-                                <td>
-                                    
-                                    {% if client.type_client == 'entreprise' %}
-                                        {{client.raison_sociale}}
+        <!-- SECTION PRINCIPALE - GRID DE STATS -->
+        <div class="grid grid-stats gap-6 mb-8">
+            <!-- CARTE CLIENTS -->
+            <div class="card">
+                <div class="card-body">
+                    <div class="flex items-center gap-3 mb-4">
+                        <svg style="width:20px; height:20px" fill="currentColor" viewBox="0 0 20 20" class="text-primary">
+                            <path d="M13 6a3 3 0 11-6 0 3 3 0 016 0zM18 8a2 2 0 11-4 0 2 2 0 014 0zM14 15a4 4 0 00-8 0v3h8v-3zM6 8a2 2 0 11-4 0 2 2 0 014 0zM16 18v-3a5.972 5.972 0 00-.75-2.906A3.005 3.005 0 0119 15v3h-3zM4.75 12.094A5.973 5.973 0 004 15v3H1v-3a3 3 0 013.75-2.906z"/>
+                        </svg>
+                        <h2 class="card-title text-xl">Clients</h2>
+                    </div>
+                    <div class="space-y-3">
+                        <div class="stat p-0">
+                            <div class="stat-title">Total clients</div>
+                            <div class="stat-value text-primary text-2xl">{{ total_client }}</div>
+                        </div>
+                        <div class="stat p-0">
+                            <div class="stat-title">Nouveaux ce mois</div>
+                            <div class="stat-value text-secondary text-2xl">{{ nouveaux_clients_mois }}</div>
+                        </div>
+                        <div class="stat p-0">
+                            <div class="stat-title">Clients fidèles</div>
+                            <div class="stat-value text-accent text-2xl">{{ clients_fideles }}</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- CARTE CHANTIERS -->
+            <div class="card">
+                <div class="card-body">
+                    <div class="flex items-center gap-3 mb-4">
+                        <svg style="width:20px; height:20px" fill="currentColor" viewBox="0 0 20 20" class="text-secondary">
+                            <path fill-rule="evenodd" d="M12.586 4.586a2 2 0 112.828 2.828l-3 3a2 2 0 01-2.828 0 1 1 0 00-1.414 1.414 4 4 0 005.656 0l3-3a4 4 0 00-5.656-5.656l-1.5 1.5a1 1 0 101.414 1.414l1.5-1.5zm-5 5a2 2 0 012.828 0 1 1 0 101.414-1.414 4 4 0 00-5.656 0l-3 3a4 4 0 105.656 5.656l1.5-1.5a1 1 0 10-1.414-1.414l-1.5 1.5a2 2 0 11-2.828-2.828l3-3z" clip-rule="evenodd"/>
+                        </svg>
+                        <h2 class="card-title text-xl">Chantiers</h2>
+                    </div>
+                    <div class="space-y-3">
+                        <div class="stat p-0">
+                            <div class="stat-title">Total chantiers</div>
+                            <div class="stat-value text-secondary text-2xl">{{ total_chantiers }}</div>
+                        </div>
+                        <div class="flex gap-4">
+                            <div class="stat p-0 flex-1">
+                                <div class="stat-title">Actifs</div>
+                                <div class="stat-value text-success text-xl">{{ chantiers_actifs }}</div>
+                            </div>
+                            <div class="stat p-0 flex-1">
+                                <div class="stat-title">Terminés (mois)</div>
+                                <div class="stat-value text-info text-xl">{{ chantiers_termine_mois }}</div>
+                            </div>
+                        </div>
+                        <div class="stat p-0">
+                            <div class="stat-title">En retard</div>
+                            <div class="stat-value text-error text-2xl">{{ nombre_chantier_en_retard }}</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- CARTE FINANCES -->
+            <div class="card">
+                <div class="card-body">
+                    <div class="flex items-center gap-3 mb-4">
+                        <svg style="width:20px; height:20px" fill="currentColor" viewBox="0 0 20 20" class="text-accent">
+                            <path fill-rule="evenodd" d="M4 4a2 2 0 00-2 2v4a2 2 0 002 2h6V6h4a2 2 0 012 2v4a2 2 0 01-2 2h-2a2 2 0 00-2 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2a2 2 0 00-2-2H2a2 2 0 01-2-2V8a2 2 0 012-2h2a2 2 0 002-2V4zm12 6a2 2 0 100 4 2 2 0 000-4z" clip-rule="evenodd"/>
+                        </svg>
+                        <h2 class="card-title text-xl">Finances</h2>
+                    </div>
+                    <div class="space-y-3">
+                        <div class="stat p-0">
+                            <div class="stat-title">Chiffre d'affaire total</div>
+                            <div class="stat-value text-accent text-2xl">{{ chiffre_affaire_total|floatformat:0 }} FCFA</div>
+                        </div>
+                        <div class="stat p-0">
+                            <div class="stat-title">Montant encaissé</div>
+                            <div class="stat-value text-success text-2xl">{{ montant_encaisse_total|floatformat:0 }} FCFA</div>
+                        </div>
+                        <div class="stat p-0">
+                            <div class="stat-title">Taux d'encaissement moyen</div>
+                            <div class="stat-value text-primary text-2xl">{{ taux_encaisse_moyen }}%</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- SECTION GRAPHIQUES EN GRID -->
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
+            <!-- GRAPHIQUE CA PAR MOIS -->
+            <div class="card">
+                <div class="card-body">
+                    <div class="flex items-center gap-3 mb-4">
+                        <svg style="width:20px; height:20px" fill="currentColor" viewBox="0 0 20 20" class="text-info">
+                            <path fill-rule="evenodd" d="M12 7a1 1 0 110-2h5a1 1 0 011 1v5a1 1 0 11-2 0V8.414l-4.293 4.293a1 1 0 01-1.414 0L8 10.414l-4.293 4.293a1 1 0 01-1.414-1.414l5-5a1 1 0 011.414 0L11 10.586 14.586 7H12z" clip-rule="evenodd"/>
+                        </svg>
+                        <h3 class="card-title">Évolution du chiffre d'affaire</h3>
+                    </div>
+                    <div class="chart-container">
+                        <canvas id="caChart"></canvas>
+                    </div>
+                </div>
+            </div>
+
+            <!-- GRAPHIQUE RADAR PERFORMANCE -->
+            <div class="card">
+                <div class="card-body">
+                    <div class="flex items-center gap-3 mb-4">
+                        <svg style="width:20px; height:20px" fill="currentColor" viewBox="0 0 20 20" class="text-warning">
+                            <path d="M5.5 16a3.5 3.5 0 01-.369-6.98 4 4 0 117.753-1.977A4.5 4.5 0 1113.5 16h-8z"/>
+                        </svg>
+                        <h3 class="card-title">Performance par type de travaux</h3>
+                    </div>
+                    <div class="chart-container">
+                        <canvas id="performanceRadarChart"></canvas>
+                    </div>
+                    <div class="flex flex-wrap justify-center gap-4 mt-4 text-sm">
+                        <div class="flex items-center gap-2">
+                            <span class="w-3 h-3 bg-[#FF6384] rounded-full"></span>
+                            <span>Nombre de chantiers</span>
+                        </div>
+                        <div class="flex items-center gap-2">
+                            <span class="w-3 h-3 bg-[#36A2EB] rounded-full"></span>
+                            <span>Budget moyen</span>
+                        </div>
+                        <div class="flex items-center gap-2">
+                            <span class="w-3 h-3 bg-[#FFCE56] rounded-full"></span>
+                            <span>Durée moyenne</span>
+                        </div>
+                        <div class="flex items-center gap-2">
+                            <span class="w-3 h-3 bg-[#4BC0C0] rounded-full"></span>
+                            <span>Efficacité</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- GRAPHIQUE DONUT DEPENSES -->
+            <div class="card">
+                <div class="card-body">
+                    <div class="flex items-center gap-3 mb-4">
+                        <svg style="width:20px; height:20px" fill="currentColor" viewBox="0 0 20 20" class="text-success">
+                            <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM7 9a1 1 0 000 2h6a1 1 0 100-2H7z" clip-rule="evenodd"/>
+                        </svg>
+                        <h3 class="card-title">Dépenses par catégorie</h3>
+                        <div class="badge badge-lg badge-success ml-auto">
+                            Total: {{ total_depenses_mois|floatformat:0 }} FCFA
+                        </div>
+                    </div>
+                    <div class="chart-container">
+                        <canvas id="depensesDonutChart"></canvas>
+                    </div>
+                </div>
+            </div>
+
+            <!-- GRAPHIQUE BARRES DEPENSES PAR MOIS -->
+            <div class="card">
+                <div class="card-body">
+                    <div class="flex items-center gap-3 mb-4">
+                        <svg style="width:20px; height:20px" fill="currentColor" viewBox="0 0 20 20" class="text-error">
+                            <path d="M2 11a1 1 0 011-1h2a1 1 0 011 1v5a1 1 0 01-1 1H3a1 1 0 01-1-1v-5zM8 7a1 1 0 011-1h2a1 1 0 011 1v9a1 1 0 01-1 1H9a1 1 0 01-1-1V7zM14 4a1 1 0 011-1h2a1 1 0 011 1v12a1 1 0 01-1 1h-2a1 1 0 01-1-1V4z"/>
+                        </svg>
+                        <h3 class="card-title">Dépenses par mois</h3>
+                    </div>
+                    <div class="chart-container">
+                        <canvas id="depensesBarChart"></canvas>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- SECTION TABLES EN GRID -->
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
+            <!-- TABLE TOP CLIENTS -->
+            <div class="card">
+                <div class="card-body">
+                    <div class="flex items-center gap-3 mb-4">
+                        <svg style="width:20px; height:20px" fill="currentColor" viewBox="0 0 20 20" class="text-primary">
+                            <path d="M9 6a3 3 0 11-6 0 3 3 0 016 0zM17 6a3 3 0 11-6 0 3 3 0 016 0zM12.93 17c.046-.327.07-.66.07-1a6.97 6.97 0 00-1.5-4.33A5 5 0 0119 16v1h-6.07zM6 11a5 5 0 015 5v1H1v-1a5 5 0 015-5z"/>
+                        </svg>
+                        <h3 class="card-title">Top 5 Clients par Chiffre d'affaire</h3>
+                    </div>
+                    <div class="overflow-x-auto">
+                        <table class="table table-zebra w-full">
+                            <thead>
+                                <tr class="bg-base-200">
+                                    <th>Client</th>
+                                    <th>Type</th>
+                                    <th>Ville</th>
+                                    <th class="text-right">Chiffre d'affaire</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for client in top_clients_ca %}
+                                <tr>
+                                    <td>
+                                        {% if client.type_client == 'entreprise' %}
+                                            {{ client.raison_sociale }}
                                         {% else %}
-                                        {{client.nom}} {{client.prenom}}
-                                    {% endif %}
-                                        
-                                </td>
-                                <td>{{ client.get_type_client_display }}</td>
-                                <td>{{ client.ville }}</td>
-                                <td>{{ client.total_ca|default:0|floatformat:0 }} FCFA</td>
+                                            {{ client.nom }} {{ client.prenom }}
+                                        {% endif %}
+                                    </td>
+                                    <td>{{ client.get_type_client_display }}</td>
+                                    <td>{{ client.ville }}</td>
+                                    <td class="text-right font-bold">{{ client.total_ca|default:0|floatformat:0 }} FCFA</td>
                                 </tr>
                                 {% empty %}
                                 <tr>
-                                    <td colspan="4">Aucun client avec Chantier</td>
+                                    <td colspan="4" class="text-center py-4">Aucun client avec chantier</td>
                                 </tr>
-                            {% endfor %} 
-                        </tbody>
-
-                    </table>
-
-                </div>
-
-
-<br>
-                <div class="kpi and chart chantier">
-                    <div>
-                        <h3>Chantier</h3>
-
-                        <p> Nombre total de chantier:<strong>{{total_chantiers}}</strong></p>
-                        <p>Chantier actifs : <strong> {{chantiers_actifs}}</strong></p>
-                        <p>chantiers terminé de ce mois: <strong>{{ chantiers_termine_mois }}</strong></p>
-                        <p>nombre_chantier_en_retard: <strong>{{ nombre_chantier_en_retard }}</strong></p>
+                                {% endfor %}
+                            </tbody>
+                        </table>
                     </div>
+                </div>
+            </div>
 
-                    <!-- RADAR Chantier Chart-->
-                    <div style="margin-top: 40px; background: white; padding: 20px; border-radius: 10px; box-shadow: 0 2px 5px rgba(0,0,0,0.1);">
-                        <h3>Performance par type de travaux (Radar) </h3>
-                        <p class="text-muted">Comparaison multi-métriques des differents types de chantiers </p>
-                        
-                        <div style='height: 400px;'>
-                            <canvas id="performanceRadarChart"></canvas>
-                        </div>
-
-                        <div class="row mt-3 text-center">
-                                <div class="col-3">
-                                    <span style="display: inline-block; width: 12px; height: 12px; background: #FF6384; border-radius: 50%;"></span>
-                                    <small> Nombre de chantiers</small>
-                                </div>
-                                <div class="col-3">
-                                    <span style="display: inline-block; width: 12px; height: 12px; background: #36A2EB; border-radius: 50%;"></span>
-                                    <small> Budget moyen</small>
-                                </div>
-                                <div class="col-3">
-                                    <span style="display: inline-block; width: 12px; height: 12px; background: #FFCE56; border-radius: 50%;"></span>
-                                    <small> Durée moyenne</small>
-                                </div>
-                                <div class="col-3">
-                                    <span style="display: inline-block; width: 12px; height: 12px; background: #4BC0C0; border-radius: 50%;"></span>
-                                    <small> Efficacité (budget/jour)</small>
-                                </div>
-                            </div>
-                        </div>
-                    
+            <!-- TABLE TOP DEPENSES -->
+            <div class="card">
+                <div class="card-body">
+                    <div class="flex items-center gap-3 mb-4">
+                        <svg style="width:20px; height:20px" fill="currentColor" viewBox="0 0 20 20" class="text-error">
+                            <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM7 9a1 1 0 000 2h6a1 1 0 100-2H7z" clip-rule="evenodd"/>
+                        </svg>
+                        <h3 class="card-title">Top 5 Types de Dépenses</h3>
                     </div>
-                  
+                    <div class="overflow-x-auto">
+                        <table class="table table-zebra w-full">
+                            <thead>
+                                <tr class="bg-base-200">
+                                    <th>Type de Dépense</th>
+                                    <th>Catégorie</th>
+                                    <th class="text-right">Montant Total</th>
+                                    <th class="text-right">Utilisations</th>
+                                    <th class="text-right">%</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for depense in depense_par_type|slice:":5" %}
+                                <tr>
+                                    <td>{{ depense.nom }}</td>
+                                    <td>
+                                        <span class="inline-block w-3 h-3 rounded-full mr-2" style="background-color: {{ depense.couleur|default:'#ccc' }}"></span>
+                                        {{ depense.categorie }}
+                                    </td>
+                                    <td class="text-right font-bold">{{ depense.total_depenses_sum|default:0|floatformat:0 }} FCFA</td>
+                                    <td class="text-right">{{ depense.nombre_utilisation|default:0 }}</td>
+                                    <td class="text-right">{{ depense.total_pourcentage|floatformat:0 }}%</td>
+                                </tr>
+                                {% empty %}
+                                <tr>
+                                    <td colspan="5" class="text-center py-4">Aucune dépense enregistrée</td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
                 </div>
+            </div>
+        </div>
 
-
-<br>
-
-                <div class="kpi-and-graph-finance">
-                        <div>
-                            <h3>Finance</h3>
-                            <p><strong>{{ chiffre_affaire_total|floatformat:0 }}</strong>Chiffre d'affaire total</p>
-                            <p><strong>{{ montant_encaisse_total|floatformat:0 }}</strong>FCFA encaissé</p>
-                            <p><strong>{{ taux_encaisse_moyen }}%</strong> taux d'encaissement</p>
-                        </div>
-
-                        <!--SECTION GRAPH-->
-                        <div class='grah-ca_par_mois'>
-                            <h2> Evolution du chiffre d'affaire</h2>
-
-                            <div style="height:400px;">
-                                <canvas id="caChart"></canvas>
-                            </div>
-                        </div>
-
+        <!-- ACTIONS RAPIDES -->
+        <div class="card bg-base-100 shadow-xl">
+            <div class="card-body">
+                <div class="flex items-center gap-3 mb-6">
+                    <svg style="width:20px; height:20px" fill="currentColor" viewBox="0 0 20 20" class="text-success">
+                        <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/>
+                    </svg>
+                    <h3 class="card-title text-xl">Actions rapides</h3>
                 </div>
-                
-
+                <div class="flex flex-wrap gap-4">
+                    <a href="{% url 'client_app:ajouter-client' %}" class="btn btn-primary gap-2">
+                        <svg style="width:20px; height:20px" fill="currentColor" viewBox="0 0 20 20">
+                            <path fill-rule="evenodd" d="M10 3a1 1 0 00-1 1v5H4a1 1 0 100 2h5v5a1 1 0 102 0v-5h5a1 1 0 100-2h-5V4a1 1 0 00-1-1z" clip-rule="evenodd"/>
+                        </svg>
+                        Ajouter un client
+                    </a>
+                    <a href="{% url 'chantier_app:ajouter-chantier' %}" class="btn btn-secondary gap-2">
+                        <svg style="width:20px; height:20px" fill="currentColor" viewBox="0 0 20 20">
+                            <path fill-rule="evenodd" d="M12.586 4.586a2 2 0 112.828 2.828l-3 3a2 2 0 01-2.828 0 1 1 0 00-1.414 1.414 4 4 0 005.656 0l3-3a4 4 0 00-5.656-5.656l-1.5 1.5a1 1 0 101.414 1.414l1.5-1.5zm-5 5a2 2 0 012.828 0 1 1 0 101.414-1.414 4 4 0 00-5.656 0l-3 3a4 4 0 105.656 5.656l1.5-1.5a1 1 0 10-1.414-1.414l-1.5 1.5a2 2 0 11-2.828-2.828l3-3z" clip-rule="evenodd"/>
+                        </svg>
+                        Nouveau chantier
+                    </a>
+                    <a href="/admin/" class="btn btn-accent gap-2">
+                        <svg style="width:20px; height:20px" fill="currentColor" viewBox="0 0 20 20">
+                            <path fill-rule="evenodd" d="M11.49 3.17c-.38-1.56-2.6-1.56-2.98 0a1.532 1.532 0 01-2.286.948c-1.372-.836-2.942.734-2.106 2.106.54.886.061 2.042-.947 2.287-1.561.379-1.561 2.6 0 2.978a1.532 1.532 0 01.947 2.287c-.836 1.372.734 2.942 2.106 2.106a1.532 1.532 0 012.287.947c.379 1.561 2.6 1.561 2.978 0a1.533 1.533 0 012.287-.947c1.372.836 2.942-.734 2.106-2.106a1.533 1.533 0 01.947-2.287c1.561-.379 1.561-2.6 0-2.978a1.532 1.532 0 01-.947-2.287c.836-1.372-.734-2.942-2.106-2.106a1.532 1.532 0 01-2.287-.947zM10 13a3 3 0 100-6 3 3 0 000 6z" clip-rule="evenodd"/>
+                        </svg>
+                        Administration
+                    </a>
+                </div>
+            </div>
+        </div>
     </div>
 
-
-
-     <!--GRAPHIQUE DEPENSES -->
-    <div style="margin-top: 40px">
-            <h2> Analytices Dépenses</h2>
-
-            <!-- GRAPH-DONUT 6 Dépenses par catégories -->
-            <div >
-                <h3>Dépenses par catégorie</h3>
-                <div style="height: 400px;">
-                        <canvas id="depensesDonutChart"></canvas>
+    <!-- Footer -->
+<footer class="bg-gray-900 text-white mt-12">
+        <div class="container mx-auto px-4 py-8">
+            <div class="flex flex-col md:flex-row justify-between items-center">
+                <div class="mb-4 md:mb-0">
+                    <p class="font-bold text-lg">SANBA GESTION FINFLOW</p>
+                    <p class="text-gray-400 text-sm"> DASHBOARD Analytices</p>
                 </div>
                 
-                <p>Total dépenses ce mois: <strong>{{total_depenses_mois|floatformat:0}}</strong> FCFA</p>
-            </div>
-
-            <!-- GRAPH-BARRES - Dépenses par mois -->
-            <div>
-                <h3>Dépenses pas Mois</h3>
-                <div style="height: 400px;">
-                    <canvas id="depensesBarChart"></canvas>
+                <div class="text-center md:text-right">
+                    <p class="text-gray-400">© {% now "Y" %} - Tous droits réservés</p>
+                    <p class="text-gray-500 text-sm mt-1">
+                        Généré le {% now "d/m/Y à H:i" %}
+                    </p>
                 </div>
             </div>
+        </div>
+</footer>
 
-     </div>
-
-       <!-- TABLEAU TOP 5 types de Dépenses-->
-       <div style='margin-top: 30px;'>
-        <h3>🏆 Top 5 Types de Dépenses</h3>
-        <table border="1", style="width: 100%;">
-            <thead>
-                <tr>
-                    <th>Type de Dépense</th>
-                    <th>Catégorie</th>
-                    <th>Montant Total</th>
-                    <th>Nombre d'utilisations</th>
-                    <th>poucentage</th>
-                </tr>
-            </thead>
-            <tbody>
-                
-                {% for depense in depense_par_type|slice:":5" %}
-                <tr>
-                    <td>{{depense.nom}}</td>
-                    <td>
-                        <!-- Affiche un point de couleur -->
-                        <span style="display: inline-block; width: 10px; height: 10px; background: {{ depense.couleur|default:'#ccc' }}; border-radius: 50%; margin-right: 5px;"></span>
-                        {{ depense.categorie }}
-                    </td>
-
-                    <td>{{ depense.total_depenses_sum|default:0|floatformat:0}} FCFA</td>
-                    <td>{{ depense.nombre_utilisation|default:0 }}</td>
-                    <td>{{ depense.total_pourcentage|floatformat:1}}%</td>
-                </tr>
-                {% empty %}
-                <tr>
-                    <td colspan="4" >Aucune dépense enregistrée</td>
-                </tr>
-                {% endfor %}
-                    
-            </tbody>
-        </table>
-       </div>
-     
-   
-
-
-
-    
-
-
-        <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
         <script>    
             //Donnée CA(chiffre d'affaire) par mois
             const chiffre_daff_data = {
-                labels:[{% for item in ca_par_mois%} "{{ item.mois }}" {% if not forloop.last %}, {%endif%}{% endfor %}],
+                labels:[{% for item in ca_par_mois %} '{{ item.mois }}' {% if not forloop.last %}, {%endif%}{% endfor %}],
                 // labels = les noms sous le graphique (les mois)
             
             
-                values:[{% for item in ca_par_mois%} "{{ item.ca }}" {% if not forloop.last %}, {%endif%}{%endfor%}]
+                values:[{% for item in ca_par_mois %} '{{ item.ca|floatformat }}' {% if not forloop.last %}, {%endif%}{%endfor%}]
                 // values = les chiffre (l'argent)
             };
             document.addEventListener("DOMContentLoaded", function(){
@@ -241,10 +402,10 @@
                             
                             label:'Chiffre d\'affaire(FCFA)', //nom de la courbe
                             data: chiffre_daff_data.values, // Les chiffres
-                            borderColor: 'rgb(75, 192, 192)',// Couleur de la ligne
+                            borderColor: 'rgba(75, 192, 192, 0.2)',// Couleur de la ligne
                             tension: 0.2,
                             fill: true,
-                            backgroundColor: 'rgb(75, 192, 192, 0.2)' 
+                            backgroundColor: 'rgba(75, 192, 192, 0.2)' 
                         }]
                     },
                     options:{
@@ -278,7 +439,7 @@
             {% if not forloop.last %}, {% endif %}{% endfor %}];
 
             //2-data-depense_Pourcentage
-            const pourcentageDonut = [{% for cat in depenses_par_categorie %} {{ cat.total_pourcentage|floatformat:1 }}
+            const pourcentageDonut = [{% for cat in depenses_par_categorie %} {{ cat.total_pourcentage|floatformat:0 }}
             {% if not forloop.last %}, {% endif %}{% endfor %}];
 
             //3-data_depense-categorir-couleur
@@ -348,129 +509,76 @@
             })
 
             //===================================== 4. GRAPHIQUE RADAR - PERFORMANCE CHANTIER =======================================
-            const radarCtx = document.getElementById('performanceRadarChart').getContext('2d');
+           // VERSION SIMPLE - Ça marche direct!
+const radarCtx = document.getElementById('performanceRadarChart');
 
-            // Données depuis Django
-            const radarLabels = [{% for item in radar_performance_data %}'{{ item.label }}'
-            {% if not forloop.last %}, {% endif %}{% endfor %}];
-            
-            const radarDatasets = [
-                {
-                    label: 'Nombre de chantiers',
-                    data: [{% for item in radar_performance_data %}{{ item.nombre_norm|floatformat:1 }}
-                    {% if not forloop.last %}, {% endif %}{% endfor %}],
-                    borderColor: '#FF6384',
-                    backgroundColor: 'rgba(255, 99, 132, 0.2)',
-                    pointBackgroundColor: '#FF6384',
-                },
-                {
-                    label: 'Budget moyen (normalisé)',
-                    data: [{% for item in radar_performance_data %}{{ item.budget_norm|floatformat:1 }}
-                    {% if not forloop.last %}, {% endif %}{% endfor %}],
-                    borderColor: '#36A2EB',
-                    backgroundColor: 'rgba(54, 162, 235, 0.2)',
-                    pointBackgroundColor: '#36A2EB',
-                },
-                {
-                    label: 'Durée moyenne (normalisée)',
-                    data: [{% for item in radar_performance_data %}{{ item.duree_norm|floatformat:1 }}
-                    {% if not forloop.last %}, {% endif %}{% endfor %}],
-                    borderColor: '#FFCE56',
-                    backgroundColor: 'rgba(255, 206, 86, 0.2)',
-                    pointBackgroundColor: '#FFCE56',
-                },
-                {
-                    label: 'Efficacité (normalisée)',
-                    data: [{% for item in radar_performance_data %}{{ item.efficacite_norm|floatformat:1 }}
-                    {% if not forloop.last %}, {% endif %}{% endfor %}],
-                    borderColor: '#4BC0C0',
-                    backgroundColor: 'rgba(75, 192, 192, 0.2)',
-                    pointBackgroundColor: '#4BC0C0',
-                }
-            ];
-            
-            new Chart(radarCtx, {
-                type: 'radar',
-                data: {
-                    labels: radarLabels,
-                    datasets: radarDatasets
-                },
-                options: {
-                    responsive: true,
-                    scales: {
-                        r: {
-                            angleLines: {
-                                display: true,
-                                color: 'rgba(0, 0, 0, 0.1)'
-                            },
-                            suggestedMin: 0,
-                            suggestedMax: 100,
-                            ticks: {
-                                display: false
-                            },
-                            pointLabels: {
-                                font: {
-                                    size: 11
-                                }
-                            }
-                        }
+if (radarCtx) {
+    const ctx = radarCtx.getContext('2d');
+    
+    const radarData = {{ radar_performance_data|safe|default:"[]" }};
+    
+    if (radarData && radarData.length > 0) {
+        const radarChart = new Chart(ctx, {
+            type: 'radar',
+            data: {
+                labels: radarData.map(item => item.label || ''),
+                datasets: [
+                    {
+                        label: 'Nombre de chantiers',
+                        data: radarData.map(item => item.nombre_norm || 0),
+                        borderColor: '#FF6384',
+                        backgroundColor: 'rgba(255, 99, 132, 0.2)',
+                        borderWidth: 2
                     },
-                    plugins: {
-                        legend: {
-                            position: 'bottom',
-                            labels: {
-                                boxWidth: 12,
-                                padding: 15
-                            }
-                        },
-                        tooltip: {
-                            callbacks: {
-                                label: function(context) {
-                                    const label = context.dataset.label || '';
-                                    const index = context.dataIndex;
-                                    const item = radar_performance_data_json[index]; // Besoin de passer en JSON
-                                    
-                                    let value = context.raw;
-                                    let realValue = '';
-                                    
-                                    if (label.includes('Nombre')) {
-                                        realValue = ` (${item.nombre} chantiers)`;
-                                    } else if (label.includes('Budget')) {
-                                        realValue = ` (${item.budget_moyen.toLocaleString()} FCFA)`;
-                                    } else if (label.includes('Durée')) {
-                                        realValue = ` (${item.duree_moyenne} jours)`;
-                                    } else if (label.includes('Efficacité')) {
-                                        realValue = ` (${item.efficacite.toFixed(0)} FCFA/jour)`;
-                                    }
-                                    
-                                    return `${label}: ${value}%${realValue}`;
-                                }
+                    {
+                        label: 'Budget moyen',
+                        data: radarData.map(item => item.budget_norm || 0),
+                        borderColor: '#36A2EB',
+                        backgroundColor: 'rgba(54, 162, 235, 0.2)',
+                        borderWidth: 2
+                    },
+                    {
+                        label: 'Durée moyenne',
+                        data: radarData.map(item => item.duree_norm || 0),
+                        borderColor: '#FFCE56',
+                        backgroundColor: 'rgba(255, 206, 86, 0.2)',
+                        borderWidth: 2
+                    },
+                    {
+                        label: 'Efficacité',
+                        data: radarData.map(item => item.efficacite_norm || 0),
+                        borderColor: '#4BC0C0',
+                        backgroundColor: 'rgba(75, 192, 192, 0.2)',
+                        borderWidth: 2
+                    }
+                ]
+            },
+            options: {
+                responsive: true,
+                scales: {
+                    r: {
+                        beginAtZero: true,
+                        max: 100,
+                        ticks: {
+                            callback: function(value) {
+                                return value + '%';
                             }
                         }
                     }
                 }
-            });
-            
-            // Passe les données en JSON pour le tooltip
-            window.radar_performance_data_json = {{ radar_performance_data|safe }};
+            }
+        });
+    } else {
+        // Afficher un message si pas de données
+        radarCtx.parentElement.innerHTML = `
+            <div class="alert alert-info">
+                <p>📊 Aucune donnée disponible pour le radar chart</p>
+                <small>Créez des chantiers avec différents types de travaux</small>
+            </div>
+        `;
+    }
+}
        
                     
         </script>
-
-
-
-        <!--Bouton D'ACTION-->
-        <div style="margin-top: 40px; padding: 20px; border-top: 2px solid #ccc">
-            <h3> Actions rapides</h3>
-            <div>
-                <a href="{% url 'client_app:ajouter-client' %}">➕ Ajouter un client</a>
-                <a href="{% url 'chantier_app:ajouter-chantier' %}">🏗️ Nouveau chantier</a>
-                <a href="/admin/">⚙️ Administration</a>
-
-                <button onclick="window.print()"> 🖨️ Imprimer le dashboard</button>
-            </div>
-        </div>
-
-{% endblock content %}
-    
 
