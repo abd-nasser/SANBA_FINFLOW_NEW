@@ -233,45 +233,7 @@ class DashboardView(LoginRequiredMixin, TemplateView):
                 'budget_total': float(perf['budget_total'] or 0)
             })
             
-            if len(radar_data) < 3:
-                radar_data.extend([
-                    {
-                        'type_travaux': 'charpente_metallique',
-                'label': 'Charpente Metallique',
-                'nombre': 8,
-                'budget_moyen': 4500000,
-                'duree_moyenne': 45,
-                'efficacite': 100000,
-                'nombre_norm': 75,
-                'budget_norm': 90,
-                'duree_norm': 60,
-                'efficacite_norm': 85
-            },
-            {
-                'type_travaux': 'menuiserie_metal',
-                'label': 'Menuiserie Metal',
-                'nombre': 5,
-                'budget_moyen': 2800000,
-                'duree_moyenne': 30,
-                'efficacite': 93333,
-                'nombre_norm': 50,
-                'budget_norm': 70,
-                'duree_norm': 40,
-                'efficacite_norm': 70
-            },
-            {
-                'type_travaux': 'serrurerie',
-                'label': 'Serrurerie',
-                'nombre': 12,
-                'budget_moyen': 1200000,
-                'duree_moyenne': 15,
-                'efficacite': 80000,
-                'nombre_norm': 100,
-                'budget_norm': 40,
-                'duree_norm': 20,
-                'efficacite_norm': 60
-            }
-        ])    
+           
         
         # ===========================================
         # 5. NORMALISATION POUR LE RADAR CHART (0-100)
@@ -458,9 +420,6 @@ class DashboardView(LoginRequiredMixin, TemplateView):
    
 
 
-
-
-    
     
     def get_alerts(self):
         """ALERTES INTELLIGENTES
@@ -496,7 +455,7 @@ class DashboardView(LoginRequiredMixin, TemplateView):
             alerts.append({
                 'type':'info',
                 "message":f"{client_sans_chantiers} client(s) sans chantier",
-                'lien':'/clients'
+                'lien':'client/'
             })
         
         #Fonds bas

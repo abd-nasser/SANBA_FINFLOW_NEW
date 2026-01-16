@@ -15,11 +15,12 @@ class ContratForm(forms.ModelForm):
                   ]
         widgets = {
             "date_signature":forms.DateInput(attrs={
-                "placeholder": "jj/mm/an"
+                "type":'date'
+                
             }),
             
             "date_du_dernier_paiement":forms.DateInput(attrs={
-                "placeholder": "jj/mm/an"
+                "type":"date"
             })
             }
        

@@ -49,8 +49,8 @@ main{
    display: flex;
    justify-content: center;
    flex-direction: column;
-   padding: 1rem;
-   padding-top: 12rem;
+   padding: 3rem;
+   padding-top: 15rem;
 }
 
 main .en_tete{

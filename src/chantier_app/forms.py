@@ -2,9 +2,9 @@ from django import forms
 from .models import Chantier
 
 class ChantierInfoForm(forms.ModelForm):
-    """Les Infos obligatoires du chantier
-    """
-    class Meta :
+    """Les Infos obligatoires du chantier"""
+    
+    class Meta:
         model = Chantier
         fields = [
             'nom_chantier',
@@ -20,36 +20,40 @@ class ChantierInfoForm(forms.ModelForm):
             'reference': 'Référence unique du chantier',
             'type_travaux': 'Type de Travaux',
             'type_batiment': 'Type de Bâtiment',
-            
-            }
-    ###method pour reference du chantier
+        }
     
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         
-        #rend tous les champs obligatoires
+        # Rendre tous les champs obligatoires (sauf référence en modification)
         for field in self.fields:
-            self.fields[field].required = True #Tous les champs requis 
+            self.fields[field].required = True
         
         # 🎯 Verifie si c'est une modification
         if self.instance and self.instance.pk:
             # 🎯 MODIFICATION : référence en lecture seule
+            self.fields['reference'].required = False  # Non requis
             self.fields['reference'].widget.attrs.update({
                 'readonly': True,
-                'class': 'form-control-plaintext bg-light'
+                'disabled': True,  # Empêche l'envoi de la valeur
+                'class': 'input input-bordered w-300 bg-base-200 opacity-75 cursor-not-allowed'
             })
-            self.fields['reference'].help_text = "Réference non modifiable"
+            self.fields['reference'].help_text = "⚠️ Référence non modifiable"
         else:
             # 🎯 CRÉATION : champ normal
             self.fields['reference'].help_text = "Référence unique du chantier"
-    
-    
+        
         # Classes DaisyUI pour tous les champs
         base_classes = "input input-bordered w-300"
         
         for field_name, field in self.fields.items():
+            # Skip reference si disabled
+            if field_name == 'reference' and field.widget.attrs.get('disabled'):
+                continue
+            
             # Classes de base
-            field.widget.attrs['class'] = base_classes
+            if 'class' not in field.widget.attrs:
+                field.widget.attrs['class'] = base_classes
             
             # Classes spécifiques par type
             if isinstance(field.widget, forms.Select):
@@ -58,27 +62,37 @@ class ChantierInfoForm(forms.ModelForm):
                 field.widget.attrs['class'] = "textarea textarea-bordered w-full"
             elif isinstance(field.widget, forms.CheckboxInput):
                 field.widget.attrs['class'] = "checkbox"
-            
-            # Ajoute input-error si le champ a des erreurs (géré dans le template)
-    
-    
-    
-    
-    
     
     def clean_reference(self):
         """Validation intelligente qui gère création ET modification"""
         reference = self.cleaned_data.get('reference')
         
-        # 🎯 Si modification, on garde l'ancienne valeur
+        # 🎯 Si modification, on garde TOUJOURS l'ancienne valeur
         if self.instance and self.instance.pk:
-            return self.instance.reference  # ← Ignore la nouvelle valeur
-        else:
-            # 🎯 Si création, on vérifie l'unicité
-            if Chantier.objects.filter(reference=reference).exists():
-                raise forms.ValidationError("Cette référence existe déjà")
+            # Si le champ est disabled, il ne sera pas dans cleaned_data
+            # On retourne donc la valeur existante
+            if 'reference' not in self.cleaned_data:
+                return self.instance.reference
             
-        return reference   
+            # Si par hasard il y a une valeur (POST malgré disabled)
+            # On l'ignore et on retourne l'ancienne
+            return self.instance.reference
+        
+        # 🎯 Si création, on vérifie l'unicité
+        if Chantier.objects.filter(reference=reference).exists():
+            raise forms.ValidationError("Cette référence existe déjà")
+        
+        return reference
+    
+    def clean(self):
+        """Nettoyage global du formulaire"""
+        cleaned_data = super().clean()
+        
+        # 🎯 En modification, on s'assure que la référence reste inchangée
+        if self.instance and self.instance.pk:
+            cleaned_data['reference'] = self.instance.reference
+        
+        return cleaned_data 
     
     
     
@@ -201,6 +215,12 @@ class ChantierPlanningForm(forms.ModelForm):
             "chef_de_chantier": "Chef de chantier",
             "equipe_affectee": "Équipe affectée",
             "duree_estimee" : "Durée estimé en jour"
+        }
+        
+        widgets = {
+            "date_debut_prevue":forms.DateInput(attrs={'type':'date'}),
+            "date_fin_prevue": forms.DateInput(attrs={'type':'date'}),
+            
         }
         
     def __init__(self, *args, **kwargs ):

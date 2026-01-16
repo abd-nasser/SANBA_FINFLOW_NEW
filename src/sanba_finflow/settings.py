@@ -128,7 +128,7 @@ AUTH_PASSWORD_VALIDATORS = [
 # https://docs.djangoproject.com/en/5.2/topics/i18n/
 
 LANGUAGE_CODE = 'fr-fr'
-TIME_ZONE = 'Africa/Lagos'  # ou ton fuseau
+TIME_ZONE = 'Africa/Dakar'  # ou ton fuseau
 USE_I18N = True
 USE_L10N = True
 USE_TZ = True  # TRÈS IMPORTANT !
@@ -172,3 +172,11 @@ CRISPY_ALLOWED_TEMPLATE_PACKS = "tailwind"
 CRISPY_TEMPLATE_PACK = "tailwind"
 
 NPM_BIN_PATH = r'C:\Program Files\nodejs\npm.cmd'
+
+#Email configuration
+EMAIL_BACKEND = "django.core.mail.backends.smtp.EmailBackend"
+EMAIL_HOST = "smtp.gmail.com"
+EMAIL_PORT = 587
+EMAIL_HOST_USER = os.getenv("EMAIL_HOST_USER")
+EMAIL_HOST_PASSWORD = os.getenv("EMAIL_HOST_PASSWORD")
+EMAIL_USE_TLS = True

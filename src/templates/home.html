@@ -1,74 +1,242 @@
 {% load static %}
 {% load tailwind_tags %}
 <!DOCTYPE html>
-<html lang="en">
+<html lang="fr">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0"> 
-    <title>  {% block title %} {% endblock title %}</title>
+    <title>{% block title %}SANBA FINFLOW - Gestion Intégrée{% endblock title %}</title>
     <link rel="stylesheet" href="{% static 'css/base_style.css' %}">
     <link rel="stylesheet" href="{% static 'css/home_style.css' %}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <script src="{% static 'js/htmx.min.js' %}"></script>
     {% tailwind_css %}
 </head>
-    <body>
-       <header>
-
-       </header>
-
-       <main>
-             {% include 'auth_templates/login.html' %}
-            <button class="btn cent" onclick="openLoginModal()">Ouvrir le modal de connexion</button>
-
-       </main>
-
-       <footer class="bg-gray-900 text-white mt-12">
-        <div class="container mx-auto px-4 py-8">
-            <div class="flex flex-col md:flex-row justify-between items-center">
-                <div class="mb-4 md:mb-0">
-                    <p class="font-bold text-lg">SANBA GESTION FINFLOW</p>
-                    <p class="text-gray-400 text-sm"> Connexion </p>
+<body class="relative overflow-x-hidden">
+    <!-- Overlay pour étendre le gradient -->
+    <div class="gradient-overlay"></div>
+    
+    <!-- Particules animées en fond -->
+    <div id="particles"></div>
+    
+    <!-- Header avec animation de gradient TEXT -->
+    <header class="relative z-20">
+        <div class="container mx-auto px-4 py-6">
+            <div class="text-center animate-fade-in">
+                <div class="mb-4">
+                    <div class="inline-block p-3 rounded-full bg-white/10 backdrop-blur-sm border border-white/20">
+                        <i class="fas fa-building text-3xl text-white"></i>
+                    </div>
                 </div>
                 
-                <div class="text-center md:text-right">
-                    <p class="text-gray-400">© {% now "Y" %} - Tous droits réservés</p>
-                    <p class="text-gray-500 text-sm mt-1">
-                        Généré le {% now "d/m/Y à H:i" %}
-                    </p>
+                <h1 class="text-4xl md:text-6xl font-bold mb-3">
+                    <span class="gradient-text animate-gradient">
+                        SANBA FINFLOW
+                    </span>
+                </h1>
+                
+                <p class="text-xl md:text-2xl text-white/90 mb-2 font-light">
+                    Gestion Intégrée des Structures Métalliques
+                </p>
+                
+                <div class="flex justify-center items-center gap-4 mt-6">
+                    <div class="h-1 w-20 bg-gradient-to-r from-transparent via-white/50 to-transparent animate-pulse-slow"></div>
+                    <span class="text-white/80 text-sm font-medium">
+                        <i class="fas fa-bolt mr-2 text-yellow-300"></i>
+                        Performance • Précision • Professionnalisme
+                    </span>
+                    <div class="h-1 w-20 bg-gradient-to-r from-transparent via-white/50 to-transparent animate-pulse-slow"></div>
                 </div>
             </div>
         </div>
-</footer>
+    </header>
+
+    <!-- Main avec effet de gradient étendu -->
+    <main class="relative z-10 min-h-[60vh] py-8">
+        <div class="container mx-auto px-4">
+            <!-- Section Principale -->
+            <div class="max-w-4xl mx-auto">
+                <div class="glass-card rounded-2xl p-8 md:p-12 mb-12 text-center">
+                    <h2 class="text-3xl md:text-4xl font-bold text-white mb-6">
+                        <i class="fas fa-lock-open mr-3 text-white/80"></i>
+                        Accès Sécurisé à la Plateforme
+                    </h2>
+                    
+                    <p class="text-white/90 text-lg mb-8 leading-relaxed">
+                        Connectez-vous pour gérer vos projets, suivre vos chantiers, 
+                        contrôler vos finances et optimiser votre productivité.
+                    </p>
+                    
+                    <!-- Bouton d'ouverture amélioré -->
+                    <div class="flex flex-col items-center gap-6">
+                        <button onclick="openLoginModal()" 
+                                class="btn-glow px-10 py-4 text-lg font-semibold rounded-xl transition-all duration-300 hover:scale-105 active:scale-95 shadow-2xl">
+                            <i class="fas fa-sign-in-alt mr-3"></i>
+                            Connexion à l'Espace Pro
+                        </button>
+                        
+                        <div class="text-white/80 text-sm flex flex-wrap justify-center items-center gap-4">
+                            <div class="flex items-center gap-2 px-3 py-1 rounded-full bg-white/10">
+                                <i class="fas fa-shield-alt text-green-400"></i>
+                                <span>Sécurisé par SSL</span>
+                            </div>
+                            <div class="flex items-center gap-2 px-3 py-1 rounded-full bg-white/10">
+                                <i class="fas fa-bolt text-yellow-400"></i>
+                                <span>Performance optimale</span>
+                            </div>
+                            <div class="flex items-center gap-2 px-3 py-1 rounded-full bg-white/10">
+                                <i class="fas fa-mobile-alt text-blue-400"></i>
+                                <span>Responsive design</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Features Grid avec effet de glow -->
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-16">
+                    <div class="feature-card animate-slide-up" style="animation-delay: 0.1s">
+                        <div class="feature-icon gradient-icon">
+                            <i class="fas fa-hard-hat"></i>
+                        </div>
+                        <h3 class="text-xl font-bold text-white mb-3">Gestion Chantier</h3>
+                        <p class="text-white/80">Suivez vos projets de construction en temps réel</p>
+                        <div class="mt-4 h-1 w-16 mx-auto bg-gradient-to-r from-transparent via-white/30 to-transparent"></div>
+                    </div>
+                    
+                    <div class="feature-card animate-slide-up" style="animation-delay: 0.2s">
+                        <div class="feature-icon gradient-icon">
+                            <i class="fas fa-chart-line"></i>
+                        </div>
+                        <h3 class="text-xl font-bold text-white mb-3">Analytics Financiers</h3>
+                        <p class="text-white/80">Tableaux de bord détaillés et indicateurs de performance</p>
+                        <div class="mt-4 h-1 w-16 mx-auto bg-gradient-to-r from-transparent via-white/30 to-transparent"></div>
+                    </div>
+                    
+                    <div class="feature-card animate-slide-up" style="animation-delay: 0.3s">
+                        <div class="feature-icon gradient-icon">
+                            <i class="fas fa-file-invoice-dollar"></i>
+                        </div>
+                        <h3 class="text-xl font-bold text-white mb-3">Facturation</h3>
+                        <p class="text-white/80">Gestion automatisée des contrats et factures</p>
+                        <div class="mt-4 h-1 w-16 mx-auto bg-gradient-to-r from-transparent via-white/30 to-transparent"></div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Include du modal de login -->
+            {% include 'auth_templates/login.html' %}
+        </div>
+    </main>
+
+    <!-- Footer avec gradient étendu -->
+    <footer class="relative z-10 text-white py-12">
+        <div class="container mx-auto px-4">
+            <div class="glass-card rounded-2xl p-8 mb-8">
+                <div class="flex flex-col md:flex-row justify-between items-center">
+                    <div class="mb-6 md:mb-0 text-center md:text-left">
+                        <div class="flex items-center justify-center md:justify-start gap-3 mb-4">
+                            <div class="p-3 rounded-xl bg-gradient-to-br from-white/10 to-white/5 border border-white/20">
+                                <i class="fas fa-building text-2xl"></i>
+                            </div>
+                            <div>
+                                <p class="font-bold text-2xl gradient-text-sm">SANBA FINFLOW</p>
+                                <p class="text-white/70 text-sm mt-1">Système de Gestion Intégré</p>
+                            </div>
+                        </div>
+                        <p class="text-white/60 max-w-md">
+                            Solution complète pour la gestion de vos chantiers 
+                            et finances dans l'industrie métallique.
+                        </p>
+                    </div>
+                    
+                    <div class="text-center md:text-right">
+                        <div class="mb-4">
+                            <p class="text-white/80 text-lg font-semibold">Contact</p>
+                            <div class="flex justify-center md:justify-end gap-4 mt-3">
+                                <a href="#" class="social-icon" title="LinkedIn">
+                                    <i class="fab fa-linkedin text-xl"></i>
+                                </a>
+                                <a href="#" class="social-icon" title="Email">
+                                    <i class="fas fa-envelope text-xl"></i>
+                                </a>
+                                <a href="#" class="social-icon" title="Téléphone">
+                                    <i class="fas fa-phone text-xl"></i>
+                                </a>
+                            </div>
+                        </div>
+                        
+                        <div class="text-white/60 text-sm">
+                            <p class="mb-1">
+                                <i class="fas fa-clock mr-2"></i>
+                                Généré le {% now "d/m/Y à H:i" %}
+                            </p>
+                            <p>© {% now "Y" %} - Tous droits réservés</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="text-center pt-6 border-t border-white/10">
+                <p class="text-white/50 text-sm">
+                    <i class="fas fa-cube mr-2"></i>
+                    Version 1.0 • Développé par SPIRIT-DIGIT Agency / L'ESPRIT DU DIGITAL
+                </p>
+                <div class="mt-3 flex justify-center gap-2">
+                    <span class="inline-block w-2 h-2 rounded-full bg-gradient-to-r from-red-500 to-white animate-pulse"></span>
+                    <span class="inline-block w-2 h-2 rounded-full bg-gradient-to-r from-white to-black animate-pulse" style="animation-delay: 0.2s"></span>
+                    <span class="inline-block w-2 h-2 rounded-full bg-gradient-to-r from-black to-red-500 animate-pulse" style="animation-delay: 0.4s"></span>
+                </div>
+            </div>
+        </div>
+    </footer>
    
     <script>
-
     function openLoginModal() {
-        document.getElementById('loginModal').showModal();
+        const modal = document.getElementById('loginModal');
+        modal.showModal();
+        
+        modal.classList.add('modal-open-animation');
+        setTimeout(() => {
+            modal.classList.remove('modal-open-animation');
+        }, 500);
     };
-    </script>
-
-    {% if open_login_modal %}
-    <script>
-    document.addEventListener('DOMContentLoaded', function(){
-        // ouvrir le modal automatiquement quand le serveur signale une erreur de login
-        openLoginModal();
+    
+    document.addEventListener('DOMContentLoaded', function() {
+        const particlesContainer = document.getElementById('particles');
+        
+        // Créer des particules colorées selon le gradient
+        for (let i = 0; i < 25; i++) {
+            const particle = document.createElement('div');
+            particle.className = 'particle';
+            
+            // Position aléatoire
+            particle.style.left = Math.random() * 100 + 'vw';
+            particle.style.top = Math.random() * 100 + 'vh';
+            
+            // Taille aléatoire
+            const size = Math.random() * 5 + 1;
+            particle.style.width = size + 'px';
+            particle.style.height = size + 'px';
+            
+            // Couleur basée sur la position (pour suivre le gradient)
+            const hue = Math.random() * 360;
+            particle.style.backgroundColor = `hsla(${hue}, 70%, 70%, 0.3)`;
+            
+            // Animation aléatoire
+            particle.style.animationDuration = Math.random() * 25 + 15 + 's';
+            particle.style.animationDelay = Math.random() * 5 + 's';
+            
+            particlesContainer.appendChild(particle);
+        }
+        
+        {% if open_login_modal %}
+        setTimeout(() => {
+            openLoginModal();
+        }, 1000);
+        {% endif %}
     });
     </script>
-    {% endif %}
 
-
-    </body>
-
-    <style>
-    body{
-        height: 100vh;
-        background: linear-gradient(-900deg,rgba(201, 26, 26, 1) 0%, rgba(235, 230, 231, 1) 50%, rgba(0, 0, 0, 1) 99%);
-    }
-
-    
-    </style>
+  
+</body>
 </html>
-
-
-<!-- Script pour ouvrir/fermer -->
-

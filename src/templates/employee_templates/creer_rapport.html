@@ -13,6 +13,7 @@
    
 </head>
 <body>
+    <div id="particles"></div>
    <nav>
     <h1>Rapports</h1>
    </nav>
@@ -425,6 +426,8 @@
 
     <!-- Scripts -->
     <script>
+
+        
         // Calcul automatique du total
         function calculateTotal() {
             const prix = parseFloat(document.getElementById('{{ rapport_form.prix_unitaire.id_for_label }}').value) || 0;
@@ -476,6 +479,42 @@
                 field.setAttribute('type', type);
             }
         }
+ document.addEventListener('DOMContentLoaded', function() {
+        const particlesContainer = document.getElementById('particles');
+        
+        // Créer des particules colorées selon le gradient
+        for (let i = 0; i < 25; i++) {
+            const particle = document.createElement('div');
+            particle.className = 'particle';
+            
+            // Position aléatoire
+            particle.style.left = Math.random() * 100 + 'vw';
+            particle.style.top = Math.random() * 100 + 'vh';
+            
+            // Taille aléatoire
+            const size = Math.random() * 5 + 1;
+            particle.style.width = size + 'px';
+            particle.style.height = size + 'px';
+            
+            // Couleur basée sur la position (pour suivre le gradient)
+            const hue = Math.random() * 360;
+            particle.style.backgroundColor = `hsla(${hue}, 70%, 70%, 0.3)`;
+            
+            // Animation aléatoire
+            particle.style.animationDuration = Math.random() * 25 + 15 + 's';
+            particle.style.animationDelay = Math.random() * 5 + 's';
+            
+            particlesContainer.appendChild(particle);
+        }
+        
+        {% if open_login_modal %}
+        setTimeout(() => {
+            openLoginModal();
+        }, 1000);
+        {% endif %}
+    });
+
+        
     </script>
     
     {% if open_change_id %}

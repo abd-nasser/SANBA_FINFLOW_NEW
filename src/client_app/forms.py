@@ -7,9 +7,9 @@ class ClientForm(forms.ModelForm):
         fields = [
             
             'type_client', 'raison_sociale', 'nom', 'prenom',
-            'telephone', 'telephone_secondaire', 'email', 
-            'adresse', 'ville', 'quartier', 'secteur_activite',
-            'source_client', 'potentiel_client', 'notes_internes'
+            'telephone', 'telephone_secondaire','date_de_naissance' ,'email', 
+            'adresse', 'pays', 'ville', 'quartier', 'secteur_activite',
+            'source_client', 'potentiel_client', 'est_fidel','notes_internes'
         ]
         
         #Personalisations des labels
@@ -20,8 +20,10 @@ class ClientForm(forms.ModelForm):
             'prenom': "Prénom",
             'telephone': "Téléphone principal",
             'telephone_secondaire': "Téléphone secondaire",
+            'date_de_naissance': 'date de naissance',
             'email': "Adresse e-mail",
             'adresse': "Adresse physique",
+            'pays': "pays",
             'ville': "Ville",
             'quartier': "Quartier",
             'secteur_activite': "Secteur d'activité",
@@ -34,6 +36,9 @@ class ClientForm(forms.ModelForm):
         widgets = {
             'adresse': forms.Textarea(attrs={'rows': 3, "class": "input input-bordered w-full"}),
             'notes_internes': forms.Textarea(attrs={'rows': 4, "class": "input input-bordered w-full"}),
+            'date_de_naissance':forms.DateInput(attrs={'type':'date', 'class':'input'})
+                
+            
         }  
         
     def __init__(self, *args, **kwargs):
@@ -45,15 +50,23 @@ class ClientForm(forms.ModelForm):
             
       # placeholders pour guider l'utilisateur
         self.fields['type_client'].widget.attrs.update({"class": "select select-bordered"})
+        self.fields['raison_sociale'].widget.attrs.update({"class": "select select-bordered", "placeholder": "Uniquement pour entreprise"})
         self.fields['nom'].widget.attrs.update({"class": "input input-bordered w-full", "placeholder": "Ex: Ouedraogo"})
         self.fields["prenom"].widget.attrs.update({"class": "input input-bordered w-full", "placeholder": "Ex: Rachide"})
         self.fields['telephone'].widget.attrs.update({"class": "input input-bordered w-full", 'placeholder': 'Ex: +226 70 12 34 56'})
         self.fields['telephone_secondaire'].widget.attrs.update({"class": "input input-bordered w-full", 'placeholder': 'Ex: +226 70 12 34 56'})
         self.fields['email'].widget.attrs.update({"class": "input input-bordered w-full", 'placeholder': 'Ex: client@email.com'})
+        self.fields['pays'].widget.attrs.update({"class": "input input-bordered w-full", 'placeholder': 'Ex: Burkina Faso'})
         self.fields['ville'].widget.attrs.update({"class": "input input-bordered w-full", 'placeholder': 'Ex: Ouagadougou'})
         self.fields['quartier'].widget.attrs.update({"class": "input input-bordered w-full", 'placeholder': 'Ex: Tampouy'})
         self.fields['secteur_activite'].widget.attrs.update({"class": "select select-bordered"})
         self.fields['source_client'].widget.attrs.update({"class": "select select-bordered"})
+        self.fields['potentiel_client'].widget.attrs.update({"class": "select select-bordered"})
+        self.fields['est_fidel'].widget.attrs.update({"class": "checkbox checkbox-sm"})
+        
+        
+        
+    
       
        
         

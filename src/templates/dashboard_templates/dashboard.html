@@ -148,7 +148,7 @@
                         </div>
                         <div class="stat p-0">
                             <div class="stat-title">Taux d'encaissement moyen</div>
-                            <div class="stat-value text-primary text-2xl">{{ taux_encaisse_moyen }}%</div>
+                            <div class="stat-value text-primary text-2xl">{{ taux_encaisse_moyen|floatformat:2 }}%</div>
                         </div>
                     </div>
                 </div>
@@ -361,6 +361,23 @@
             </div>
         </div>
     </div>
+    <div class="card-footer text-muted">
+            <small>
+                <i class="fas fa-shield-alt"></i> 
+                Système Gestion chantier sécurisé - Toutes les modifications sont permanentes.
+            </small>
+            
+            {% if user.is_authenticated and user.post.nom == 'Directeur' %}
+                 <a href="{% url 'directeur_app:directeur-view' %}" class="btn btn-sm btn-outline-primary float-end">
+                <i class="fas fa-arrow-left"></i> Retour au Dashboard
+                 </a>
+                {% elif user.is_authenticated and user.post.nom == 'Comptable' %}
+                 <a href="{% url 'comptable_app:comptable-view' %}" class="btn btn-sm btn-outline-primary float-end">
+                <i class="fas fa-arrow-left"></i> Retour au Dashboard
+                 </a>
+            {% endif %}
+                
+        </div>
 
     <!-- Footer -->
 <footer class="bg-gray-900 text-white mt-12">
@@ -389,7 +406,7 @@
                 // labels = les noms sous le graphique (les mois)
             
             
-                values:[{% for item in ca_par_mois %} '{{ item.ca|floatformat }}' {% if not forloop.last %}, {%endif%}{%endfor%}]
+                values:[{% for item in ca_par_mois %} '{{ item.ca|floatformat:0 }}' {% if not forloop.last %}, {%endif%}{%endfor%}]
                 // values = les chiffre (l'argent)
             };
             document.addEventListener("DOMContentLoaded", function(){

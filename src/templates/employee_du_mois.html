@@ -106,7 +106,7 @@
                         </div>
                         <h3 class="card-title text-2xl mb-2">🥈 Dépenses Validées</h3>
                         
-                        {% for depense in total_depense_employee %}
+                        {% for depense in total_depense_employee|slice:1 %}
                         <div class="avatar mb-4">
                             <div class="w-24 h-24 rounded-full bg-gradient-to-r from-gray-400 to-slate-600 p-1">
                                 <div class="w-full h-full rounded-full bg-white flex items-center justify-center">
@@ -146,7 +146,7 @@
                         </div>
                         <h3 class="card-title text-2xl mb-2">🥉 Plus de Rapports</h3>
                         
-                        {% for rapport in rapports_employee %}
+                        {% for rapport in rapports_employee|slice:1 %}
                         <div class="avatar mb-4">
                             <div class="w-24 h-24 rounded-full bg-gradient-to-r from-amber-400 to-orange-500 p-1">
                                 <div class="w-full h-full rounded-full bg-white flex items-center justify-center">
@@ -473,7 +473,7 @@
                         beginAtZero: true,  // Commence à 0
                         ticks: {
                             callback: function(value) {
-                                return value + ' €';  // Ajoute le signe €
+                                return value + ' FCFA';  // Ajoute le signe FCFA
                             }
                         }
                     }

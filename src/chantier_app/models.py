@@ -53,7 +53,7 @@ class Chantier(models.Model):
     client = models.ForeignKey("client_app.Client", related_name="chantiers", on_delete=models.CASCADE)
     
     #reférence unique du chantier
-    reference = models.CharField(max_length=100, unique=True)
+    reference = models.CharField(max_length=100)
     
     #nom_chantier = un nom facile à retenir pour le chantier
     nom_chantier = models.CharField(max_length=200)

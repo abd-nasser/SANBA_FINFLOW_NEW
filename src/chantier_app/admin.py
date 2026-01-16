@@ -1,3 +1,6 @@
 from django.contrib import admin
+from .models import Chantier
 
-# Register your models here.
+@admin.register(Chantier)
+class AdminChantier(admin.ModelAdmin):
+    list_display=["nom_chantier", "reference"]

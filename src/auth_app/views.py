@@ -9,6 +9,8 @@ from secretaire_app.models import DemandeDecaissement
 from secretaire_app.forms import DemandeDecaissementForm
 from client_app.forms import ClientForm
 from employee_app.form import RapportDepenseForm
+from django.core.mail import send_mail
+from django.conf import settings
 import logging
 
 
@@ -23,6 +25,7 @@ def register_view(request):
             # Utiliser ModelForm si tu changes
             form = PersonnelRegisterForm(request.POST)
             if form.is_valid():
+                email = form.cleaned_data['email']
                 # Générer username
                 first = form.cleaned_data['first_name'][0].lower()
                 last = form.cleaned_data['last_name'].lower().replace(" ", "")
@@ -51,6 +54,19 @@ def register_view(request):
                     date_de_naissance=form.cleaned_data['date_de_naissance'],
                     lieu_de_naissance=form.cleaned_data['lieu_de_naissance'],
                     personne_a_prevenir_en_cas=form.cleaned_data['personne_a_prevenir_en_cas']
+                )
+                send_mail(
+                    subject="Identifiant Temporaire",
+                    message=f"""Bonjour, Mr/Mme {form.cleaned_data.get('first_name')},
+                    \n Vos identifiant pour SANBA GESTION FINFLOW: 
+                    \n nom d'utilisateur = {username}
+                    \n mot de passe = {password}
+                    \n Ces informations sont à titre personnel,
+                    \n Veuillez les garder en sécurité et privée
+                    """ ,
+                    from_email=settings.EMAIL_HOST_USER, #sender email defini at setting.py 
+                    fail_silently=False,
+                    recipient_list=[email]
                 )
                 
                 messages.success(request, 
@@ -140,7 +156,22 @@ def change_credentials_view(request):
                 print(f"new_password: {new_password}")
                 print(f"new_username: {new_username}")
                 user.set_password(new_password)
+                
+                send_mail(
+                    subject="Identifiant Temporaire",
+                    message=f"""Bonjour, Mr/Mme {request.user.last_name},
+                    \n Vous venez de changer vos identifiant pour SANBA GESTION FINFLOW: 
+                    \n nouveau nom d'utilisateur = {new_username}
+                    \n  nouveau mot de passe = {new_password}
+                    \n Ces informations sont à titre personnel,
+                    \n Veuillez les garder en sécurité et privée
+                    """ ,
+                    from_email=settings.EMAIL_HOST_USER, #sender email defini at setting.py 
+                    fail_silently=False,
+                    recipient_list=[request.user.email]
+                )
                 messages.success(request, "Mot de pass changé avec succès")
+                
                 
             user.save()
             

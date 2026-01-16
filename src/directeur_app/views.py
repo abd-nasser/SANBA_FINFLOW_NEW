@@ -53,8 +53,12 @@ def ajouter_fond(request):
                                                                        type_depot=type_depot, notes=notes)
             historique_de_fond.save()
             print('Fond ajouté avec succès')
-            messages.success(request, f"vous venez d'ajouter la somme de {fond_aj} au fond disponible ! Nouveau Capitale est de : {fond.montant}")
-            return redirect("directeur_app:directeur-view")
+            if request.user.post.nom == "Comptable" :
+                messages.success(request, f"vous venez d'ajouter la somme de {fond_aj} au fond disponible ! Nouveau Capitale est de : {fond.montant}")
+                return redirect("comptable_app:comptable-view")
+            else:
+                messages.success(request, f"vous venez d'ajouter la somme de {fond_aj} au fond disponible ! Nouveau Capitale est de : {fond.montant}")
+                return redirect("directeur_app:directeur-view")
             
         except Exception as e:
             logger.error(f"error{e}")

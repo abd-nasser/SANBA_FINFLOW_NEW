@@ -1,3 +1,73 @@
+body{
+     min-height: 110vh;
+        background: linear-gradient(-45deg, 
+            rgba(201, 26, 26, 1) 0%, 
+            rgba(235, 230, 231, 1) 50%, 
+            rgba(0, 0, 0, 1) 99%);
+        background-size: 400% 400%;
+        animation: gradient-shift 20s ease infinite;
+        overflow-x: hidden;
+        position: relative;
+}
+
+/* ===== ANIMATION DU GRADIENT ===== */
+    @keyframes gradient-shift {
+        0% {
+            background-position: 0% 50%;
+        }
+        25% {
+            background-position: 50% 100%;
+        }
+        50% {
+            background-position: 100% 50%;
+        }
+        75% {
+            background-position: 50% 0%;
+        }
+        100% {
+            background-position: 0% 50%;
+        }
+    }
+
+        /* ===== PARTICULES COLORÉES ===== */
+    #particles {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        pointer-events: none;
+        z-index: 2;
+    }
+    
+    .particle {
+        position: absolute;
+        border-radius: 50%;
+        filter: blur(1px);
+        animation: float-particle linear infinite;
+        box-shadow: 0 0 10px currentColor;
+    }
+    
+    @keyframes float-particle {
+        0% {
+            transform: translateY(100vh) translateX(0) rotate(0deg);
+            opacity: 0;
+        }
+        10% {
+            opacity: 0.7;
+        }
+        90% {
+            opacity: 0.7;
+        }
+        100% {
+            transform: translateY(-100px) translateX(calc(100px * var(--direction, 1))) rotate(360deg);
+            opacity: 0;
+        }
+    }
+
+
+
+
 nav{
     background-color: black;
     color: rgb(255, 255, 255);
@@ -11,7 +81,15 @@ nav{
 
 
 header{
-    background: linear-gradient(144deg,rgba(255, 0, 0, 1) 2%, rgba(222, 211, 211, 1) 50%, rgba(13, 12, 13, 1) 100%);
+    background: linear-gradient(-45deg, 
+            rgba(201, 26, 26, 1) 0%, 
+            rgba(235, 230, 231, 1) 50%, 
+            rgba(0, 0, 0, 1) 99%);
+            
+    background-size: 400% 400%;
+    animation:  gradient-shift 25s ease infinite,
+                slide_header 5s ease-in-out;
+    overflow-x: hidden;
     height: 25vh;
     width: 100%;
     display: flex;
@@ -24,7 +102,20 @@ header{
     position: fixed;
     z-index: 1000;
     margin-top: 1.5rem;
+    
 }
+
+
+
+@keyframes slide_header{
+    0%{
+        transform: translateY(-70vh);
+    }
+    100%{
+        transform: translateY(0px);
+    }
+}
+
 header h1{
     color: linear-gradient(90deg,rgba(201, 26, 26, 1) 4%, rgba(223, 158, 159, 1) 35%, rgba(255, 245, 249, 1) 51%, rgba(179, 172, 175, 1) 64%, rgba(0, 0, 0, 1) 94%);
     text-align: center;
@@ -105,14 +196,14 @@ header .action{
 }
 
 main{
-   background: linear-gradient(144deg,rgba(255, 0, 0, 1) 2%, rgba(222, 211, 211, 1) 50%, rgba(13, 12, 13, 1) 100%);
-   min-height: 110vh;
+    min-height: 110vh;
    min-width: 100%;
    display: flex;
    justify-content: center;
    flex-direction: column;
    padding-top: 18rem;
 }
+
 
 main .section_container{
     display: flex;
@@ -141,8 +232,21 @@ main .demande_section{
     display: flex;
     justify-content: space-evenly;
     flex-wrap: wrap;
+    animation: slide_dmd_section 5s ease-in-out;
 
 
+}
+
+@keyframes slide_dmd_section{
+    0%{
+        transform: translateY(100px);
+    }
+    50%{
+        transform: translateY(-100px);
+    }
+    100%{
+        transform: translate(0px);
+    }
 }
 
 
@@ -157,16 +261,32 @@ main .demande_section{
     margin-left: 2rem;
     margin-bottom: 1rem;
     backdrop-filter: blur(5rem);
-     background: linear-gradient(144deg,rgba(255, 0, 0, 1) 2%, rgba(222, 211, 211, 1) 50%, rgba(13, 12, 13, 1) 100%);
+     background-color: rgba(255, 250, 250, 0);
    
     color: rgb(0, 0, 0);
     box-shadow: 0 4px 8px rgba(14, 13, 13, 0.779);
     transition: all 0.5s ease;
+    animation: slide_all_btn 5s  ease-in-out;
+}
+
+@keyframes slide_all_btn{
+    0%{
+        transform: translateY(-50vh) ;
+    }
+    50%{
+        transform: translateY(30vh);
+    }
+    100%{
+        transform: translateY(0px);
+    }
 }
 
 .div_all_btn .btn:hover{
-    background: linear-gradient(270deg,rgba(71, 56, 59, 1) 19%, rgba(181, 152, 166, 1) 33%, rgb(183, 89, 103) 51%, rgba(189, 155, 158, 1) 69%, rgba(41, 30, 30, 1) 87%);
-    color: white;
+    background: linear-gradient(-45deg, 
+            rgba(201, 26, 26, 1) 0%, 
+            rgba(235, 230, 231, 1) 50%, 
+            rgba(0, 0, 0, 1) 99%);
+    color: rgb(0, 0, 0);
     box-shadow: 0 4px 8px rgba(255, 255, 255, 0.779);
 }
 
@@ -205,8 +325,8 @@ main .demande_card:hover{
 
 /*################################################################ Modal Style #################################################################*/
 .modal-box{
-    backdrop-filter: blur(0.5rem);
-    background: linear-gradient(144deg,rgba(255, 0, 0, 1) 2%, rgba(222, 211, 211, 1) 50%, rgba(13, 12, 13, 1) 100%);
+    backdrop-filter: blur(1.5rem);
+    background-color: rgba(255, 255, 255, 0);
     box-shadow: 0 4px 8px rgba(14, 13, 13, 0.779);
     border-radius: 1rem;
     padding: 1rem;
@@ -231,42 +351,42 @@ main .demande_card:hover{
 
 .modal-box .btn-depot{
     backdrop-filter: blur(0.5rem);
-    background: linear-gradient(144deg,rgba(255, 0, 0, 1) 2%, rgba(222, 211, 211, 1) 50%, rgba(13, 12, 13, 1) 100%);
+    background-color: rgba(255, 255, 255, 0);
     box-shadow: 0 4px 8px rgba(14, 13, 13, 0.779);
     color: rgb(0, 0, 0);
     transition: all 0.5s ease;
 }
 
 .modal-box .btn-depot:hover{
-    background: linear-gradient(270deg,rgba(71, 56, 59, 1) 19%, rgba(181, 152, 166, 1) 33%, rgb(183, 89, 103) 51%, rgba(189, 155, 158, 1) 69%, rgba(41, 30, 30, 1) 87%);
-    color: white;
-    box-shadow: 0 4px 8px rgba(255, 255, 255, 0.779);
+    background: linear-gradient(144deg,rgba(255, 0, 0, 1) 2%, rgba(222, 211, 211, 1) 50%, rgba(13, 12, 13, 1) 100%);
+    color: rgb(0, 0, 0);
+    box-shadow: 0 4px 8px rgba(87, 85, 85, 0.779);
 }
 
 .modal-box .btn-enregistrer{
     backdrop-filter: blur(0.5rem);
-    background: linear-gradient(144deg,rgba(255, 0, 0, 1) 2%, rgba(222, 211, 211, 1) 50%, rgba(13, 12, 13, 1) 100%);
+    background-color: rgba(255, 255, 255, 0);
     box-shadow: 0 4px 8px rgba(14, 13, 13, 0.779);
     color: rgb(0, 0, 0);
     transition: all 0.5s ease;
 }
 
 .modal-box .btn-enregistrer:hover{
-    background: linear-gradient(270deg,rgba(71, 56, 59, 1) 19%, rgba(181, 152, 166, 1) 33%, rgb(183, 89, 103) 51%, rgba(189, 155, 158, 1) 69%, rgba(41, 30, 30, 1) 87%);
-    color: white;
+    background:linear-gradient(144deg,rgba(255, 0, 0, 1) 2%, rgba(222, 211, 211, 1) 50%, rgba(13, 12, 13, 1) 100%);
+    color: rgb(45, 41, 41);
     box-shadow: 0 4px 8px rgba(255, 255, 255, 0.779);
 }
 
 .modal-box .btn-maj{
     backdrop-filter: blur(0.5rem);
-    background: linear-gradient(144deg,rgba(255, 0, 0, 1) 2%, rgba(222, 211, 211, 1) 50%, rgba(13, 12, 13, 1) 100%);
+     background-color: rgba(255, 255, 255, 0);
     box-shadow: 0 4px 8px rgba(14, 13, 13, 0.779);
     color: rgb(0, 0, 0);
     transition: all 0.5s ease;
 }
 .modal-box .btn-maj:hover{
-    background: linear-gradient(270deg,rgba(71, 56, 59, 1) 19%, rgba(181, 152, 166, 1) 33%, rgb(183, 89, 103) 51%, rgba(189, 155, 158, 1) 69%, rgba(41, 30, 30, 1) 87%);
-    color: white;
+    background:linear-gradient(144deg,rgba(255, 0, 0, 1) 2%, rgba(222, 211, 211, 1) 50%, rgba(13, 12, 13, 1) 100%);
+    color: rgb(0, 0, 0);
     box-shadow: 0 4px 8px rgba(255, 255, 255, 0.779);
 
 }

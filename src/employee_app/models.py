@@ -121,8 +121,9 @@ class Fournisseur(models.Model):
     specialite = models.CharField(max_length=100, blank=True)
     
     def __str__(self):
+        return str(self.nom) if self.nom else "sans nom"
     
-        return str(self.nom) if self.nom else "Fournisseur sans nom"
+    
    
     class Meta:
         verbose_name_plural = "Fournisseurs"

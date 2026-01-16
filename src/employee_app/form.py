@@ -90,9 +90,8 @@ class RapportDepenseForm(forms.ModelForm):
             self.fields['demande_decaissement'].queryset = DemandeDecaissement.objects.filter(
                 demandeur=self.employee,# ou le champ qui lie à l'employé
                 decaisse = True,
-                #status__in=['approuvee_directeur', 'approuvee_comptable'],
-                date_approbation__gte=date_limite
-            ).order_by('-date_demande')
+                date_decaissement__gte=date_limite
+            ).order_by('-date_decaissement')
             
         
         #Filtre les chantier ou cet employee travaille
@@ -205,6 +204,8 @@ class FournisseurForm(forms.ModelForm):
         
     def __init__(self, *args, **kwargs ):
         super().__init__(*args, **kwargs)
+        
+        self.fields['nom'].required=True
         
          # Classes DaisyUI pour tous les champs
         base_classes = "input input-bordered w-300 mb-4"

@@ -1,4 +1,4 @@
-from django.shortcuts import render, get_object_or_404
+from django.shortcuts import render, get_object_or_404, redirect
 from django.contrib.auth.mixins import LoginRequiredMixin #Sécurité
 from django.views.generic import ListView, CreateView , DetailView, UpdateView, DeleteView
 from django.urls import reverse_lazy
@@ -109,15 +109,40 @@ class ClientCreateView(LoginRequiredMixin, CreateView):
         Méthode appelée quand le formulaire est valide
         On peut faire des actions supplémentaires ici
         """
-        #Ajoute le commercial connecté automatiquement
-        if hasattr(self.request.user, 'personnel'):
-            form.instance.commercial_attache = self.request.user
-        #Message de succès
-        messages.success(self.request, f"Client {form.instance.nom} à été ajouté avec succès")
-        
-        #Sauvegarde le client et redirige
-        return super().form_valid(form)
     
+            
+
+        if self.request.user.is_superuser or self.request.user.post.nom == "Directeur":
+            form.instance.commercial_attache = self.request.user
+            form.save()
+            messages.success(self.request, f"Client {form.instance.nom} à été ajouté avec succès par {self.request.user}")
+            super().form_valid(form)
+            return redirect("client_app:liste-client")
+         
+        elif self.request.user.post.nom == "Sécretaire":
+            form.instance.commercial_attache = self.request.user
+            form.save()
+            messages.success(self.request, f"Client {form.instance.nom} à été ajouté avec succès par {self.request.user}")
+            super().form_valid(form)
+            return redirect("secretaire_app:secretaire-view")
+            
+        elif self.request.user.post.nom == "Comptable":
+            form.instance.commercial_attache = self.request.user
+            form.save()
+            messages.success(self.request, f"Client {form.instance.nom} à été ajouté avec succès par {self.request.user}")
+            super().form_valid(form) 
+            return redirect("client_app:liste-client")
+      
+        elif self.request.user.post.nom == "Employé":
+            form.instance.commercial_attache = self.request.user
+            form.save()
+            messages.success(self.request, f"Client {form.instance.nom} à été ajouté avec succès par {self.request.user}")
+            super().form_valid(form)
+            return redirect("employee_app:employee-view")
+        
+            
+        
+        
     def form_invalid(self, form):
         return super().form_invalid(form)
     
@@ -134,6 +159,8 @@ class ClientCreateView(LoginRequiredMixin, CreateView):
       
             elif self.request.user.post.nom == "Employé":
                 return ["employee_templates/creer_rapport.html"]
+            
+       
     
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)

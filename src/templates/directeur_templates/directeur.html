@@ -12,7 +12,7 @@
     {% tailwind_css %}
 </head>
     <body>
-        
+        <div id="particles"></div>
 {% include 'auth_templates/register.html' %}
 {% include 'auth_templates/changer_id.html' %}
 {% include 'modal/ajouter_fond.html' %}
@@ -20,6 +20,7 @@
             <h1>Interface Directeur</h1>
         </nav>
         <header>
+            <div id="particles"></div>
             <h1>SANBA STRUCTURE METTALIQUE</h1>
             <h3 class="txt-fond">Fond disponible: <span class="fond">{{ fond }}</span></h3>
                 <div class="action">
@@ -160,6 +161,41 @@
         document.getElementById('fondModal').showModal();
         document.getElementById('montant').focus();
         }
+
+        document.addEventListener('DOMContentLoaded', function() {
+        const particlesContainer = document.getElementById('particles');
+        
+        // Créer des particules colorées selon le gradient
+        for (let i = 0; i < 25; i++) {
+            const particle = document.createElement('div');
+            particle.className = 'particle';
+            
+            // Position aléatoire
+            particle.style.left = Math.random() * 100 + 'vw';
+            particle.style.top = Math.random() * 100 + 'vh';
+            
+            // Taille aléatoire
+            const size = Math.random() * 5 + 1;
+            particle.style.width = size + 'px';
+            particle.style.height = size + 'px';
+            
+            // Couleur basée sur la position (pour suivre le gradient)
+            const hue = Math.random() * 360;
+            particle.style.backgroundColor = `hsla(${hue}, 70%, 70%, 0.3)`;
+            
+            // Animation aléatoire
+            particle.style.animationDuration = Math.random() * 25 + 15 + 's';
+            particle.style.animationDelay = Math.random() * 5 + 's';
+            
+            particlesContainer.appendChild(particle);
+        }
+        
+        {% if open_login_modal %}
+        setTimeout(() => {
+            openLoginModal();
+        }, 1000);
+        {% endif %}
+    });
     </script>
 
     <!-- Script pour ouvrir/fermer et toggle password -->

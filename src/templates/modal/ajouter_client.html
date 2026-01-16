@@ -85,8 +85,17 @@
             </label>
             {{ form.prenom }}
           </div>
+
+          <div class="form-control">
+            <label class="label">
+              <span class="label-text font-medium">date naissance</span>
+            </label>
+            {{ form.date_de_naissance }}
+          </div>
+
         </div>
       </div>
+      
 
       <!-- Section 2: Coordonnées -->
       <div class="card bg-base-200 p-6">
@@ -139,6 +148,15 @@
             {{ form.adresse }}
           </div>
           
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div class="form-control">
+              <label class="label">
+                <span class="label-text font-medium">Ville *</span>
+              </label>
+              {{ form.pays }}
+            </div>
+            
+
           <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div class="form-control">
               <label class="label">
@@ -185,6 +203,13 @@
             {{ form.potentiel_client }}
           </div>
         </div>
+      </div>
+
+      <div class="form-control">
+        <label class="label">
+          <span class="label-text font-medium">Client fidel</span>
+        </label>
+        {{ form.est_fidel }}
       </div>
 
       <!-- Section 5: Notes -->
