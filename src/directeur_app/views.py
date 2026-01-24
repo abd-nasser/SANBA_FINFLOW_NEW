@@ -141,16 +141,17 @@ class ListRapportDepenseView(LoginRequiredMixin, ListView):
         if self.request.headers.get('HX-request'):
             return ["partials/rapport_employee_partial.html"]
         return [self.template_name]
-    
+        
     def get_context_data(self, **kwargs):
        context =super().get_context_data(**kwargs)
        context["STATUS_RAPPORT_CHOICES"]=RapportDepense.STATUS_RAPPORT_CHOICES
+       context["TYPE_DEPENSE_CHOICES"]=TypeDepense.CATEGORIE_CHOICES
        context['validation_form'] = ValidationRapportForm()
        context["fournisseur_form"] = FournisseurForm()
        context["form"] = updateRapportFournisseurForm()
        context["rapport_soumis"] = RapportDepense.objects.filter(status="soumis").count()
        context["fournisseur"]= RapportDepense.objects.filter(fournisseur__isnull=False).count()
-       context["depenses_par_categorie"] =depenses_par_categorie= TypeDepense.objects.filter(
+       context["depenses_par_categorie"] = depenses_par_categorie= TypeDepense.objects.filter(
             est_actif=True
             ).values('categorie').annotate(
             total_depenses=Coalesce(
@@ -160,51 +161,57 @@ class ListRapportDepenseView(LoginRequiredMixin, ListView):
                 output_field=DecimalField(max_digits=12, decimal_places=2)
             )
         ).filter(total_depenses__gte=0).order_by('-total_depenses')
-              
-        
-        # Calculer le TOTAL GÉNÉRAL des dépenses validées
+       
+       # Calculer le TOTAL GÉNÉRAL des dépenses validées
        total_general_depenses = Decimal('0')
        for item in depenses_par_categorie:
             total_general_depenses += item['total_depenses'] or Decimal('0')  
-            
-       context['total_general_depenses']=total_general_depenses
+       context['total_general_depenses_valide']=total_general_depenses
+       
+       queryset = self.get_queryset()
+       total_general_depenses_filter = queryset.aggregate(
+            total=(Sum(F('prix_unitaire') * F('quantité')))
+       )
+       context['total_general_depenses_filter'] = total_general_depenses_filter['total'] or Decimal('0')
        return context
-        
-    
+
     def get_queryset(self):
         queryset= RapportDepense.objects.all().order_by("-date_creation")
-        
         #filtrer rapport par status
         status = self.request.GET.get('status')
         if status:
             queryset = RapportDepense.objects.filter(status=status)
-        
+            
+            
+            
         #filter par type depense 
         type_depense = self.request.GET.get('type_depense') 
         if type_depense:
-            queryset = RapportDepense.objects.filter(type_depense__categorie=type_depense)
+            queryset = RapportDepense.objects.filter(type_depense__categorie=type_depense)    
             
         #recherche
         search = self.request.GET.get('q')
         if search:
             queryset = RapportDepense.objects.filter(
-                Q(demande_decaissement__reference_demande=search)|
-                Q(employee__username=search)|
-                Q(chantier__nom_chantier=search)|
-                Q(chantier__reference=search)     
+                Q(demande_decaissement__reference_demande__icontains=search)|
+                Q(employee__username__icontains=search)|
+                Q(chantier__client__nom__icontains=search)|
+                Q(chantier__nom_chantier__icontains=search)|
+                Q(chantier__reference__icontains=search)|
+                Q(type_depense__categorie__icontains=(search).lower())
             )
+            
         return queryset
+    
 
-
-
+        
+    
 
 class ValidationRapportView(LoginRequiredMixin, UpdateView):
     model = RapportDepense
-    template_name = "partials\rapport_employee_partial.html"
-    context_object_name="rapport"
+    template_name = "partials/rapport_employee_partial.html"
     form_class = ValidationRapportForm
     success_url = reverse_lazy("directeur_app:rapport-depense-employee")
-    
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         context["form"] = "validation_form"

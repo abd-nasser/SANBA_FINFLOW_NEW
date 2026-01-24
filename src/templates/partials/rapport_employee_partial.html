@@ -1,4 +1,5 @@
       <!-- Vue Tableau -->
+      {% load humanize %}
             <div id="tableView" class="table-container bg-white rounded-lg">
                 <table class="table table-zebra w-full">
                     <thead class="bg-gray-100">
@@ -18,6 +19,7 @@
                         </tr>
                     </thead>
                     <tbody>
+
                         {% for rapport in list_rapport_depense %}
                         <tr>
                             <!-- Employé -->
@@ -75,7 +77,7 @@
                             
                             <!-- Prix Unitaire -->
                             <td class="text-right font-semibold">
-                                {{ rapport.prix_unitaire|floatformat:0 }} FCFA
+                                {{ rapport.prix_unitaire|floatformat:1|intcomma }} FCFA
                             </td>
                             
                             <!-- Quantité -->
@@ -87,7 +89,7 @@
                             <td class="text-right">
                                 <span class="font-bold text-green-600">
                                     {% widthratio rapport.prix_unitaire 1 rapport.quantité as total %}
-                                    {{ total|floatformat:0 }} FCFA
+                                    {{ total|floatformat:1|intcomma}} FCFA
                                 </span>
                             </td>
                             
@@ -114,42 +116,131 @@
                                     <span class="text-red-500 font-semibold">❌ Inconnu</span>
                                 {% endif %}
                             </td>
-                            
+
                             <!-- Facture -->
-                            <td>
+                             <td>
                                 {% if rapport.facture %}
-                                    <span class="badge badge-success tooltip" data-tip="{{ rapport.facture }}">
-                                        ✅ {{ rapport.facture|truncatechars:10 }}
+                                <div class="flex items-center gap-2">
+                                    <!-- Badge format -->
+                                    <span class="badge badge-xs badge-outline">
+                                        {{ rapport.facture.name|slice:"-3:"|upper }}
                                     </span>
+                                    <!-- Actions -->
+                                    <div class="flex gap-1">
+                                        <button onclick="openFactureModal('{{ rapport.facture.url }}')"
+                                                class="btn btn-ghost btn-xs">
+                                            👁️
+                                        </button>
+                                        <a href="{{ rapport.facture.url }}" 
+                                        download
+                                        class="btn btn-ghost btn-xs">
+                                            ⬇️
+                                        </a>
+                                    </div>
+                                </div>
                                 {% else %}
                                     <span class="text-red-500 font-semibold tooltip" data-tip="Pas de facture fournie">
                                         ❌ Sans facture
                                     </span>
                                 {% endif %}
-                            </td>
-                            
+                            </td>        
                             <!-- Statut -->
                             <td>
                                 {% if rapport.status == 'valide' %}
                                     <span class="status-badge status-valide">✅ Validé</span>
                                 {% elif rapport.status == 'rejete' %}
                                     <span class="status-badge status-rejete">❌ Rejeté</span>
+                                 {% elif rapport.status == 'modifier' %}   
+                                     <span class="status-badge status-soumis ">📃 à modiier</span>
                                 {% else %}
                                     <span class="status-badge status-soumis">⏳ En attente</span>
                                 {% endif %}
                             </td>
-                            
+                
                             <!-- Actions -->
                             <td class="no-print">
                                 <div class="flex gap-2">
-                                     {% include 'modal/valider_rapport.html' %}
-                                   <button onclick="document.getElementById('validationModal').showModal()" class="btn btn-primary">
+                                     
+                                <button onclick="document.getElementById('validationModal-{{ rapport.id }}').showModal()" class="btn btn-primary">
                                         Valider le rapport
                                         </button>
                                            
                                 </div>
+                                <!-- Modal -->
+                                <dialog id="validationModal-{{ rapport.id }}" class="modal">
+                                <div class="modal-box max-w-2xl">
+                                    <!-- Header -->
+                                    <div class="flex justify-between items-center mb-6 pb-4 border-b">
+                                    <h3 class="text-xl font-bold">
+                                        📋 Validation du rapport
+                                    </h3>
+                                    <form method="dialog">
+                                        <button class="btn btn-sm btn-circle btn-ghost">✕</button>
+                                    </form>
+                                    </div>
+                                    
+                                    <!-- Informations du rapport -->
+                                    <div class="p-4 rounded-lg mb-6">
+                                    <div class="grid grid-cols-2 gap-3 text-sm">
+                                        <div class="detail-row">
+                                        <span class="font-semibold">Employé :</span>
+                                        <span>{{ rapport.employee.username }}</span>
+                                        </div>
+                                        <div class="detail-row">
+                                        <span class="font-semibold">Type :</span>
+                                        <span>{{ rapport.type_depense.nom }}</span>
+                                        </div>
+                                        <div class="detail-row">
+                                        <span class="font-semibold">Montant :</span>
+                                        <span class="font-bold text-green-600">{{ rapport.total_affichage }}</span>
+                                        </div>
+                                        <div class="detail-row">
+                                        <span class="font-semibold">Article :</span>
+                                        <span>{{ rapport.materiau_article }}</span>
+                                        </div>
+                                    </div>
+                                    </div>
+                                    
+                                    <!-- Formulaire -->
+                                    <form method="post" action="{% url 'directeur_app:validation-rapports' rapport.pk %}">
+                                    {% csrf_token %}
+                                    
+                                    <!-- Choix d'action -->
+                                    <div class="mb-6">
+                                        <label class="block font-semibold mb-3">Action :</label>
+                                        <div class="space-y-3">
+                                        {% for choice in validation_form.action %}
+                                            <div class="flex items-center p-3 bg-base-200 rounded-lg hover:bg-base-300">
+                                            {{ choice.tag }}
+                                            <label for="{{ choice.id_for_label }}" class="ml-3 cursor-pointer">
+                                                {{ choice.choice_label }}
+                                            </label>
+                                            </div>
+                                        {% endfor %}
+                                        </div>
+                                    </div>
+                                    
+                                    <!-- Commentaire -->
+                                    <div class="mb-6">
+                                        <label class="block font-semibold mb-2">Commentaire :</label>
+                                        {{ validation_form.commentaire_validation }}
+                                    </div>
+                                    
+                                
+                                        <button type="submit" class="btn btn-primary">
+                                        Confirmer la décision
+                                        </button>
+                                    </form>
+                                </div>
+                                
+                                <!-- Fermeture en cliquant à l'extérieur -->
+                                <form method="dialog" class="modal-backdrop">
+                                    <button>close</button>
+                                </form>
+                                </dialog>
                             </td>
                         </tr>
+
                         {% empty %}
                         <tr>
                             <td colspan="12" class="text-center py-12">
@@ -160,7 +251,49 @@
                                 </div>
                             </td>
                         </tr>
+
                         {% endfor %}
                     </tbody>
+                   <tfoot>
+                    <tr>
+                        <th colspan="7" class="text-right font-bold">TOTAL GÉNÉRAL :</th>
+                        <th id="totalGeneral" class="text-right font-bold text-green-700">
+                            <!-- Calcul initial côté serveur -->       
+                            {{ total_general_depenses_filter|floatformat:1|intcomma }} FCFA     
+                        </th>
+                        <th colspan="4"></th>
+                    </tr>
+                </tfoot>
                 </table>
-            </div>     
+            </div>    
+
+
+<!-- JUSTE après ta table (à la fin de ton template) -->
+<dialog id="factureModal" class="modal">
+    <div class="modal-box">
+        <form method="dialog">
+            <button class="btn btn-sm btn-circle btn-ghost absolute right-2 top-2">✕</button>
+        </form>
+        <h3 class="font-bold text-lg mb-4">Facture</h3>
+        <div id="modalContent"></div>
+    </div>
+    <form method="dialog" class="modal-backdrop"><button>Fermer</button></form>
+</dialog>
+
+<script>
+function openFactureModal(fileUrl) {
+    const modal = document.getElementById('factureModal');
+    const content = document.getElementById('modalContent');
+    const ext = fileUrl.split('.').pop().toLowerCase();
+    
+    if (['jpg','jpeg','png','gif'].includes(ext)) {
+        content.innerHTML = `<img src="${fileUrl}" class="w-full rounded">`;
+    } else if (ext === 'pdf') {
+        content.innerHTML = `<iframe src="${fileUrl}" class="w-full h-96"></iframe>`;
+    } else {
+        content.innerHTML = `<a href="${fileUrl}" download class="btn btn-primary">Télécharger (${ext})</a>`;
+    }
+    
+    modal.showModal();
+}
+</script>  

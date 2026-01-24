@@ -148,7 +148,8 @@ class RapportDepense(models.Model):
             ("brouillon", 'Brouillon'),
             ("soumis", 'Soumis'),
             ('valide','validé'),
-            ('rejete', "Rejeté")
+            ('rejete', "Rejeté"),
+            ('modifier', 'Demander des modifications')
                  ]
     demande_decaissement = models.ForeignKey(
         DemandeDecaissement,  # Assure-toi que c'est le bon chemin
@@ -181,7 +182,7 @@ class RapportDepense(models.Model):
                                     related_name="achats"
                                     )
     
-    facture = models.ImageField(upload_to="images/photo_facture/%Y/%m/%d", 
+    facture = models.ImageField(upload_to="images/photo_facture", 
                                 null=True, 
                                 blank=True)
     

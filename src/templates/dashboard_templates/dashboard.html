@@ -1,4 +1,5 @@
 {% load static  %}
+{% load humanize %}
 <!DOCTYPE html>
 <html lang="fr">
 <head>
@@ -140,11 +141,11 @@
                     <div class="space-y-3">
                         <div class="stat p-0">
                             <div class="stat-title">Chiffre d'affaire total</div>
-                            <div class="stat-value text-accent text-2xl">{{ chiffre_affaire_total|floatformat:0 }} FCFA</div>
+                            <div class="stat-value text-accent text-2xl">{{ chiffre_affaire_total|floatformat:1|intcomma }} FCFA</div>
                         </div>
                         <div class="stat p-0">
                             <div class="stat-title">Montant encaissé</div>
-                            <div class="stat-value text-success text-2xl">{{ montant_encaisse_total|floatformat:0 }} FCFA</div>
+                            <div class="stat-value text-success text-2xl">{{ montant_encaisse_total|floatformat:1|intcomma }} FCFA</div>
                         </div>
                         <div class="stat p-0">
                             <div class="stat-title">Taux d'encaissement moyen</div>
@@ -214,7 +215,7 @@
                         </svg>
                         <h3 class="card-title">Dépenses par catégorie</h3>
                         <div class="badge badge-lg badge-success ml-auto">
-                            Total: {{ total_depenses_mois|floatformat:0 }} FCFA
+                            Total: {{ total_depenses_mois|floatformat:1|intcomma }} FCFA
                         </div>
                     </div>
                     <div class="chart-container">
@@ -272,7 +273,7 @@
                                     </td>
                                     <td>{{ client.get_type_client_display }}</td>
                                     <td>{{ client.ville }}</td>
-                                    <td class="text-right font-bold">{{ client.total_ca|default:0|floatformat:0 }} FCFA</td>
+                                    <td class="text-right font-bold">{{ client.total_ca|default:0|floatformat:1|intcomma }} FCFA</td>
                                 </tr>
                                 {% empty %}
                                 <tr>
@@ -313,7 +314,7 @@
                                         <span class="inline-block w-3 h-3 rounded-full mr-2" style="background-color: {{ depense.couleur|default:'#ccc' }}"></span>
                                         {{ depense.categorie }}
                                     </td>
-                                    <td class="text-right font-bold">{{ depense.total_depenses_sum|default:0|floatformat:0 }} FCFA</td>
+                                    <td class="text-right font-bold">{{ depense.total_depenses_sum|default:0|floatformat:1|intcomma }} FCFA</td>
                                     <td class="text-right">{{ depense.nombre_utilisation|default:0 }}</td>
                                     <td class="text-right">{{ depense.total_pourcentage|floatformat:0 }}%</td>
                                 </tr>
@@ -327,6 +328,44 @@
                     </div>
                 </div>
             </div>
+
+            <!-- TABLE TOP 5 Fournisseurs -->
+             <div class="card">
+                <div class="card-body">
+                    <div class="flex items-center gap-3 mb-4">
+                        <svg style="width:20px; height:20px" fill="currentColor" viewBox="0 0 20 20" class="text-primary">
+                            <path d="M9 6a3 3 0 11-6 0 3 3 0 016 0zM17 6a3 3 0 11-6 0 3 3 0 016 0zM12.93 17c.046-.327.07-.66.07-1a6.97 6.97 0 00-1.5-4.33A5 5 0 0119 16v1h-6.07zM6 11a5 5 0 015 5v1H1v-1a5 5 0 015-5z"/>
+                        </svg>
+                        <h3 class="card-title">Top 5 Fournisseurs par Somme Total Achats</h3>
+                    </div>
+                    <div class="overflow-x-auto">
+                        <table class="table table-zebra w-full">
+                            <thead>
+                                <tr class="bg-base-200">
+                                    <th>Nom</th>
+                                    <th>Nombre d'achats</th>
+                                    <th class="text-right">Somme total</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for fournisseur in top_fournisseur %}
+                                <tr>
+                                    <td>{{fournisseur.nom}}</td>
+                                    <td>{{ fournisseur.nombre_achats }}</td>
+                                    <td class="text-right font-bold">{{ fournisseur.total_achats_sum|floatformat:1|intcomma }} FCFA</td>
+                                    
+                                </tr>
+                                {% empty %}
+                                <tr>
+                                    <td colspan="4" class="text-center py-4">Aucun Fournisseur enregistrer</td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
         </div>
 
         <!-- ACTIONS RAPIDES -->
@@ -350,12 +389,6 @@
                             <path fill-rule="evenodd" d="M12.586 4.586a2 2 0 112.828 2.828l-3 3a2 2 0 01-2.828 0 1 1 0 00-1.414 1.414 4 4 0 005.656 0l3-3a4 4 0 00-5.656-5.656l-1.5 1.5a1 1 0 101.414 1.414l1.5-1.5zm-5 5a2 2 0 012.828 0 1 1 0 101.414-1.414 4 4 0 00-5.656 0l-3 3a4 4 0 105.656 5.656l1.5-1.5a1 1 0 10-1.414-1.414l-1.5 1.5a2 2 0 11-2.828-2.828l3-3z" clip-rule="evenodd"/>
                         </svg>
                         Nouveau chantier
-                    </a>
-                    <a href="/admin/" class="btn btn-accent gap-2">
-                        <svg style="width:20px; height:20px" fill="currentColor" viewBox="0 0 20 20">
-                            <path fill-rule="evenodd" d="M11.49 3.17c-.38-1.56-2.6-1.56-2.98 0a1.532 1.532 0 01-2.286.948c-1.372-.836-2.942.734-2.106 2.106.54.886.061 2.042-.947 2.287-1.561.379-1.561 2.6 0 2.978a1.532 1.532 0 01.947 2.287c-.836 1.372.734 2.942 2.106 2.106a1.532 1.532 0 012.287.947c.379 1.561 2.6 1.561 2.978 0a1.533 1.533 0 012.287-.947c1.372.836 2.942-.734 2.106-2.106a1.533 1.533 0 01.947-2.287c1.561-.379 1.561-2.6 0-2.978a1.532 1.532 0 01-.947-2.287c.836-1.372-.734-2.942-2.106-2.106a1.532 1.532 0 01-2.287-.947zM10 13a3 3 0 100-6 3 3 0 000 6z" clip-rule="evenodd"/>
-                        </svg>
-                        Administration
                     </a>
                 </div>
             </div>

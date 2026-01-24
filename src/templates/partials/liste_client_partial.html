@@ -89,7 +89,7 @@
             <!-- Chiffre d'affaires -->
             <td>
               <div class="space-y-1">
-                <div class="font-bold text-lg">{{ client.chiffre_daff_total|floatformat }} FCFA</div>
+                <div class="font-bold text-lg">{{ client.chiffre_daff_total|floatformat:1|intcomma }} FCFA</div>
                 <div class="text-sm text-gray-500">{{ client.total_contrats|default:"0" }} contrat(s)</div>
                 {% if client.potentiel_client %}
                 <div class="badge badge-sm {% if client.potentiel_client == 'élevé' %}badge-success{% elif client.potentiel_client == 'moyen' %}badge-warning{% else %}badge-error{% endif %}">

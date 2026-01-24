@@ -1,11 +1,12 @@
 from django import forms
 from .models import RapportDepense
-
-
+from django.core.mail import send_mail
+from django.conf import settings
+import logging
 from chantier_app.models import Chantier
 from employee_app.models import TypeDepense, Fournisseur
 
-
+logger = logging.getLogger(__name__)
 class RapportDepenseForm(forms.ModelForm):
     """Formulaire pour soumettre un rapport depense"""
     
@@ -39,6 +40,11 @@ class RapportDepenseForm(forms.ModelForm):
                 'class': 'forms-controle'
             }),
             
+            
+            'facture': forms.FileInput(attrs={
+                'class': 'file-input file-input-bordered w-full',
+                'accept': 'image/*,.pdf,.jpg,.jpeg,.png'}),
+            
             "note":forms.Textarea(attrs={
                 'rows':3,
                 'placeholder': 'Ex: Details suplementaire'
@@ -60,6 +66,12 @@ class RapportDepenseForm(forms.ModelForm):
         self.fields['note'].required=True
         self.fields['chantier'].required=False
         self.fields['demande_decaissement'].required=True
+        
+        # Personnaliser le champ facture
+        self.fields['facture'].required = False
+        self.fields['facture'].help_text = "Téléchargez la facture (image ou PDF)"
+        self.fields['facture'].label = "📄 Facture"
+        
         
         # Classes DaisyUI pour tous les champs
         base_classes = "input input-bordered w-300"
@@ -85,7 +97,7 @@ class RapportDepenseForm(forms.ModelForm):
             from django.utils import timezone
             from secretaire_app.models import DemandeDecaissement
             
-            date_limite = timezone.now() - timedelta(hours=48)
+            date_limite = timezone.now() - timedelta(hours=72)
             
             self.fields['demande_decaissement'].queryset = DemandeDecaissement.objects.filter(
                 demandeur=self.employee,# ou le champ qui lie à l'employé
@@ -177,14 +189,84 @@ class ValidationRapportForm(forms.ModelForm):
         if action == "valide":
             rapport.status = 'valide'
             rapport.note += f"\n[VALIDE] {commentaire}"
+            try:
+                # Envoi d'un email de notification à l'employé
+                send_mail(
+                    subject='✅ Votre rapport de dépense a été validé',
+                    message=f"""
+                    Bonjour {rapport.employee.username},
+                    
+                    Votre rapport de dépense concernant "{rapport.materiau_article}" 
+                    pour un montant de {rapport.prix_unitaire * rapport.quantité} FCFA a été validé.
+                    
+                    Merci pour votre diligence.
+                    
+                    Cordialement,
+                    L'équipe de gestion des dépenses
+                    """,
+                    from_email="sanbasystemegestion@gmail.com",
+                    recipient_list=[rapport.employee.email, "nasserdevtest@gmail.com"],
+                    fail_silently=True
+                )
+            except Exception as e:
+                logger.error(f"Erreur envoi mail validation rapport {e}")
+                
             
         elif action == 'rejete':
             rapport.status ="rejete"
             rapport.note = f'\n[REJETE] {commentaire}'
+            try:
+                # Envoi d'un email de notification à l'employé
+                send_mail(
+                    subject='❌ Votre rapport de dépense a été rejeté',
+                    message=f"""
+                    Bonjour {rapport.employee.username},
+                    
+                    Nous regrettons de vous informer que votre rapport de dépense concernant 
+                    {rapport.materiau_article} pour un montant de {rapport.prix_unitaire * rapport.quantité} FCFA a été rejeté.
+                    
+                    Commentaire du gestionnaire : {commentaire}
+                    
+                    Veuillez prendre les mesures nécessaires.
+                    
+                    Cordialement,
+                    L'équipe de gestion des dépenses
+                    """,
+                    from_email="sanbasystemegestion@gmail.com",
+                    recipient_list=[rapport.employee.email, "nasserdevtest@gmail.com"],
+                    fail_silently=True
+                    
+                )
+            except Exception as e:
+                logger.error(f"Erreur envoi mail rejet rapport {e}")
+                
         
         elif action == "modifier":
-            rapport.status == "modifier"
+            rapport.status = "modifier"
             rapport.note = f'\n[A MODIFIER {commentaire}]'
+            try:
+                # Envoi d'un email de notification à l'employé
+                send_mail(
+                    subject='📝 Modifications requises pour votre rapport de dépense',
+                    message=f"""
+                    Bonjour {rapport.employee.username},
+                    
+                    Votre rapport de dépense concernant {rapport.materiau_article} 
+                    nécessite des modifications avant validation.
+                    
+                    Commentaire du gestionnaire : _ {commentaire} _
+                    
+                    Merci de bien vouloir apporter les modifications nécessaires.
+                    
+                    Cordialement,
+                    L'équipe de gestion des dépenses
+                    """,
+                    from_email="sanbasystemegestion@gmail.com",
+                    recipient_list=[rapport.employee.email, "nasserdevtest@gmail.com"],
+                    fail_silently=True
+                )
+            except Exception as e:
+                logger.error(f"Erreur envoi mail modification rapport {e}")
         
         if commit:
             rapport.save()

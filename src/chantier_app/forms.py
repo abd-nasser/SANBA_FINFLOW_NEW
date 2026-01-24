@@ -32,7 +32,7 @@ class ChantierInfoForm(forms.ModelForm):
         # 🎯 Verifie si c'est une modification
         if self.instance and self.instance.pk:
             # 🎯 MODIFICATION : référence en lecture seule
-            self.fields['reference'].required = False  # Non requis
+            self.fields['reference'].initial = self.instance.reference 
             self.fields['reference'].widget.attrs.update({
                 'readonly': True,
                 'disabled': True,  # Empêche l'envoi de la valeur
@@ -64,25 +64,20 @@ class ChantierInfoForm(forms.ModelForm):
                 field.widget.attrs['class'] = "checkbox"
     
     def clean_reference(self):
-        """Validation intelligente qui gère création ET modification"""
+        """Validation qui fonctionne pour create et update"""
         reference = self.cleaned_data.get('reference')
         
-        # 🎯 Si modification, on garde TOUJOURS l'ancienne valeur
+        # Mode UPDATE : on retourne toujours la valeur existante
         if self.instance and self.instance.pk:
-            # Si le champ est disabled, il ne sera pas dans cleaned_data
-            # On retourne donc la valeur existante
-            if 'reference' not in self.cleaned_data:
-                return self.instance.reference
-            
-            # Si par hasard il y a une valeur (POST malgré disabled)
-            # On l'ignore et on retourne l'ancienne
             return self.instance.reference
         
-        # 🎯 Si création, on vérifie l'unicité
-        if Chantier.objects.filter(reference=reference).exists():
+        # Mode CREATE : on vérifie l'unicité
+        if reference and Chantier.objects.filter(reference=reference).exists():
             raise forms.ValidationError("Cette référence existe déjà")
         
         return reference
+            
+     
     
     def clean(self):
         """Nettoyage global du formulaire"""

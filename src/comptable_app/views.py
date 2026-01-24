@@ -1,6 +1,7 @@
 from django.utils import timezone
 from django.shortcuts import render
-
+from auth_app.form import ChangeCredentialsForm
+from auth_app.form import PersonnelRegisterForm
 from django.shortcuts import render, get_object_or_404, redirect
 from directeur_app.models import FondDisponible, Historique_dajout_fond
 from secretaire_app.models import DemandeDecaissement
@@ -18,6 +19,8 @@ def comptable_view(request):
     ctx = {
             "list_demande": list_demande,
             "fond":fond.montant,
+            "ch_form":ChangeCredentialsForm(request.user),
+            "form":PersonnelRegisterForm()
            }
     return render(request, "comptable_templates/comptable.html", ctx)
 

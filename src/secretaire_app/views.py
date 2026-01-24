@@ -6,7 +6,11 @@ from django.views.generic import ListView
 import django_htmx
 from django.db.models import Sum, Count, Q
 from django.core.mail import send_mail
-
+from django.conf import settings
+from datetime import timedelta
+from django.utils import timezone
+from secretaire_app.models import DemandeDecaissement
+        
 from client_app.forms import ClientForm
 from .forms import DemandeDecaissementForm
 from .models import DemandeDecaissement
@@ -31,17 +35,19 @@ def demande_decaissement_view(request):
                 demande = form.save()
                 
                 # Après succès d'envoie de demande
-                
-                #send_mail(
-                    #subject=" Demande Décaissement de ",
-                    #message=f"""Bonjour, Mr {demande.demandeur.username},
-                    #\n demande un décaissement de {form.cleaned_data.get('montant')} FCFA'
-                    #\n pour {form.cleaned_data.get("motif")}
-                    #\n plus d'information : https//directeur/directeur-interface.
-                    #""" ,
-                    #from_email="caisse@sanba.bf",
-                    #recipient_list=['directeur@gmail.com', 'comptable@gmail.com']
-                #)
+                try:
+                    send_mail(
+                        subject=" Demande Décaissement 💰", 
+                        message=f"""Bonjour, Mr {demande.demandeur.username},
+                        \n demande un décaissement de {form.cleaned_data.get('montant')} FCFA'
+                        \n pour {form.cleaned_data.get("motif")}
+                    \n plus d'information : https//sanba/finflow/gestion.org
+                    """ ,
+                    from_email=settings.EMAIL_HOST_USER,
+                    recipient_list=['directeur@gmail.com', "adaneoued@gmail.com"]
+                    )
+                except Exception as e:
+                    logger.error(f"Erreur envoi mail demande décaissement {e}")
                                 
                 
                 return redirect("secretaire_app:secretaire-view")
@@ -96,15 +102,40 @@ def valider_decaissement_view(request, decaissement_id):
             messages.success(request, f"{request.user} viens de faire le decaissement de  {decaissement.montant} FCFA pour  {decaissement.demandeur.username} ")
             logger.info(f"Décaissement #{decaissement_id}: {decaissement.montant} FCFA -> {decaissement.demandeur.username}")
             
+            try:
             # Après succès
-            #from django.core.mail import send_mail
-            #send_mail(
-                #subject=f"💰 Décaissement {decaissement.montant} FCFA",
-                #message=f"Bonjour {decaissement.demandeur.username}, votre décaissement a été effectué.",
-                #from_email="caisse@sanba.bf",
-                #recipient_list=[decaissement.demandeur.email, request.user.email]
-            #)
-                        
+                send_mail(
+                    subject=f"💰 Décaissement {decaissement.montant} FCFA",
+                    message=f"Décaissement pour {decaissement.demandeur.username}, a été effectué.",
+                    from_email=settings.EMAIL_HOST_USER,
+                    recipient_list=[decaissement.demandeur.email, request.user.email,"adaneoued@gmail.com"]
+                )
+            except Exception as e:
+                logger.error(f"Erreur envoi mail décaissement {e}")
+            
+            time_limite = timezone.now() - timedelta(hours=48)
+            if decaissement.decaisse==True and decaissement.rapports_depense is None and decaissement.date_decaissement <= time_limite:
+                messages.warning(request, f"⚠️ Attention {decaissement.demandeur.username} n'a pas encore soumis son rapport de dépense pour le décaissement, référence:{decaissement.reference_demande} fait il y a plus de 48 heures.")
+                
+                try:
+                    send_mail(
+                        subject="⚠️ Rapport de Dépense en Retard",
+                        message=f"Bonjour {decaissement.demandeur.username}, n'a pas encore soumis son rapport de dépense pour le décaissement fait il y a plus de 48 heures.",
+                        from_email=settings.EMAIL_HOST_USER,    
+                        recipient_list=[request.user.email, "directeur@gmail.com", "adaneoued@gmail.com"]
+                    )   
+                except Exception as e:
+                    logger.error(f"Erreur envoi mail rapport retard {e}")
+                
+                try:
+                    send_mail(
+                        subject="⚠️ Rapport de Dépense en Retard",
+                        message=f"Bonjour {decaissement.demandeur.username}, vous n'avez pas encore soumis votre rapport de dépense pour le décaissement effectué il y a plus de 48 heures. Veuillez le faire dès que possible.",
+                        from_email=settings.EMAIL_HOST_USER,        
+                        recipient_list=[decaissement.demandeur.email]
+                    )
+                except Exception as e:
+                    logger.error(f"Erreur envoi mail rapport retard {e}")
 
     except Exception as e:
         logger.error(f"erreur decaissement {e}")

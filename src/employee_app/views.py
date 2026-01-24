@@ -1,4 +1,4 @@
-from django.views.generic import CreateView, ListView, TemplateView
+from django.views.generic import CreateView, ListView, TemplateView, UpdateView
 from django.utils import timezone
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.contrib import messages
@@ -25,8 +25,6 @@ class CreerRapportDepenseView(LoginRequiredMixin, CreateView):
         kwargs['employee'] = self.request.user
         return kwargs
     
-    def form_invalid(self, form):
-        return super().form_invalid(form)
             
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
@@ -35,31 +33,54 @@ class CreerRapportDepenseView(LoginRequiredMixin, CreateView):
         context["ch_form"]= ChangeCredentialsForm(self.request.user)
         
         context["total_rapport"]=RapportDepense.objects.filter( employee = self.request.user).count()
+        # Debug: vérifier si le form a le champ facture
+        print("Champs du form:", [f.name for f in context["rapport_form"]])
+        print("Facture field:", context["rapport_form"]["facture"])
            
-        
-        
         return context
         
    
         
         
     def form_valid(self, form):
-        """Associe l'employé automatiquement"""
+        """Associe l'employé et gère l'upload de fichier"""
         form.instance.employee = self.request.user
         form.instance.status = 'soumis'
         
-        # Message amélioré avec le lien
-        if form.instance.demande_decaissement:
-            messages.success(self.request,
-                f'Rapport de {form.instance.total_affichage} soumis '
-                f'pour la demande "{form.instance.demande_decaissement.motif}"')
-        else:
-            messages.success(self.request,
-                f'Rapport de {form.instance.total_affichage} soumis '
-                f'(sans lien avec une demande)')
+        # Vérifier l'upload de fichier
+        if 'facture' in self.request.FILES:
+            uploaded_file = self.request.FILES['facture']
+            print(f"✅ Fichier uploadé: {uploaded_file.name} ({uploaded_file.size} bytes)")
+            
+            # Validation du fichier
+            max_size = 5 * 1024 * 1024  # 5MB
+            allowed_types = ['image/jpeg', 'image/png', 'image/jpg', 'application/pdf']
+            
+            if uploaded_file.size > max_size:
+                form.add_error('facture', 'Le fichier est trop volumineux (max 5MB)')
+                return self.form_invalid(form)
+            
+            if uploaded_file.content_type not in allowed_types:
+                form.add_error('facture', 'Format non supporté. Utilisez JPG, PNG ou PDF')
+                return self.form_invalid(form)
         
-        return super().form_valid(form)
+        # Sauvegarder
+        response = super().form_valid(form)
+        
+        # Message de succès
+        messages.success(
+            self.request,
+            f'✅ Rapport de {form.instance.total_affichage} soumis avec succès!'
+        )
+        
+        return response
     
+    def form_invalid(self, form):
+        """Debug en cas d'erreur"""
+        print("❌ Form invalid")
+        print("Errors:", form.errors)
+        print("Files:", self.request.FILES)
+        return super().form_invalid(form)
     
     
             
@@ -137,3 +158,73 @@ class BestEmployeeView(LoginRequiredMixin,TemplateView):
         }   
 
 
+class UpdateRapportView(LoginRequiredMixin, UpdateView):
+    model= RapportDepense
+    form_class = RapportDepenseForm
+    template_name="employee_templates/modifier_rapport.html"
+    context_object_name='rapport'
+    success_url = reverse_lazy('employee_app:mes-rapports')
+    
+    def get_form_kwargs(self):
+        """Passe l'employé connecté au formulaire"""
+        kwargs =super().get_form_kwargs()
+        kwargs['employee'] = self.request.user
+        return kwargs
+    
+            
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context["rapport_form"] = context["form"] 
+        context["form"]= ClientForm()
+        context["ch_form"]= ChangeCredentialsForm(self.request.user)
+        
+        context["total_rapport"]=RapportDepense.objects.filter( employee = self.request.user).count()
+        # Debug: vérifier si le form a le champ facture
+        print("Champs du form:", [f.name for f in context["rapport_form"]])
+        print("Facture field:", context["rapport_form"]["facture"])
+           
+        return context
+        
+   
+        
+        
+    def form_valid(self, form):
+        """Associe l'employé et gère l'upload de fichier"""
+        form.instance.employee = self.request.user
+        form.instance.status = 'soumis'
+        
+        # Vérifier l'upload de fichier
+        if 'facture' in self.request.FILES:
+            uploaded_file = self.request.FILES['facture']
+            print(f"✅ Fichier uploadé: {uploaded_file.name} ({uploaded_file.size} bytes)")
+            
+            # Validation du fichier
+            max_size = 5 * 1024 * 1024  # 5MB
+            allowed_types = ['image/jpeg', 'image/png', 'image/jpg', 'application/pdf']
+            
+            if uploaded_file.size > max_size:
+                form.add_error('facture', 'Le fichier est trop volumineux (max 5MB)')
+                return self.form_invalid(form)
+            
+            if uploaded_file.content_type not in allowed_types:
+                form.add_error('facture', 'Format non supporté. Utilisez JPG, PNG ou PDF')
+                return self.form_invalid(form)
+        
+        # Sauvegarder
+        response = super().form_valid(form)
+        
+        # Message de succès
+        messages.success(
+            self.request,
+            f'✅ Rapport de {form.instance.total_affichage} soumis avec succès!'
+        )
+        
+        return response
+    
+    def form_invalid(self, form):
+        """Debug en cas d'erreur"""
+        print("❌ Form invalid")
+        print("Errors:", form.errors)
+        print("Files:", self.request.FILES)
+        return super().form_invalid(form)
+    

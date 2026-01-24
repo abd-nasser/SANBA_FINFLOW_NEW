@@ -1,5 +1,6 @@
 {% load static %}
 {% load tailwind_tags %}
+{% load humanize %}
 <!DOCTYPE html>
 <html lang="fr">
 <head>
@@ -190,14 +191,14 @@
         
         <section>
             <h3>CONDITIONS FINANCIÈRES</h3>
-            <p><strong>Montant total :</strong> {{ contrat.montant_total }} FCFA</p>
+            <p><strong>Montant total :</strong> {{ contrat.montant_total|floatformat:1|intcomma }} FCFA</p>
             <p><strong>Mode de paiement :</strong> {{ contrat.get_mode_paiement_display }}</p>
-            <p><strong>Acompte :</strong> {{ contrat.acompte_pourcentage }}% ({{ contrat.montant_acompte }} FCFA)</p>
+            <p><strong>Acompte :</strong> {{ contrat.acompte_pourcentage }}% ({{ contrat.montant_acompte|floatformat:1|intcomma }} FCFA)</p>
             {% if contrat.mode_paiement == 'tranche' %}
             <p><strong>Nombre de tranches :</strong> {{ contrat.nombre_tranches }}</p>
             {% endif %}
-            <p><strong>Montant encaissé :</strong> {{ contrat.montant_encaisse }} FCFA</p>
-            <p><strong>Solde restant :</strong> {{ contrat.solde_restant }} FCFA</p>
+            <p><strong>Montant encaissé :</strong> {{ contrat.montant_encaisse|floatformat:1|intcomma }} FCFA</p>
+            <p><strong>Solde restant :</strong> {{ contrat.solde_restant|floatformat:1|intcomma }} FCFA</p>
              <button onclick="openPaiementModal()" class="btn btn-success btn-sm">
   Nouveau paiement
 </button>

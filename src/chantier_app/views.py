@@ -6,7 +6,7 @@ from django.views.generic import ListView, CreateView , DetailView, UpdateView, 
 from django.contrib import messages
 from django.utils import timezone
 from chantier_app import models
-from django.db.models import Q
+from django.db.models import Q, Sum, F
 from django.contrib.auth.decorators import login_required
 
 from chantier_app.models import Chantier
@@ -81,14 +81,6 @@ class ChantierListeView(LoginRequiredMixin, ListView):
                Q(client__raison_sociale__icontains=search_query)|
                Q(reference__icontains=search_query)
            )
-           
-       ########################__ #  4️⃣ FILTRE AUTO PAR RÔLE (SÉCURITÉ + UX) __############################
-       user = self.request.user
-       if user.post and user.post.nom != "Directeur":
-           queryset = queryset.filter(
-               Q(chef_de_chantier=user)|
-               Q(equipe_affectee=user)
-           ).distinct()
         
        return queryset.order_by('-date_creation')
    
@@ -199,7 +191,14 @@ class ChantierDetailView(LoginRequiredMixin, DetailView):
     def get_context_data(self, **kwargs):
         """On peut ajouter des données supplémentaires au template"""
         #Récupère le contexte de base (le chantier)
-        return super().get_context_data(**kwargs)
+        context = super().get_context_data(**kwargs)
+        chantier = self.get_object() #le chantier actuel
+        #Ajoute des données supplémentaires
+        context['total_depenses'] = chantier.depenses.aggregate(
+            total = Sum(F('prix_unitaire') * F('quantité'))
+        )["total"] or 0
+       
+        return context
         
 
 class ChantierUpdateView(LoginRequiredMixin, SessionWizardView):
@@ -207,7 +206,7 @@ class ChantierUpdateView(LoginRequiredMixin, SessionWizardView):
     🎯 MODIFICATION avec Wizard - Version SIMPLE
     Même structure que ta CreateView
     """
-    
+   
     form_list = [
         ("info", ChantierInfoForm),
         ("localisation", ChantierLocalisationForm), 
@@ -215,8 +214,10 @@ class ChantierUpdateView(LoginRequiredMixin, SessionWizardView):
         ("planning", ChantierPlanningForm),
         ("budget", ChantierBudgetForm),
     ]
-    template_name = "modal/modifier_chantier.html"
     
+    template_name = "modal/modifier_chantier.html"
+  
+
     def get_form_initial(self, step):
         """
         🎯 CHARGE les données du chantier à modifier

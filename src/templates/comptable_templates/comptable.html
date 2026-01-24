@@ -1,5 +1,6 @@
 {% load static %}
 {% load tailwind_tags %}
+{% load humanize %}
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -21,7 +22,7 @@
         </nav>
         <header>
             <h1>SANBA STRUCTURE METTALIQUE</h1>
-            <h3 class="txt-fond">Fond disponible: <span class="fond">{{ fond }}</span></h3>
+            <h3 class="txt-fond">Fond disponible: <span class="fond">{{ fond|floatformat:1|intcomma }} FCFA</span></h3>
                 <div class="action">
                     <div class="right_actions">
                         
@@ -56,6 +57,7 @@
                 <section class="historique_section">
                     <a class="btn" href="{% url 'secretaire_app:hist-demande-decaisse' %}">Historique des demandes</a>
                     <a class="btn" href="{% url 'directeur_app:historique-fonds' %}">historique 'ajouts fonds</a>
+                    <a class="btn" href="{% url 'employee_app:employee-view' %}" >📋 Envoyer un rapport</a>
                 </section>
 
                 <section class="views_section">
@@ -82,7 +84,7 @@
                 {% for demande in list_demande %}
                 <div class="demande_card">
                     <span><strong>Nom:</strong> <em>{{ demande.demandeur.username }}</em></span>
-                    <span><strong>Montant:</strong> <em>{{ demande.montant }} FCFA</em></span>
+                    <span><strong>Montant:</strong> <em>{{ demande.montant|floatformat:1|intcomma }} FCFA</em></span>
                     
                     {% if  demande.chantier %}
                     <span><strong>Chantier:</strong> <em>{{ demande.chantier }}</em></span>

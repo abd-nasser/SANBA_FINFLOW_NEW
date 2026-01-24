@@ -27,7 +27,7 @@
                         </td>
                         <td class="font-semibold">{{ hist.demandeur.username }}</td>
                         <td class="font-bold text-green-600">
-                            {{ hist.montant|floatformat:0 }} FCFA
+                            {{ hist.montant|floatformat:1|intcomma }} FCFA
                         </td>
                         <td>
                             {% if hist.chantier %}

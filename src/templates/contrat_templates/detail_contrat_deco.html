@@ -1,5 +1,6 @@
 {% load static %}
 {% load tailwind_tags %}
+{% load humanize %}
 <!DOCTYPE html>
 <html lang="fr">
 <head>
@@ -266,7 +267,7 @@
         
         <section>
             <h3>CONDITIONS FINANCIÈRES</h3>
-            <p><strong>Montant total :</strong> {{ contrat.montant_total }} FCFA</p>
+            <p><strong>Montant total :</strong> {{ contrat.montant_total|floatformat:1|intcomma }} FCFA</p>
             <p><strong>Acompte :</strong> {{ contrat.acompte_pourcentage }}% à la signature</p>
             <p><strong>Solde :</strong> À la réception des travaux</p>
             {% if contrat.mode_paiement == 'tranche' %}
@@ -276,8 +277,8 @@
 
         <section>
             <h3>ÉTAT DES PAIEMENTS</h3>
-            <p><strong>Montant déjà encaissé :</strong> {{ contrat.montant_encaisse }} FCFA</p>
-            <p><strong>Solde restant :</strong> {{ contrat.solde_restant }} FCFA</p>
+            <p><strong>Montant déjà encaissé :</strong> {{ contrat.montant_encaisse|floatformat:1|intcomma }} FCFA</p>
+            <p><strong>Solde restant :</strong> {{ contrat.solde_restant|floatformat:1|intcomma }} FCFA</p>
             <p><strong>Pourcentage payé :</strong> {{ contrat.pourcentage_encaisse|floatformat:2 }}%</p>
             {% if contrat.date_du_dernier_paiement %}
             <p><strong>Dernier paiement :</strong> {{ contrat.date_du_dernier_paiement }}</p>

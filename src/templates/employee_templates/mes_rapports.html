@@ -1,5 +1,6 @@
 {% load static %}
 {% load tailwind_tags %}
+{% load humanize %}
 <!DOCTYPE html>
 <html lang="fr">
 <head>
@@ -63,6 +64,7 @@
                             <th class="font-bold text-gray-700">Fournisseur</th>
                             <th class="font-bold text-gray-700">Facture</th>
                             <th class="font-bold text-gray-700">Date Soumission</th>
+                            <th class="font-bold text-gray-700">statut</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -113,7 +115,7 @@
                             <!-- Prix Unitaire -->
                             <td class="text-right">
                                 <span class="font-bold text-green-600">
-                                    {{ rapport.prix_unitaire|floatformat:0 }} FCFA
+                                    {{ rapport.prix_unitaire|floatformat:1|default:"0"|intcomma }} FCFA
                                 </span>
                             </td>
                             
@@ -121,7 +123,7 @@
                             <td class="text-right">
                                 <span class="font-bold text-blue-600">
                                     {% widthratio rapport.prix_unitaire 1 rapport.quantité as total %}
-                                    {{ total }} FCFA
+                                    {{ total|floatformat:1|intcomma }} FCFA
                                 </span>
                             </td>
                             
@@ -146,18 +148,34 @@
                             </td>
                             
                             <!-- Facture -->
+
                             <td>
                                 {% if rapport.facture %}
-                                    <span class="badge badge-primary">
-                                        {{ rapport.facture|truncatechars:15 }}
+                                <div class="flex items-center gap-2">
+                                    <!-- Badge format -->
+                                    <span class="badge badge-xs badge-outline">
+                                        {{ rapport.facture.name|slice:"-3:"|upper }}
                                     </span>
+                                    
+                                    <!-- Actions -->
+                                    <div class="flex gap-1">
+                                        <button onclick="openFactureModal('{{ rapport.facture.url }}')"
+                                                class="btn btn-ghost btn-xs">
+                                            👁️
+                                        </button>
+                                        <a href="{{ rapport.facture.url }}" 
+                                        download
+                                        class="btn btn-ghost btn-xs">
+                                            ⬇️
+                                        </a>
+                                    </div>
+                                </div>
                                 {% else %}
-                                    <span class="text-amber-600 font-semibold tooltip" data-tip="Important pour l'entreprise">
-                                        ⚠️ Absente
-                                    </span>
+                                <span class="text-amber-600 font-semibold tooltip" data-tip="Important pour l'entreprise">
+                                                                    ⚠️ Absente
+                                </span>
                                 {% endif %}
-                            </td>
-                            
+                            </td>        
                             <!-- Date Soumission -->
                             <td>
                                 <div class="tooltip" data-tip="{{ rapport.date_creation|date:'H:i' }}">
@@ -166,7 +184,24 @@
                                     </span>
                                 </div>
                             </td>
+                            <!-- status -->
+                            
+                            {% if rapport.status == "modifier"  %}
+                                 <td>
+                                    <a href="{% url 'employee_app:modifier-rapport' rapport.id %}" class="btn-xs btn-modif">
+                                    <svg style="width: 20px; height: 20px;" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/>
+                                    </svg>
+                                    Modifier
+                                  </a>
+                            </td>
+                            {% else %}
+                            <td>{{ rapport.status }}</td>
+                            {% endif %}
+                                
+                            
                         </tr>
+                        
                         {% empty %}
                         <tr>
                             <td colspan="11" class="text-center py-12">
@@ -192,7 +227,7 @@
                                         {% with total_general=total_general|add:subtotal %}
                                         {% endwith %}
                                     {% endfor %}
-                                    {{ total_general }} FCFA
+                                    {{ total_general|floatformat:1|intcomma }} FCFA
                                 {% endwith %}
                             </th>
                             <th colspan="4"></th>
@@ -200,6 +235,20 @@
                     </tfoot>
                 </table>
             </div>
+
+
+
+            <!-- JUSTE après ta table (à la fin de ton template) -->
+<dialog id="factureModal" class="modal">
+    <div class="modal-box">
+        <form method="dialog">
+            <button class="btn btn-sm btn-circle btn-ghost absolute right-2 top-2">✕</button>
+        </form>
+        <h3 class="font-bold text-lg mb-4">Facture</h3>
+        <div id="modalContent"></div>
+    </div>
+    <form method="dialog" class="modal-backdrop"><button>Fermer</button></form>
+</dialog>
 
                  <a href="{% url 'employee_app:employee-view' %}" class="btn btn-ghost">
         <svg style="width: 20px; height: 20px;" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -228,6 +277,25 @@
             </div>
         </div>
 </footer>
+<!-- Scripts pour ouvrir le modal -->
+<script>
+    function openFactureModal(fileUrl) {
+        const modal = document.getElementById('factureModal');
+        const content = document.getElementById('modalContent');
+        const ext = fileUrl.split('.').pop().toLowerCase();
+        
+        if (['jpg','jpeg','png','gif'].includes(ext)) {
+            content.innerHTML = `<img src="${fileUrl}" class="w-full rounded">`;
+        } else if (ext === 'pdf') {
+            content.innerHTML = `<iframe src="${fileUrl}" class="w-full h-96"></iframe>`;
+        } else {
+            content.innerHTML = `<a href="${fileUrl}" download class="btn btn-primary">Télécharger (${ext})</a>`;
+        }
+        
+        modal.showModal();
+    }
+</script>
+
     <!-- Scripts -->
     <script>
         // Initialiser les tooltips DaisyUI
@@ -290,5 +358,7 @@
             document.body.removeChild(link);
         }
     </script>
+
+
 </body>
 </html>

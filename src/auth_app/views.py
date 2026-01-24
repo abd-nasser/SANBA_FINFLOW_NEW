@@ -156,22 +156,23 @@ def change_credentials_view(request):
                 print(f"new_password: {new_password}")
                 print(f"new_username: {new_username}")
                 user.set_password(new_password)
-                
-                send_mail(
-                    subject="Identifiant Temporaire",
-                    message=f"""Bonjour, Mr/Mme {request.user.last_name},
-                    \n Vous venez de changer vos identifiant pour SANBA GESTION FINFLOW: 
-                    \n nouveau nom d'utilisateur = {new_username}
-                    \n  nouveau mot de passe = {new_password}
-                    \n Ces informations sont à titre personnel,
-                    \n Veuillez les garder en sécurité et privée
-                    """ ,
-                    from_email=settings.EMAIL_HOST_USER, #sender email defini at setting.py 
-                    fail_silently=False,
-                    recipient_list=[request.user.email]
-                )
-                messages.success(request, "Mot de pass changé avec succès")
-                
+                try: 
+                    send_mail(
+                        subject="Identifiant Temporaire",
+                        message=f"""Bonjour, Mr/Mme {request.user.last_name},
+                        \n Vous venez de changer vos identifiant pour SANBA GESTION FINFLOW: 
+                        \n nouveau nom d'utilisateur = {new_username}
+                        \n  nouveau mot de passe = {new_password}
+                        \n Ces informations sont à titre personnel,
+                        \n Veuillez les garder en sécurité et privée
+                        """ ,
+                        from_email=settings.EMAIL_HOST_USER, #sender email defini at setting.py 
+                        fail_silently=False,
+                        recipient_list=[request.user.email]
+                    )
+                    messages.success(request, "Mot de pass changé avec succès")
+                except Exception as e:
+                    logger.error(f"error{e} lors de l'envoie pour changement d'identifiant")
                 
             user.save()
             
@@ -229,7 +230,7 @@ def change_credentials_view(request):
                 return response
             
             elif request.user.post.nom == "Comptable":
-                response = render(request, "comptable_templates/comtable.html",{
+                response = render(request, "comptable_templates/comptable.html",{
                 "list_demande": list_demande,
                 "fond": fond.montant,
                 "ch_form": form,  # Le form avec erreurs

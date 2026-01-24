@@ -33,7 +33,7 @@
                 <div class="each_stat">
                          <div class="card bg-white shadow">
                         <div class="card-body p-4 text-center">
-                            <div class="text-2xl font-bold text-primary">{{ total_ajoutes|floatformat:0 }} FCFA</div>
+                            <div class="text-2xl font-bold text-primary">{{ total_ajoutes }} FCFA</div>
                             <div class="text-sm text-gray-500">💰 Total ajouté</div>
                         </div>
                     </div>
@@ -49,7 +49,7 @@
                 <div class="each_stat">
                       <div class="card bg-white shadow">
                         <div class="card-body p-4 text-center">
-                            <div class="text-2xl font-bold text-primary">{{ moyenne_ajout|floatformat:0 }} FCFA</div>
+                            <div class="text-2xl font-bold text-primary">{{ moyenne_ajout }} FCFA</div>
                             <div class="text-sm text-gray-500">📈 Moyenne par ajout</div>
                         </div>
                     </div>
@@ -111,7 +111,7 @@
                             </td>
                             <td>
                                 <span class="badge bg-success rounded-pill fs-6">
-                                    +{{ mouvement.montant|floatformat:0 }} FCFA
+                                    +{{ mouvement.montant }} FCFA
                                 </span>
                             </td>
                             <td>
@@ -183,7 +183,7 @@
                         <li class="list-group-item d-flex justify-content-between align-items-center">
                             <div>
                                 <strong>{{ user.nom__username }}</strong><br>
-                                <small>{{ user.total_ajoute|floatformat:0 }} FCFA</small>
+                                <small>{{ user.total_ajoute }} FCFA</small>
                             </div>
                             <span class="badge bg-primary rounded-pill">{{ user.nb_ajouts }} fois</span>
                         </li>

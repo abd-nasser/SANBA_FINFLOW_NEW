@@ -8,6 +8,7 @@ Ce template est utilisé pour tous les types de chantier sauf 'decoration' et 't
 {% endcomment %}
 {% load static %}
 {% load tailwind_tags %}
+{% load humanize %}
 <!DOCTYPE html>
 <html lang="fr">
 <head>
@@ -294,16 +295,16 @@ Ce template est utilisé pour tous les types de chantier sauf 'decoration' et 't
     <section>
         <h3>CONDITIONS FINANCIÈRES</h3>
         <div class="financial-info">
-            <p><strong>Montant total :</strong> {{ contrat.montant_total }} FCFA</p>
+            <p><strong>Montant total :</strong> {{ contrat.montant_total|floatformat:1|intcomma }} FCFA</p>
             <p><strong>Mode de paiement :</strong> {{ contrat.get_mode_paiement_display }}</p>
             
             {% if contrat.mode_paiement == 'tranche' %}
-            <p><strong>Acompte :</strong> {{ contrat.acompte_pourcentage }}% ({{ contrat.montant_acompte }} FCFA)</p>
+            <p><strong>Acompte :</strong> {{ contrat.acompte_pourcentage }}% ({{ contrat.montant_acompte|floatformat:1|intcomma }} FCFA)</p>
             <p><strong>Nombre de tranches :</strong> {{ contrat.nombre_tranches }}</p>
             {% endif %}
-            
-            <p><strong>Montant déjà encaissé :</strong> {{ contrat.montant_encaisse }} FCFA</p>
-            <p><strong>Solde restant :</strong> {{ contrat.solde_restant }} FCFA</p>
+
+            <p><strong>Montant déjà encaissé :</strong> {{ contrat.montant_encaisse|floatformat:1|intcomma }} FCFA</p>
+            <p><strong>Solde restant :</strong> {{ contrat.solde_restant|floatformat:1|intcomma }} FCFA</p>
             <p><strong>Pourcentage payé :</strong> {{ contrat.pourcentage_encaisse|floatformat:2 }}%</p>
         </div>
         

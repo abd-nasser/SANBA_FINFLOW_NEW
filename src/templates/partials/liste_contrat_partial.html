@@ -82,7 +82,7 @@
                 <div class="w-32">
                   <div class="flex justify-between text-xs mb-1">
                     <span>{{ contrat.pourcentage_encaisse|floatformat:0 }}%</span>
-                    <span>{{ contrat.montant_encaisse|floatformat:0 }}/{{ contrat.montant_total|floatformat:0 }}</span>
+                    <span>{{ contrat.montant_encaisse|floatformat:1|intcomma }}/{{ contrat.montant_total|floatformat:1|intcomma }}</span>
                   </div>
                   <progress class="progress progress-primary w-full h-2" 
                             value="{{ contrat.pourcentage_encaisse }}" 
@@ -94,9 +94,9 @@
             
             <td>
               <div class="space-y-1">
-                <div class="font-bold">{{ contrat.montant_total|floatformat:0 }} FCFA</div>
+                <div class="font-bold">{{ contrat.montant_total|floatformat:1|intcomma }} FCFA</div>
                 <div class="text-sm text-gray-500">
-                  Reste à payer: {{ contrat.solde_restant|floatformat:0 }} FCFA
+                  Reste à payer: {{ contrat.solde_restant|floatformat:1|intcomma }} FCFA
                 </div>
               </div>
             </td>

@@ -1,5 +1,6 @@
 {% load static %}
 {% load tailwind_tags %}
+{% load humanize %}
 <!DOCTYPE html>
 <html lang="fr">
 <head>
@@ -186,7 +187,7 @@
                 <div class="card bg-white shadow">
                         <div class="card-body p-4 text-center">
                                 <div class="text-2xl font-bold ">
-                                   {{total_general_depenses}} FCFA
+                                   {{total_general_depenses_valide|floatformat:1|intcomma}} FCFA
                                 </div>
                                 <div class="text-sm text-gray-500">Total Dépensé</div>
                         </div>
@@ -300,7 +301,7 @@
                            placeholder="Nom chantier, client..."
                            hx-get="{% url 'directeur_app:rapport-depense-employee' %}"
                            hx-target="#rapport_table"
-                           hx-trigger="keyup changed delay:400ms">
+                           hx-trigger="keyup delay:400ms">
                 </div>
                 
                
@@ -318,8 +319,9 @@
         </div>
          <!-- Vue Tableau -->
          <div id="rapport_table">
-                 {% include 'partials/rapport_employee_partial.html' %}      
+                 {% include 'partials/rapport_employee_partial.html' %}     
          </div>
+
         
      <div class="card-footer text-muted">
             <small>

@@ -58,16 +58,15 @@ class ClientListView(LoginRequiredMixin, ListView):
       ville = self.request.GET.get("villes")
       if ville:
           queryset = queryset.filter(ville=ville)
+          return queryset
           
      ########################__ # 3️⃣ FILTRER PAR POTENTIEL CLIENT __############################     
       potentiel = self.request.GET.get("potentiel")
       if potentiel:
           queryset = queryset.filter(potentiel_client=potentiel)
+          return queryset
           
-     ########################__ # 3️⃣ FILTRER PAR CLIENT FIDEL __############################
-      fidelite = self.request.GET.get("fidelite")
-      if fidelite:
-         queryset = queryset.filter(est_fidel=fidelite)
+
          
     ########################__ # 3️⃣ RECHERCHE TEXTE (nom chantier Ou client) __############################
       search_query = self.request.GET.get('q')
@@ -81,8 +80,7 @@ class ClientListView(LoginRequiredMixin, ListView):
               Q(pays__icontains=search_query)|
               Q(nom__icontains=search_query)|
               Q(prenom__icontains=search_query)|
-              Q(total_contrats__icontains=search_query)
-          
+              Q(commercial_attache__username__icontains=search_query)
               
           )
              

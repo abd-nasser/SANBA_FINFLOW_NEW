@@ -63,7 +63,7 @@
                     </td>
                     <td>
                         {% if chantier.budget_total %}
-                            <strong>{{ chantier.budget_total|floatformat:0 }} FCFA</strong>
+                            <strong>{{ chantier.budget_total|floatformat:1|intcomma }} FCFA</strong>
                         {% else %}
                             <span class="text-muted">Non défini</span>
                         {% endif %}

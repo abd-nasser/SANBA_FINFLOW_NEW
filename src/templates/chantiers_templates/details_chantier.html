@@ -1,5 +1,6 @@
 {% load static %}
 {% load tailwind_tags %}
+{% load humanize %}
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -247,23 +248,38 @@
           <div class="stats stats-vertical md:stats-horizontal shadow">
             <div class="stat">
               <div class="stat-title">Budget total</div>
-              <div class="stat-value">{{ chantier.budget_total|default:"0"|floatformat:0 }} FCFA</div>
+              <div class="stat-value">{{ chantier.budget_total|default:"0"|floatformat:1|intcomma }} FCFA</div>
               <div class="stat-desc">Alloué</div>
             </div>
             
             {% if chantier.cout_materiaux_estime %}
             <div class="stat">
               <div class="stat-title">Coût matériaux</div>
-              <div class="stat-value">{{ chantier.cout_materiaux_estime|floatformat:0 }} FCFA</div>
+              <div class="stat-value">{{ chantier.cout_materiaux_estime|floatformat:1|intcomma}} FCFA</div>
               <div class="stat-desc">Estimé</div>
             </div>
             {% endif %}
+
             
             {% if chantier.cout_main_oeuvre_estime %}
             <div class="stat">
               <div class="stat-title">Coût main d'œuvre</div>
-              <div class="stat-value">{{ chantier.cout_main_oeuvre_estime|floatformat:0 }} FCFA</div>
+              <div class="stat-value">{{ chantier.cout_main_oeuvre_estime|floatformat:1|intcomma }} FCFA</div>
               <div class="stat-desc">Estimé</div>
+            </div>
+            {% endif %}
+
+             {% if total_depenses %}
+            <div class="stat">
+              <div class="stat-title">Depense Total</div>
+              <div class="stat-value">{{ total_depenses|floatformat:1|intcomma }} FCFA</div>
+              <div class="stat-desc">Estimé</div>
+            </div>
+            {% else %}
+            <div class="stat">
+              <div class="stat-title">Depense Total</div>
+              <div class="stat-value"> 0.00 FCFA </div>
+              <div class="stat-desc">effectué</div>
             </div>
             {% endif %}
           </div>

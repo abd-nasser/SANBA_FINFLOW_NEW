@@ -335,7 +335,8 @@ class DashboardView(LoginRequiredMixin, TemplateView):
             
             # 2-################__DEPENSE PAR TYPE DETAILLE__##############
             depense_par_type = TypeDepense.objects.filter(
-                est_actif=True
+                est_actif=True,
+                rapports__status='valide'
             ).values("nom","categorie", "couleur").annotate(
                 total_depenses_sum = Sum(F("rapports__prix_unitaire") * F("rapports__quantité")),
                 nombre_utilisation = Count("rapports"),
@@ -388,7 +389,8 @@ class DashboardView(LoginRequiredMixin, TemplateView):
         
         # 6-################__TOP FOURNISSEUR__##############
         top_fournisseur = Fournisseur.objects.values('nom').annotate(
-            total_achats_sum = Sum(F("achats__prix_unitaire")*F("achats__quantité"))
+            total_achats_sum = Sum(F("achats__prix_unitaire")*F("achats__quantité"), filter=Q(achats__status='valide')),
+            nombre_achats = Count("achats", filter=Q(achats__status='valide'))
         ).exclude(total_achats_sum=None).order_by("-total_achats_sum")[:5] 
         
         

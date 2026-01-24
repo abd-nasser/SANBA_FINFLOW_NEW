@@ -1,6 +1,6 @@
-
 {% load static %}
 {% load tailwind_tags %}
+{% load humanize %}
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -70,10 +70,7 @@
             name="q" 
             hx-trigger="keyup changed delay:1s"
             hx-get="{% url 'client_app:liste-client' %}"
-            hx-target="#client_table"
-            hx-indicator="#loading"
-            hx-on::before-request="document.getElementById('client_table').style.background=black"
-            hx-on::after-request="document.getElementById('client_table').style.opacity= 1.0"
+            hx-target="#table_container"
             />
     </div>
            
@@ -133,24 +130,7 @@
         </select>
       </div>
       
-      <div class="form-control">
-        <label class="label">
-          <span class="label-text font-medium">Fidélité</span>
-        </label>
-        <select 
-        class="select select-bordered"
-        hx-get="{% url 'client_app:liste-client' %}"
-        hx-trigger="change"
-        hx-target="#table_container"
-        name="fidelite"
-        >
-          <option value="">Tous</option>
-          <option value="fidel">Client fidèle</option>
-          <option value="nouveau">Nouveau client</option>
-        </select>
-      </div>
-    </div>
-  </div>
+     
 
   
          {% include 'partials/liste_client_partial.html' %}

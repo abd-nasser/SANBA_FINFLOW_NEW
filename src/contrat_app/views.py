@@ -29,11 +29,21 @@ class ContratView(LoginRequiredMixin, ListView):
         queryset = Contrat.objects.all().select_related(
             'chantier'
         )
+        
+        ###########################___FILTRE PAR MODE DE PAIEMENT~__################################
+        mode_paiement = self.request.GET.get("mode_paiement")
+        if mode_paiement:
+            queryset = queryset.filter(mode_paiement=mode_paiement)
+            return queryset
+        
         #########################__RECHERCHE DE CONTRAT PAR NON CHANTIER__###########################
         search_query = self.request.GET.get('q')
         if search_query:
             queryset = queryset.filter(
+                Q(chantier__client__nom__icontains=search_query)|
+                 Q(chantier__client__prenom__icontains=search_query)|
                 Q(chantier__nom_chantier__icontains=search_query)|
+                Q(chantier__reference__icontains=search_query)|
                 Q(reference_contrat__icontains=search_query)
             )
         return  queryset
