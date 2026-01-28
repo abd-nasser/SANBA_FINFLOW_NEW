@@ -25,7 +25,8 @@ logger = logging.getLogger(__name__)
 
 def directeur_view(request):
     fond = get_object_or_404(FondDisponible, id=1)
-    list_demande = DemandeDecaissement.objects.all().order_by("-date_demande")[:5]
+    list_demande = DemandeDecaissement.objects.all().select_related(
+        "demandeur", "chantier", "approuve_par",).order_by("-date_demande")[:5]
     
     ctx = {
             "list_demande": list_demande,
@@ -68,6 +69,7 @@ def ajouter_fond(request):
 def historique_ajout_fonf(request):
     hist_fond = Historique_dajout_fond.objects.all().order_by('-date_ajout')
     
+    hist_fond_chart=Historique_dajout_fond.objects.all().order_by('date_ajout')
     # Calcul des stats
     total_ajoutes = hist_fond.aggregate(total=Sum('montant'))['total'] or 0
     moyenne_ajout = total_ajoutes / hist_fond.count() if hist_fond.count() > 0 else 0
@@ -83,6 +85,7 @@ def historique_ajout_fonf(request):
     
     context = {
         'hist_fond': hist_fond,
+        'hist_fond_chart': hist_fond_chart,
         'total_ajoutes': total_ajoutes,
         'moyenne_ajout': moyenne_ajout,
         'top_contributeurs': top_contributeurs,

@@ -14,7 +14,9 @@ logger = logging.getLogger(__name__)
 
 def comptable_view(request):
     fond = get_object_or_404(FondDisponible, id=1)
-    list_demande = DemandeDecaissement.objects.all().order_by("-date_demande")
+    list_demande = DemandeDecaissement.objects.all().select_related(
+        "demandeur", "chantier", "approuve_par",).order_by("-date_demande")[:5]
+    # list_demande = DemandeDecaissement.objects.all().order_by("-date_demande")[:5]
     
     ctx = {
             "list_demande": list_demande,

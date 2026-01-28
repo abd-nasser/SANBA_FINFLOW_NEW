@@ -56,13 +56,14 @@
     <button onclick="openClientModal()" class="btn btn-aj_client">
       Nouveau Client
     </button>
+   <!-- Modal pour ajouter un client -->  
+  </div>       
+  {% include 'modal/ajouter_client.html' %}
 
-  </div>
-
-  
-  <!-- Filtres -->
-  
-    <div class="form-control">
+  <!-- Filtres de recherche -->
+<div class="filter_container card bg-base-200 p-6 mb-8">
+<div class="filter grid grid-cols-1 md:grid-cols-4 gap-4">
+        <div class="form-control">
            <input  
             class="input input_search input-neutral input-bordered w-full" 
             type="search" 
@@ -72,12 +73,8 @@
             hx-get="{% url 'client_app:liste-client' %}"
             hx-target="#table_container"
             />
-    </div>
-           
-            
-  
-  <div class="filtre_container card bg-base-200 p-6 mb-8">
-    <div class="filter grid grid-cols-1 md:grid-cols-4 gap-4">
+          </div>
+
       <div class="form-control">
         <label class="label">
           <span class="label-text font-medium">Type de client</span>
@@ -109,6 +106,15 @@
           <option value="">Toutes les villes</option>
           <option value="Ouagadougou">Ouagadougou</option>
           <option value="Bobo-Dioulasso">Bobo-Dioulasso</option>
+          <option value="Koudougou">Koudougou</option>
+          <option value="Banfora">Banfora</option>
+          <option value="Fada N'gourma">Fada N'gourma</option>
+          <option value="Ouahigouya">Ouahigouya</option>
+          <option value="Dori">Dori</option>
+          <option value="Tenkodogo">Tenkodogo</option>
+          <option value="Kaya">Kaya</option>
+          <option value="Ziniaré">Ziniaré</option>
+
           <!-- Autres villes -->
         </select>
       </div>
@@ -129,38 +135,16 @@
           <option value="élevé">Élevé</option>
         </select>
       </div>
-      
-     
-
-  
-         {% include 'partials/liste_client_partial.html' %}
-   
-   
-    <!-- Pagination -->
-    {% if is_paginated %}
-    <div class="border-t px-6 py-4">
-      <div class="flex justify-center">
-        <div class="join">
-          {% if page_obj.has_previous %}
-          <a href="?page={{ page_obj.previous_page_number }}" class="join-item btn">«</a>
-          {% endif %}
-          <span class="join-item btn">Page {{ page_obj.number }} sur {{ page_obj.paginator.num_pages }}</span>
-          {% if page_obj.has_next %}
-          <a href="?page={{ page_obj.next_page_number }}" class="join-item btn">»</a>
-          {% endif %}
-        </div>
-      </div>
     </div>
-    {% endif %}
-  </div>
-<!-- Modal pour ajouter un client -->
-{% include 'modal/ajouter_client.html' %}
+</div>
+  <!-- Table des clients -->
+         {% include 'partials/liste_client_partial.html' %}
 
-
-<div class="card-footer text-muted">
+  <!-- Bas de page -->
+          <div class="card-footer text-muted">
             <small>
                 <i class="fas fa-shield-alt"></i> 
-                Système Gestion chantier client - Toutes les modifications sont permanentes.
+                Système Gestion  client - Toutes les modifications sont permanentes.
             </small>
             
             {% if user.is_authenticated and user.post.nom == 'Directeur' %}
@@ -174,7 +158,7 @@
             {% endif %}
                 
         </div>
-        </main>
+</main>
 
            <!-- Footer -->
 <footer class="bg-gray-900 text-white mt-12">

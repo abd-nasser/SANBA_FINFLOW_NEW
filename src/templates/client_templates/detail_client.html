@@ -36,14 +36,14 @@
         </svg>
         Modifier
         </button>
-      {% include 'modal/supprimer_client.html' %}
+     
      <button class="btn btn-supp_client" onclick="modal_supp_client.showModal()">
       <svg style="width: 20px; height: 20px;" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
         </svg>
       Supprimer
     </button>
-    
+     {% include 'modal/supprimer_client.html' %}
     </div>
         </header>
       <main>
@@ -74,7 +74,7 @@
       </div>
       
       <!-- Badges -->
-      <div class="flex gap-2 mb-6">
+      <div class="flex-wrap gap-2 mb-6">
         <span class="badge badge-outline">{{ client.get_type_client_display }}</span>
         {% if client.potentiel_client %}
         <div class="badge 
@@ -229,7 +229,7 @@
           <div class="space-y-3">
             {% for chantier in client_all_chantiers %}
             <div class="border rounded-lg p-3 hover:bg-base-200">
-              <a href="{% url 'chantier_app:detail-chantier' chantier.id %}" class="font-medium hover:text-primary block">
+              <a href="{% url 'chantier_app:detail-chantier' chantier.id %}" class="font-medium link hover:text-primary block">
                 {{ chantier.nom_chantier }}
               </a>
               <div class="flex justify-between text-sm mt-1">

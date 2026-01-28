@@ -1,5 +1,6 @@
 {% load static %}
 {% load tailwind_tags %}
+{% load humanize %}
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -49,7 +50,7 @@
                 <div class="each_stat">
                       <div class="card bg-white shadow">
                         <div class="card-body p-4 text-center">
-                            <div class="text-2xl font-bold text-primary">{{ moyenne_ajout }} FCFA</div>
+                            <div class="text-2xl font-bold text-primary">{{ moyenne_ajout|floatformat:1|intcomma }} FCFA</div>
                             <div class="text-sm text-gray-500">📈 Moyenne par ajout</div>
                         </div>
                     </div>
@@ -85,6 +86,8 @@
                             <th><i class="fas fa-calendar"></i> Date & Heure</th>
                             <th><i class="fas fa-user"></i> Responsable</th>
                             <th><i class="fas fa-money-bill-wave"></i> Montant Ajouté</th>
+                            <th><i class="fas fa-plus-circle"></i> Type de Dépôt</th>
+                            <th><i class="fas fa-sticky-note"></i> Notes</th>
                             <th><i class="fas fa-file-invoice"></i> Référence</th>
                             <th><i class="fas fa-clock"></i> Il y a</th>
                         </tr>
@@ -111,15 +114,34 @@
                             </td>
                             <td>
                                 <span class="badge bg-success rounded-pill fs-6">
-                                    +{{ mouvement.montant }} FCFA
+                                    +{{ mouvement.montant|floatformat:1|intcomma }} FCFA
                                 </span>
                             </td>
+
+                             <td>
+                                <span class="badge bg-warning rounded-pill fs-6">
+                                    {{ mouvement.type_depot }}
+                                </span>
+                            </td>
+                            
+                            {% if mouvement.notes %}
+                            <td>
+                                <span class="badge bg-info rounded-pill fs-6">
+                                    {{ mouvement.notes }}
+                                </span>
+                            </td>
+                            {% else %}
+                            <td>
+                                <span class="text-muted">-</span>
+                            </td>
+                            {% endif %}
+                                
                             <td>
                                 <small class="text-muted">FOND-{{ mouvement.date_ajout|date:"Ymd" }}-{{ mouvement.id }}</small>
                             </td>
                             <td>
-                                {% with delta=movement.date_ajout|timesince %}
-                                <span class="badge {% if 'jour' in delta %}bg-warning{% else %}bg-info{% endif %}">
+                                {% with delta=mouvement.date_ajout|timesince %}
+                                <span class="badge {% if 'jour' in delta %}bg-warning{% else %}bg-secondary{% endif %}">
                                     {{ delta }}
                                 </span>
                                 {% endwith %}
@@ -229,10 +251,10 @@ document.addEventListener('DOMContentLoaded', function() {
     
     // Données example (à adapter avec tes vraies données)
     const data = {
-        labels: [{% for m in hist_fond %}'{{ m.date_ajout}}'{% if not forloop.last %},{% endif %}{% endfor %}],
+        labels: [{% for m in hist_fond_chart %}'{{ m.date_ajout|date:"d/m/Y" }}'{% if not forloop.last %},{% endif %}{% endfor %}],
         datasets: [{
             label: 'Ajouts de Fonds (FCFA)',
-            data: [{% for m in hist_fond %}{{ m.montant|floatformat:0 }}{% if not forloop.last %},{% endif %}{% endfor %}],
+            data: [{% for m in hist_fond_chart %}{{ m.montant|floatformat:0 }}{% if not forloop.last %},{% endif %}{% endfor %}],
             borderColor: 'rgb(46, 204, 113)',
             backgroundColor: 'rgba(46, 204, 113, 0.2)',
             fill: true,

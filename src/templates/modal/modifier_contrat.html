@@ -12,9 +12,16 @@
     {% tailwind_css %}
 </head>
     <body>
+         {% if user.is_authenticated and user.post.nom == 'Directeur' %}
         <nav>
-            <h1>Interface Directeur</h1>
+          <h1>Interface Directeur</h1>
         </nav>
+        {% elif user.is_authenticated and user.post.nom == 'Comptable' %}
+        <nav>
+          <h1>Interface Comptable</h1>
+        </nav>
+        {% endif %}
+        
         <header>
             Modifier le contrat</h1>
         </header>

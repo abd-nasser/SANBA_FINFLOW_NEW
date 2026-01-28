@@ -108,10 +108,6 @@ class ContratDetaiView(LoginRequiredMixin, DetailView):
             return ["contrat_templates/detail_contrat.html"]
         
     
-
-    
-    
-
 class ContratDeleteView(LoginRequiredMixin, DeleteView):
     model = Contrat
     template_name ='modal/supprimer_contrat.html'

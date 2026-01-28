@@ -49,7 +49,7 @@ main{
    display: flex;
    justify-content: center;
    flex-direction: column;
-   padding: 3rem;
+   padding: 0.8rem;
    padding-top: 15rem;
 }
 

@@ -26,8 +26,10 @@ logger = logging.getLogger(__name__)
 
 def demande_decaissement_view(request):
     fond = get_object_or_404(FondDisponible, id=1)
-    list_demande = DemandeDecaissement.objects.all().order_by("-date_demande")
-    
+    list_demande = DemandeDecaissement.objects.all().select_related(
+        'demandeur',"chantier","approuve_par"
+    ).order_by("-date_demande")[:10]
+
     if request.method == 'POST':
         try:
             form = DemandeDecaissementForm(request.POST)
@@ -44,7 +46,7 @@ def demande_decaissement_view(request):
                     \n plus d'information : https//sanba/finflow/gestion.org
                     """ ,
                     from_email=settings.EMAIL_HOST_USER,
-                    recipient_list=['directeur@gmail.com', "adaneoued@gmail.com"]
+                    recipient_list=['directeur@gmail.com', "adaneoued@gmail.com","nasserdevtest@gmail.com"]
                     )
                 except Exception as e:
                     logger.error(f"Erreur envoi mail demande décaissement {e}")
@@ -108,7 +110,7 @@ def valider_decaissement_view(request, decaissement_id):
                     subject=f"💰 Décaissement {decaissement.montant} FCFA",
                     message=f"Décaissement pour {decaissement.demandeur.username}, a été effectué.",
                     from_email=settings.EMAIL_HOST_USER,
-                    recipient_list=[decaissement.demandeur.email, request.user.email,"adaneoued@gmail.com"]
+                    recipient_list=[decaissement.demandeur.email, request.user.email,"adaneoued@gmail.com","nasserdevtest@gmail.com"]
                 )
             except Exception as e:
                 logger.error(f"Erreur envoi mail décaissement {e}")
@@ -122,7 +124,7 @@ def valider_decaissement_view(request, decaissement_id):
                         subject="⚠️ Rapport de Dépense en Retard",
                         message=f"Bonjour {decaissement.demandeur.username}, n'a pas encore soumis son rapport de dépense pour le décaissement fait il y a plus de 48 heures.",
                         from_email=settings.EMAIL_HOST_USER,    
-                        recipient_list=[request.user.email, "directeur@gmail.com", "adaneoued@gmail.com"]
+                        recipient_list=[request.user.email, "nasserdevtest@gmail.com", "adaneoued@gmail.com"]
                     )   
                 except Exception as e:
                     logger.error(f"Erreur envoi mail rapport retard {e}")
@@ -167,7 +169,12 @@ class HistoriqueDemandeView(LoginRequiredMixin, ListView):
         if search:
             queryset = queryset.filter(
                 Q(demandeur__username__icontains=search)|
-                Q(demandeur__prenom__icontains=search)|
+                Q(demandeur__first_name__icontains=search)|
+                Q(demandeur__last_name__icontains=search)|
+                Q(chantier__nom_chantier__icontains=search)|
+                Q(chantier__reference__icontains=search)|
+                Q(motif__icontains=search)|Q(montant__icontains=search)|
+                
                 Q(approuve_par__post__nom__icontains=search)|
                 Q(reference_demande__icontains=search)
             )
@@ -191,9 +198,13 @@ class HistoriqueDemandeView(LoginRequiredMixin, ListView):
         context["total_general"]= DemandeDecaissement.objects.aggregate(
             tota_general_decaisse=Sum("montant"),
             total_general_approuve =Count('id',filter=Q(status='approuvee_directeur') | Q(status="approuvee_comptable")),
-            total_general_refuse = Count('id',filter=Q(status='refusee_directeur') | Q(status="Refusée par Comptable")),
+            total_general_refuse = Count('id',filter=Q(status='refusee_directeur') | Q(status="refusee_comptable")),
             total_general_effectue =Sum("montant", filter=Q(decaisse=True))
-        )
+        )   
+        
+        queryset = self.get_queryset()
+        total_general_filter = queryset.aggregate(total=Sum("montant"))["total"] or 0
+        context["total_general_filter"] = total_general_filter
         
         return context
       

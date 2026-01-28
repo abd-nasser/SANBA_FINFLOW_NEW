@@ -1,5 +1,5 @@
- 
-<div class=" table_container card bg-white shadow-lg">
+ {% load humanize %}
+<div class=" table_container card bg-white shadow-lg" id="table_container">
     <div class="card-body p-0">
         <div class="overflow-x-auto">
             <table class="table table-zebra w-full">
@@ -11,7 +11,7 @@
                         <th class="font-bold">Chantier</th>
                         <th class="font-bold">Motif</th>
                         <th class="font-bold">Statut</th>
-                        <th class="font-bold">Approuvé par</th>
+                        <th class="font-bold">Approuvé/Refusé par</th>
                         <th class="font-bold">Décaissé</th>
                         <th class="font-bold">Date Demande</th>
                         <th class="font-bold">Date Approbation</th>
@@ -89,10 +89,6 @@
                         </td>
                         <td class="no-print">
                             <div class="flex gap-2">
-                                <button class="btn btn-xs btn-outline"
-                                        onclick="showDetails('{{ hist.id }}')">
-                                    👁️ Détails
-                                </button>
                                 
                                 {% if user.is_authenticated and user.post.nom == "Sécretaire" %}
                                       {% if not hist.decaisse and hist.status == 'approuvee_directeur' or hist.status == 'approuvee_comptable' %}
@@ -121,7 +117,7 @@
                     <tr>
                         <th colspan="2" class="text-right font-bold">TOTAL :</th>
                         <th class="font-bold text-green-700">
-                            {{ total_montant|default:"0" }} FCFA
+                            {{ total_general_filter|floatformat:1|default:"0" }} FCFA
                         </th>
                         <th colspan="8"></th>
                         <th class="no-print">

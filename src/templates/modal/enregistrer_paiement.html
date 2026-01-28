@@ -17,15 +17,15 @@
       <div class="grid grid-cols-2 gap-2 text-sm">
         <div>
           <span class="font-medium text-gray-600">Montant total:</span>
-          <p class="font-bold">{{ contrat.montant_total }} FCFA</p>
+          <p class="font-bold">{{ contrat.montant_total|floatformat:2 }} FCFA</p>
         </div>
         <div>
           <span class="font-medium text-gray-600">Déjà payé:</span>
-          <p class="font-bold">{{ contrat.montant_encaisse }} FCFA</p>
+          <p class="font-bold">{{ contrat.montant_encaisse|floatformat:2 }} FCFA</p>
         </div>
         <div class="col-span-2">
           <span class="font-medium text-gray-600">Solde restant:</span>
-          <p class="font-bold text-green-600">{{ contrat.solde_restant }} FCFA</p>
+          <p class="font-bold text-green-600">{{ contrat.solde_restant|floatformat:2 }} FCFA</p>
         </div>
       </div>
       
@@ -36,7 +36,7 @@
           <span>{{ contrat.pourcentage_encaisse|floatformat:1 }}%</span>
         </div>
         <progress class="progress progress-primary w-full h-2" 
-                  value="{{ contrat.pourcentage_encaisse }}" 
+                  value="{{ contrat.pourcentage_encaisse|floatformat:1 }}" 
                   max="100"></progress>
       </div>
     </div>
@@ -57,8 +57,6 @@
                  id="nouveau-paiement"
                  class="input input-bordered w-full pl-14 text-lg"
                  placeholder="0.00"
-                 max="{{ contrat.solde_restant }}"
-                 step="100"
                  required>
         </div>
         <div class="text-xs text-gray-500 mt-1">
@@ -134,18 +132,5 @@
 <script>
 function openPaiementModal() {
   document.getElementById('paiementModal').showModal();
-  // Focus sur le champ de montant
-  document.getElementById('nouveau-paiement').focus();
 }
-
-// Validation du montant
-document.getElementById('nouveau-paiement')?.addEventListener('input', function(e) {
-  const max = parseFloat("{{ contrat.solde_restant }}");
-  const value = parseFloat(e.target.value);
-  
-  if (value > max) {
-    e.target.value = max;
-    alert(`Le montant maximum est de ${max.toLocaleString()} FCFA`);
-  }
-});
 </script>

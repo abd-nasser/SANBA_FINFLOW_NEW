@@ -45,9 +45,7 @@ class Chantier(models.Model):
         ('en_cours', 'En Cours'),
         ('suspendu', 'Suspendu'),
         ('termine', 'Terminé'),
-        ('facturee', 'Facturée'),
-        ('paye', 'Payée'),
-        ('annule', 'Annulé')
+        ('annule', 'Annulé'),
     ]
 
     client = models.ForeignKey("client_app.Client", related_name="chantiers", on_delete=models.CASCADE)
@@ -113,7 +111,7 @@ class Chantier(models.Model):
     
     #STATUS ET  SUIVI
     status_chantier = models.CharField(max_length=50, choices=STATUS_CHANTIER_CHOICES, default='devis')
-    
+   
     #priorité = priorité du chantier
     priorite = models.CharField(max_length=20, 
                                choices=[
@@ -149,6 +147,20 @@ class Chantier(models.Model):
         """
         return 0 # a ameliorer plus tard
     
+    def est_payer_partiellement(self):
+        """Vérifie si le chantier est partiellement payé"""
+        if self.contrats.montant_encaisse >= self.contrats.montant_total:
+            return False
+        elif self.contrats.montant_encaisse > 0:
+            return True
+        return False
+
+    def est_payer_entierement(self):
+        """Vérifie si le chantier est entièrement payé"""
+        if self.contrats.montant_encaisse >= self.contrats.montant_total:
+            return True
+        return False
+
     @property
     def est_en_retard(self):
         """Vérifie si le chantier est en retard"""

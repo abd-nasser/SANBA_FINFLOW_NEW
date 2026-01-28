@@ -29,7 +29,7 @@
         <header>
             <h1>Detail Chantier</h1>
 
-             <button class="btn mb-4" onclick=status_modal.showModal()>⚙️Gestion du chantier</button>
+             <button class="btn btn-gestion mb-4"  onclick=status_modal.showModal()>⚙️Gestion du chantier</button>
     <div class="flex gap-2">
       <a href="{% url 'chantier_app:modifier-chantier' chantier.id %}" class="btn btn-modif">
         <svg style="width: 20px; height: 20px;" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -80,7 +80,7 @@
       </div>
       
       <!-- Badges -->
-      <div class="flex flex-wrap gap-2 mb-6">
+      <div class="flex-wrap gap-2 mb-6">
         <span class="badge badge-outline">{{ chantier.get_type_travaux_display }}</span>
         <span class="badge 
           {% if chantier.status_chantier == 'termine' %}badge-success
@@ -94,6 +94,19 @@
         {% if chantier.est_en_retard %}
         <span class="badge badge-error">🚨 En retard</span>
         {% endif %}
+        
+        {% if chantier.est_payer_partiellement %}
+          <span class="badge bg-warning">
+            💵 payé partiellement
+          </span>
+        {% endif %}
+
+        {% if chantier.est_payer_entierement %}
+          <span class="badge bg-success">
+            💰 payé entièrement
+          </span>
+        {% endif %}
+
       </div>
     </div>
     
@@ -117,7 +130,7 @@
               Client
             </h3>
             <div class="space-y-2">
-              <a href="{% url 'client_app:detail-client' chantier.client.id %}" class="font-bold text-lg hover:text-primary">
+              <a href="{% url 'client_app:detail-client' chantier.client.id %}" class="font-bold link text-lg hover:text-primary">
                 {{ chantier.client.nom }} {{ chantier.client.prenom }}
               </a>
               {% if chantier.client.telephone %}
@@ -221,7 +234,7 @@
             <!-- Équipe affectée -->
             <div>
               <p class="text-sm text-gray-500 mb-2">Équipe affectée ({{ chantier.equipe_affectee.count }})</p>
-              <div class="flex flex-wrap gap-2">
+              <div class="flex-wrap gap-2">
                 {% for membre in chantier.equipe_affectee.all %}
                 <div class="badge badge-outline">
                   {{ membre.username }}
@@ -364,7 +377,7 @@
           <h3 class="card-title">📋 Contrat</h3>
           {% if chantier.contrats %}
           <div class="space-y-2">
-            <a href="{% url 'contrat_app:detail-contrat' chantier.contrats.id %}" class="font-medium hover:text-primary block">
+            <a href="{% url 'contrat_app:detail-contrat' chantier.contrats.id %}" class="font-medium link hover:text-primary block">
               {{ chantier.contrats.reference_contrat }}
             </a>
             <p class="text-sm">{{ chantier.contrats.montant_total|floatformat:0 }} FCFA</p>

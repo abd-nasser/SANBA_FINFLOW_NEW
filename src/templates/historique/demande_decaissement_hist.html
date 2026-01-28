@@ -23,7 +23,7 @@
     <header>
 
                <!-- Statistiques rapides -->
-        <div class="stats-grid statistique grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
+        <div class=" statistique">
             <div class="stats-card card bg-white shadow-md">
                 <div class="card-body">
                     <h3 class="card-title text-gray-500">Total Demande</h3>
@@ -35,7 +35,7 @@
             <div class="stats-card card bg-white shadow-md">
                 <div class="card-body">
                     <h3 class="card-title text-gray-500">Demandes Approuvées</h3>
-                    <p class="text-2xl font-bold text-green-600">{{ total_general.total_general_approuve|default:"0"|floatformat:1|intcomma }}</p>
+                    <p class="text-2xl font-bold text-green-600">{{ total_general.total_general_approuve|default:"0"}}</p>
                     <div class="text-sm text-gray-400">En attente de décaissement</div>
                 </div>
             </div>
@@ -43,7 +43,7 @@
             <div class="stats-card card bg-white shadow-md">
                 <div class="card-body">
                     <h3 class="card-title text-gray-500">Demandes Refusées</h3>
-                    <p class="text-2xl font-bold text-red-600">{{ total_general.total_general_refuse|default:"0"|floatformat:1|intcomma }}</p>
+                    <p class="text-2xl font-bold text-red-600">{{ total_general.total_general_refuse|default:"0"}}</p>
                     <div class="text-sm text-gray-400">Non approuvées</div>
                 </div>
             </div>
@@ -98,7 +98,7 @@
                     <select 
                         class="select select-bordered w-full"
                         hx-get="{% url 'secretaire_app:hist-demande-decaisse' %}"
-                        hx-target="#dmd_list"
+                        hx-target="#table_container"
                         hx-trigger="change"
                         name="status" 
                         id="st">
@@ -113,7 +113,7 @@
                 </div>
 
                 <!-- Recherche texte -->
-                <div class="form-control">
+                <div class="form-control mt-4">
                     <label class="label">
                         <span class="label-text font-semibold">🔎 Recherche texte</span>
                     </label>
@@ -123,103 +123,95 @@
                            placeholder="Nom, motif, chantier..."
                            hx-get="{% url 'secretaire_app:hist-demande-decaisse' %}"
                            hx-trigger="keyup changed delay:400ms"
-                           hx-target="#dmd_list">
+                           hx-target="#table_container">
                 </div>
 
-                <!-- Filtre par date (optionnel) -->
-                <div class="form-control">
-                    <label class="label">
-                        <span class="label-text font-semibold">📅 Période</span>
-                    </label>
-                    <div class="flex gap-2">
-                        <input type="date" name="start_date" class="input input-bordered flex-1" placeholder="Début">
-                        <input type="date" name="end_date" class="input input-bordered flex-1" placeholder="Fin">
-                    </div>
-                </div>
-            </div>
 
             <!-- Boutons d'action filtres -->
             <div class="flex justify-end gap-3 mt-6">
                 <button type="button"
                         class="btn btn-outline"
                         hx-get="{% url 'secretaire_app:hist-demande-decaisse' %}"
-                        hx-target="#dmd_list">
+                        hx-target="#table_container">
                     🔄 Réinitialiser filtres
-                </button>
-                <button type="button" class="btn btn-primary">
-                    📊 Exporter Excel
                 </button>
             </div>
         </div>
 
         <!-- Liste des demandes -->
-        <div class="mb-12" id="dmd_list">
+    
             {% include 'partials/filter_demande.html' %}
-        </div>
+        
 
         <!-- Statistiques employés -->
-        <div class="shadow-lg p-6 stat_by_employe mb-12">
+      
             <h2 class="text-2xl font-bold mb-6 text-gray-800">
                 👥 Statistiques par Employé
                 <span class="text-sm font-normal text-gray-500 ml-2">(Sommes décaissées)</span>
             </h2>
             
-            <div class="overflow-x-auto table_container">
-                <table class="table  table-zebra w-full">
-                    <thead>
-                        <tr >
-                            <th class="font-bold">Nom Employé</th>
-                            <th class="text-right">Total Décaissé</th>
-                            <th class="text-right">Demandes Total</th>
-                            <th class="text-right">Approuvées</th>
-                            <th class="text-right">Refusées</th>
-                            <th class="text-right">Taux Approuvé</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {% for decaisse in total_decaisse %}
-                        <tr class="employee-stats">
-                            <td class="font-semibold">
-                                <div class="flex items-center">
-                                    <div class="avatar placeholder mr-3">
-                                        <div class="bg-blue-100 text-blue-800 rounded-full w-8 h-8 flex items-center justify-center">
-                                            {{ decaisse.demandeur__username|first|upper }}
+            <div class=" table_container card bg-white shadow-lg">
+                <div class="card-body p-0">
+                    <div class="overflow-x-auto">
+                    
+                    <table class="table table-zebra w-full">
+                        <thead>
+                            <tr >
+                                <th class="font-bold">Nom Employé</th>
+                                <th class="text-right">Total Décaissé</th>
+                                <th class="text-right">Demandes Total</th>
+                                <th class="text-right">Approuvées</th>
+                                <th class="text-right">Refusées</th>
+                                <th class="text-right">Taux Approuvé</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for decaisse in total_decaisse %}
+                            <tr class="employee-stats">
+                                <td class="font-semibold">
+                                    <div class="flex items-center">
+                                        <div class="avatar placeholder mr-3">
+                                            <div class="bg-blue-100 text-blue-800 rounded-full w-8 h-8 flex items-center justify-center">
+                                                {{ decaisse.demandeur__username|first|upper }}
+                                            </div>
                                         </div>
+                                        {{ decaisse.demandeur__username }}
                                     </div>
-                                    {{ decaisse.demandeur__username }}
-                                </div>
-                            </td>
-                            <td class="text-right font-bold text-green-600">
-                                {{ decaisse.total_decaisse|default:"0" }} FCFA
-                            </td>
-                            <td class="text-right">
-                                <span class="badge badge-outline">{{ decaisse.nombre_total|default:"0" }}</span>
-                            </td>
-                            <td class="text-right">
-                                <span class="badge badge-success">{{ decaisse.total_approuve|default:"0" }}</span>
-                            </td>
-                            <td class="text-right">
-                                <span class="badge badge-error">{{ decaisse.total_refuse|default:"0" }}</span>
-                            </td>
-                            <td class="text-right">
-                                {% if decaisse.nombre_total > 0 %}
-                                    {% widthratio decaisse.total_approuve decaisse.nombre_total 100 %}%
-                                {% else %}
-                                    0%
-                                {% endif %}
-                            </td>
-                        </tr>
-                        {% empty %}
-                        <tr>
-                            <td colspan="6" class="text-center py-8 text-gray-500">
-                                📭 Aucune donnée disponible
-                            </td>
-                        </tr>
-                        {% endfor %}
-                    </tbody>
-                   
-                </table>
+                                </td>
+                                <td class="text-right font-bold text-green-600">
+                                    {{ decaisse.total_decaisse|default:"0" }} FCFA
+                                </td>
+                                <td class="text-right">
+                                    <span class="badge badge-outline">{{ decaisse.nombre_total|default:"0" }}</span>
+                                </td>
+                                <td class="text-right">
+                                    <span class="badge badge-success">{{ decaisse.total_approuve|default:"0" }}</span>
+                                </td>
+                                <td class="text-right">
+                                    <span class="badge badge-error">{{ decaisse.total_refuse|default:"0" }}</span>
+                                </td>
+                                <td class="text-right">
+                                    {% if decaisse.nombre_total > 0 %}
+                                        {% widthratio decaisse.total_approuve decaisse.nombre_total 100 %}%
+                                    {% else %}
+                                        0%
+                                    {% endif %}
+                                </td>
+                            </tr>
+                            {% empty %}
+                            <tr>
+                                <td colspan="6" class="text-center py-8 text-gray-500">
+                                    📭 Aucune donnée disponible
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    
+                    </table>
+                    </div>
+                </div>
             </div>
+            
 
 
     </main>

@@ -1,5 +1,4 @@
       <!-- Vue Tableau -->
-      {% load humanize %}
             <div id="tableView" class="table-container bg-white rounded-lg">
                 <table class="table table-zebra w-full">
                     <thead class="bg-gray-100">
@@ -77,7 +76,7 @@
                             
                             <!-- Prix Unitaire -->
                             <td class="text-right font-semibold">
-                                {{ rapport.prix_unitaire|floatformat:1|intcomma }} FCFA
+                                {{ rapport.prix_unitaire }} FCFA
                             </td>
                             
                             <!-- Quantité -->
@@ -89,7 +88,7 @@
                             <td class="text-right">
                                 <span class="font-bold text-green-600">
                                     {% widthratio rapport.prix_unitaire 1 rapport.quantité as total %}
-                                    {{ total|floatformat:1|intcomma}} FCFA
+                                    {{ total }} FCFA
                                 </span>
                             </td>
                             
@@ -107,7 +106,7 @@
                                         <br>
                                         <br>
                                         
-                                <button onclick="document.getElementById('modalFournisseur').showModal()" class="btn btn-sm">
+                                <button onclick="document.getElementById('modalFournisseur-{{ rapport.id }}').showModal()" class="btn btn-sm">
                                 Ajouter fournisseur
                                 </button>
                                 {% include 'modal/modifier_rapport_fournisseur.html' %}
@@ -259,7 +258,7 @@
                         <th colspan="7" class="text-right font-bold">TOTAL GÉNÉRAL :</th>
                         <th id="totalGeneral" class="text-right font-bold text-green-700">
                             <!-- Calcul initial côté serveur -->       
-                            {{ total_general_depenses_filter|floatformat:1|intcomma }} FCFA     
+                            {{ total_general_depenses_filter|floatformat:1 }} FCFA     
                         </th>
                         <th colspan="4"></th>
                     </tr>

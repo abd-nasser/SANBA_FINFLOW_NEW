@@ -94,44 +94,16 @@ class Contrat(models.Model):
         """
         self.montant_encaisse += montant_paye
         self.date_du_dernier_paiement = timezone.now().date()
-        self.nombre_tranches -= 1
-        self.save()
+        if self.mode_paiement == "tranche" and self.nombre_tranches > 0:
+            self.nombre_tranches -= 1
+            self.save()
         
-        if self.montant_encaisse >= self.montant_total:
-            # Contrat entièrement payé
-            self.chantier.status_chantier = 'paye'
-            self.chantier.save()
+   
+       
+    
             
-    def save(self, *args, **kwargs):
-        # Vérifier si on doit changer le statut du chantier
-        if not self._state.adding:  # Si c'est une modification (pas une création)
-            try:
-                # Récupérer l'ancienne version depuis la base
-                ancien_contrat = Contrat.objects.get(pk=self.pk)
-                
-                # Vérifier si la date de paiement vient d'être ajoutée
-                if not ancien_contrat.date_du_dernier_paiement and self.date_du_dernier_paiement:
-                    # La date de paiement vient d'être ajoutée → facturer le chantier
-                    self.chantier.status_chantier = "facturee"
-                    self.chantier.date_modification = timezone.now()
-                    self.chantier.save()
-                    
-                # Vérifier si la date de paiement vient d'être retirée
-                elif ancien_contrat.date_du_dernier_paiement and not self.date_du_dernier_paiement:
-                    # La date de paiement vient d'être supprimée → dé-facturer le chantier
-                    if self.chantier.status_chantier == 'facturee':
-                        self.chantier.status_chantier = "termine"
-                        self.chantier.date_modification = timezone.now()
-                        self.chantier.save()
-                        
-            except Contrat.DoesNotExist:
-                # Cas rare: l'objet n'existe pas encore dans la base
-                pass
-        
-        # Sauvegarder le contrat
-        super().save(*args, **kwargs)
-     
-     
+
+    
             
 class TranchePaiement(models.Model):
     """pour les paiements en plusieurs tranches

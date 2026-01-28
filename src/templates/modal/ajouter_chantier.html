@@ -13,10 +13,15 @@
 </head>
     <body>
 
+         {% if user.is_authenticated and user.post.nom == 'Directeur' %}
         <nav>
           <h1>Interface Directeur</h1>
         </nav>
-
+        {% elif user.is_authenticated and user.post.nom == 'Comptable' %}
+        <nav>
+          <h1>Interface Comptable</h1>
+        </nav>
+        {% endif %}
         <header>
             <h1>Nouveau Chantier</h1>
         </header>
@@ -152,7 +157,12 @@
   </div>
 </div>
 
-    
+     <a href="{% url 'chantier_app:liste-chantier' %}" class="btn btn-ghost">
+        <svg style="width: 20px; height: 20px;" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"/>
+        </svg>
+        Retour à la liste
+      </a>
         </main>
 
 

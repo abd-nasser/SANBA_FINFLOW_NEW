@@ -1,5 +1,5 @@
 <!-- Tableau des clients -->
-  
+  {% load humanize %}
     <div class="card shadow table_container" id="table_container">
       <table class="table table-hover mb-0">
         <thead class="table-light">
@@ -104,10 +104,6 @@
               
                 <a href="{% url 'client_app:detail-client' client.id %}" class="btn btn-sm btn-outline btn-info">
                   Détails
-                </a>
-              
-                <a href="{% url 'client_app:supprimer-client' client.id %}" class="btn btn-sm btn-outline btn-error" onclick="return confirm('Supprimer ce client ?');">
-                  Supprimer
                 </a>
              
             </td>

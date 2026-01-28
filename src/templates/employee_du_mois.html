@@ -220,7 +220,7 @@
                     </div>
                 </div>
                 
-                <!-- Graphique 3: Performance commerciale -->
+                <!-- Graphique 3: Performance commerciale 
                 <div class="card">
                     <div class="card-body">
                         <h3 class="card-title mb-4">
@@ -236,7 +236,7 @@
                         </p>
                     </div>
                 </div>
-            </div>
+            </div>-->
         </section>
 
         <!-- Section 3: Tableau détaillé -->
@@ -369,6 +369,7 @@
                 </div>
             </div>
         </section>
+   
 
         <!-- Section 4: Commentaires et félicitations -->
         <section class="mb-8">
@@ -401,7 +402,26 @@
                 </div>
             </div>
         </section>
-        
+           
+            {% if user.is_authenticated and user.post.nom == 'Directeur' %}
+                 <a href="{% url 'directeur_app:directeur-view' %}" class="btn btn-sm btn-outline-primary float-end">
+                <i class="fas fa-arrow-left"></i> Retour au Dashboard
+                 </a>
+                {% elif user.is_authenticated and user.post.nom == 'Comptable' %}
+                 <a href="{% url 'comptable_app:comptable-view' %}" class="btn btn-sm btn-outline-primary float-end">
+                <i class="fas fa-arrow-left"></i> Retour au Dashboard
+                 </a>
+                 {% elif user.is_authenticated and user.post.nom == 'Sécretaire' %}
+                 <a href="{% url 'secretaire_app:secretaire-view' %}" class="btn btn-sm btn-outline-primary float-end">
+                <i class="fas fa-arrow-left"></i> Retour au Dashboard
+                 </a>
+                    {% elif user.is_authenticated and user.post.nom == 'Employé' %}
+                    <a href="{% url 'employee_app:employee-view' %}" class="btn btn-sm btn-outline-primary float-end">
+                <i class="fas fa-arrow-left"></i> Retour au Dashboard
+                 </a>
+            {% endif %}
+                
+       
         <!-- Pied de page -->
         <footer class="text-center text-gray-500 text-sm mt-12 pt-8 border-t">
             <p>
@@ -532,35 +552,35 @@
         // 3. GRAPHIQUE DE PERFORMANCE DÉTAILLÉ
         // ============================================
         // Un dernier graphique plus complet
-        const performanceCtx = document.getElementById('performanceChart').getContext('2d');
-        const performanceChart = new Chart(performanceCtx, {
-            type: 'radar',  // Graphique en forme d'étoile/radar
-            data: {
-                labels: ['CA Généré', 'Clients', 'Contrats', 'Dépenses', 'Rapports', 'Satisfaction'],
-                datasets: [
-                    {
-                        label: 'Top Commercial',
-                        data: [90, 85, 95, 70, 80, 90],
-                        backgroundColor: 'rgba(251, 191, 36, 0.2)',
-                        borderColor: '#FBBF24',
-                        borderWidth: 3
-                    },
-                    {
-                        label: 'Top Dépenses',
-                        data: [60, 70, 65, 95, 75, 80],
-                        backgroundColor: 'rgba(156, 163, 175, 0.2)',
-                        borderColor: '#9CA3AF',
-                        borderWidth: 3
-                    },
-                    {
-                        label: 'Top Rapports',
-                        data: [70, 65, 70, 75, 95, 85],
-                        backgroundColor: 'rgba(251, 146, 60, 0.2)',
-                        borderColor: '#FB923C',
-                        borderWidth: 3
-                    }
-                ]
-            },
+
+        // const performanceCtx = document.getElementById('performanceChart').getContext('2d');
+        // const performanceChart = new Chart(performanceCtx, {
+        //     type: 'radar',  // Graphique en forme d'étoile/radar
+        //     data: {
+        //         labels: ['CA Généré', 'Clients', 'Contrats', 'Dépenses', 'Rapports', 'Satisfaction'],
+        //         datasets: [
+        //            {
+        //                label: 'Top Commercial',
+        //                data: [90, 85, 95, 70, 80, 90],
+        //                backgroundColor: 'rgba(251, 191, 36, 0.2)',
+        //                borderColor: '#FBBF24',
+        //                borderWidth: 3       },
+       //             {
+        //                label: 'Top Dépenses',
+        //                 data: [60, 70, 65, 95, 75, 80],
+        //                backgroundColor: 'rgba(156, 163, 175, 0.2)',
+        //                borderColor: '#9CA3AF',
+        //                borderWidth: 3
+        //            },
+        //            {
+        //                label: 'Top Rapports',
+        //                data: [70, 65, 70, 75, 95, 85],
+        //                backgroundColor: 'rgba(251, 146, 60, 0.2)',
+        //                borderColor: '#FB923C',
+        //                borderWidth: 3
+         //           }
+         //         ]
+          //  },
             options: {
                 responsive: true,
                 plugins: {
@@ -582,7 +602,7 @@
                     }
                 }
             }
-        });
+      //  });
         
         // ============================================
         // PETIT BONUS : Animation des scores

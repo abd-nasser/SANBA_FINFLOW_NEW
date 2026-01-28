@@ -78,12 +78,12 @@ main .btn-add_chantier, .btn-add_contrat, .btn-modif_client{
     transition: all 0.5s ease;
 }
 
-main .btn-supp_client{
+.btn-supp_client{
     background-color: rgb(211, 120, 120);
     transition: all 0.5s ease;
 }
 
-main .btn-supp_client:hover{
+.btn-supp_client:hover{
     background-color: red;
     color: white;
     box-shadow: 0 4px 8px rgba(203, 27, 27, 0.779);

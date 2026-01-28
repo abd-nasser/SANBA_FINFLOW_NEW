@@ -353,7 +353,12 @@ Ce template est utilisé pour tous les types de chantier sauf 'decoration' et 't
     </div>
     
     <button onclick="window.print()">🖨️ Imprimer ce contrat</button>
-
+    <a href="{% url 'contrat_app:liste-contrats' %}" class="btn btn-ghost">
+        <svg style="width: 20px; height: 20px;" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"/>
+        </svg>
+        Retour à la liste
+      </a>
     <script>
         // Affiche la section signature seulement pour l'impression
         window.addEventListener('beforeprint', function() {

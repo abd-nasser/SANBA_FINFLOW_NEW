@@ -83,12 +83,23 @@ main .btn-contrat:hover, .btn-rapport:hover, .btn-modif:hover{
     box-shadow: 0 4px 8px rgba(255, 255, 255, 0.779);
 }
 
-main .btn-supp{
+.btn-gestion{
+    background-color: rgb(160, 158, 158);
+    transition: all 0.5s ease;
+}
+
+.btn-gestion:hover{
+    background-color: rgb(71, 69, 69);
+    color: white;
+    box-shadow: 0 4px 8px rgba(233, 232, 232, 0.779);
+}
+
+.btn-supp{
     background-color: rgb(211, 120, 120);
     transition: all 0.5s ease;
 }
 
-main .btn-supp:hover{
+.btn-supp:hover{
     background-color: red;
     color: white;
     box-shadow: 0 4px 8px rgba(203, 27, 27, 0.779);

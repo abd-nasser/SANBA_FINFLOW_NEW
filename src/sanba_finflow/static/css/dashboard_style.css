@@ -1,9 +1,21 @@
 .dash_container{
-        background:linear-gradient(144deg,rgb(220, 110, 110) 2%, rgba(222, 211, 211, 1) 50%, rgba(13, 12, 13, 1) 100%);
+         background: linear-gradient(-45deg, 
+            rgba(201, 26, 26, 1) 0%, 
+            rgba(235, 230, 231, 1) 50%, 
+            rgba(0, 0, 0, 1) 99%);
+            
+    background-size: 400% 400%;
+    animation:  gradient-shift 25s ease infinite;
         }
 
 .body{
-     background:linear-gradient(144deg,rgb(220, 96, 96) 2%, rgba(222, 211, 211, 1) 50%, rgba(13, 12, 13, 1) 100%);
+      background: linear-gradient(-45deg, 
+            rgba(201, 26, 26, 1) 0%, 
+            rgba(235, 230, 231, 1) 50%, 
+            rgba(0, 0, 0, 1) 99%);
+            
+    background-size: 400% 400%;
+    animation:  gradient-shift 25s ease infinite;
 }
 
 .card,.card-body{
@@ -14,3 +26,23 @@ background-color: rgba(255, 255, 255, 0);
 .card{
     box-shadow: 3px 6px 20px 0px;
 }
+
+
+/* ===== ANIMATION DU GRADIENT ===== */
+    @keyframes gradient-shift {
+        0% {
+            background-position: 0% 50%;
+        }
+        25% {
+            background-position: 50% 100%;
+        }
+        50% {
+            background-position: 100% 50%;
+        }
+        75% {
+            background-position: 50% 0%;
+        }
+        100% {
+            background-position: 0% 50%;
+        }
+    }

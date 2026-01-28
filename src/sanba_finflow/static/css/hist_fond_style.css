@@ -9,7 +9,14 @@ nav{
 
 header{
     display: flex;
-    background:linear-gradient(144deg,rgba(255, 0, 0, 1) 2%, rgba(222, 211, 211, 1) 50%, rgba(13, 12, 13, 1) 100%);
+     background: linear-gradient(-45deg, 
+            rgba(201, 26, 26, 1) 0%, 
+            rgba(235, 230, 231, 1) 50%, 
+            rgba(0, 0, 0, 1) 99%);
+            
+    background-size: 400% 400%;
+    animation:  gradient-shift 25s ease infinite,
+                slide_header 2s ease-in-out;
     height: 30vh;
     position: relative;
     border: 1px solid black;
@@ -23,6 +30,33 @@ header{
 
 }
 
+@keyframes slide_header{
+    0%{
+        transform: translateY(-70vh);
+    }
+    100%{
+        transform: translateY(0px);
+    }
+}
+
+/* ===== ANIMATION DU GRADIENT ===== */
+    @keyframes gradient-shift {
+        0% {
+            background-position: 0% 50%;
+        }
+        25% {
+            background-position: 50% 100%;
+        }
+        50% {
+            background-position: 100% 50%;
+        }
+        75% {
+            background-position: 50% 0%;
+        }
+        100% {
+            background-position: 0% 50%;
+        }
+    }
 
 
 header .statistique{
@@ -40,13 +74,19 @@ header .statistique .card{
 }
 
 main{
-   background:linear-gradient(144deg,rgba(255, 0, 0, 1) 2%, rgba(222, 211, 211, 1) 50%, rgba(13, 12, 13, 1) 100%);
+    background: linear-gradient(-45deg, 
+            rgba(201, 26, 26, 1) 0%, 
+            rgba(235, 230, 231, 1) 50%, 
+            rgba(0, 0, 0, 1) 99%);
+            
+    background-size: 400% 400%;
+    animation:  gradient-shift 25s ease infinite;
    min-height: 70vh;
    min-width: 100%;
    display: flex;
    justify-content: center;
    flex-direction: column;
-  padding:2rem;
+  padding:0.8rem;
 }
 
 .avatar-sm {

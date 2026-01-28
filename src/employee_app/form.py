@@ -97,7 +97,7 @@ class RapportDepenseForm(forms.ModelForm):
             from django.utils import timezone
             from secretaire_app.models import DemandeDecaissement
             
-            date_limite = timezone.now() - timedelta(hours=72)
+            date_limite = timezone.now() - timedelta(hours=336) # 14 jours
             
             self.fields['demande_decaissement'].queryset = DemandeDecaissement.objects.filter(
                 demandeur=self.employee,# ou le champ qui lie à l'employé
@@ -205,7 +205,7 @@ class ValidationRapportForm(forms.ModelForm):
                     L'équipe de gestion des dépenses
                     """,
                     from_email="sanbasystemegestion@gmail.com",
-                    recipient_list=[rapport.employee.email, "nasserdevtest@gmail.com"],
+                    recipient_list=[rapport.employee.email],
                     fail_silently=True
                 )
             except Exception as e:
@@ -225,7 +225,7 @@ class ValidationRapportForm(forms.ModelForm):
                     Nous regrettons de vous informer que votre rapport de dépense concernant 
                     {rapport.materiau_article} pour un montant de {rapport.prix_unitaire * rapport.quantité} FCFA a été rejeté.
                     
-                    Commentaire du gestionnaire : {commentaire}
+                    Commentaire du gestionnaire : "{commentaire}"
                     
                     Veuillez prendre les mesures nécessaires.
                     
@@ -233,7 +233,7 @@ class ValidationRapportForm(forms.ModelForm):
                     L'équipe de gestion des dépenses
                     """,
                     from_email="sanbasystemegestion@gmail.com",
-                    recipient_list=[rapport.employee.email, "nasserdevtest@gmail.com"],
+                    recipient_list=[rapport.employee.email],
                     fail_silently=True
                     
                 )
@@ -254,7 +254,7 @@ class ValidationRapportForm(forms.ModelForm):
                     Votre rapport de dépense concernant {rapport.materiau_article} 
                     nécessite des modifications avant validation.
                     
-                    Commentaire du gestionnaire : _ {commentaire} _
+                    Commentaire du gestionnaire :  "{commentaire}"
                     
                     Merci de bien vouloir apporter les modifications nécessaires.
                     
@@ -262,7 +262,7 @@ class ValidationRapportForm(forms.ModelForm):
                     L'équipe de gestion des dépenses
                     """,
                     from_email="sanbasystemegestion@gmail.com",
-                    recipient_list=[rapport.employee.email, "nasserdevtest@gmail.com"],
+                    recipient_list=[rapport.employee.email],
                     fail_silently=True
                 )
             except Exception as e:
