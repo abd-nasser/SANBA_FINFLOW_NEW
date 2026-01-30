@@ -1,0 +1,563 @@
+body{
+     min-height: 110vh;
+        background: linear-gradient(-45deg, 
+            rgba(201, 26, 26, 1) 0%, 
+            rgba(235, 230, 231, 1) 50%, 
+            rgba(0, 0, 0, 1) 99%);
+        background-size: 400% 400%;
+        animation: gradient-shift 20s ease infinite;
+        overflow-x: hidden;
+        position: relative;
+}
+
+/* ===== ANIMATION DU GRADIENT ===== */
+    @keyframes gradient-shift {
+        0% {
+            background-position: 0% 50%;
+        }
+        25% {
+            background-position: 50% 100%;
+        }
+        50% {
+            background-position: 100% 50%;
+        }
+        75% {
+            background-position: 50% 0%;
+        }
+        100% {
+            background-position: 0% 50%;
+        }
+    }
+
+        /* ===== PARTICULES COLORÉES ===== */
+    #particles {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        pointer-events: none;
+        z-index: 2;
+    }
+    
+    .particle {
+        position: absolute;
+        border-radius: 50%;
+        filter: blur(1px);
+        animation: float-particle linear infinite;
+        box-shadow: 0 0 10px currentColor;
+    }
+    
+    @keyframes float-particle {
+        0% {
+            transform: translateY(100vh) translateX(0) rotate(0deg);
+            opacity: 0;
+        }
+        10% {
+            opacity: 0.7;
+        }
+        90% {
+            opacity: 0.7;
+        }
+        100% {
+            transform: translateY(-100px) translateX(calc(100px * var(--direction, 1))) rotate(360deg);
+            opacity: 0;
+        }
+    }
+
+
+
+
+nav{
+    background-color: black;
+    color: rgb(255, 255, 255);
+    text-align: center;
+    font-size: 1rem;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    position: fixed;
+    z-index: 1000;
+    width: 100%;
+}
+
+
+header{
+    background: linear-gradient(-45deg, 
+            rgba(201, 26, 26, 1) 0%, 
+            rgba(235, 230, 231, 1) 50%, 
+            rgba(0, 0, 0, 1) 99%);
+            
+    background-size: 400% 400%;
+    animation:  gradient-shift 25s ease infinite,
+                slide_header 2s ease-in-out;
+    overflow-x: hidden;
+    height: 25vh;
+    width: 100%;
+    display: flex;
+    border: 1px solid black;
+    box-shadow: 7px 5px 14px 6px rgb(42 18 18 / 71%);
+    flex-direction: column;
+    align-items: center;
+    justify-content: space-evenly;
+    align-content: center;
+    position: fixed;
+    z-index: 1000;
+    margin-top: 1.5rem;
+    
+}
+
+
+
+@keyframes slide_header{
+    0%{
+        transform: translateY(-70vh);
+    }
+    100%{
+        transform: translateY(0px);
+    }
+}
+
+header h1{
+    color: linear-gradient(90deg,rgba(201, 26, 26, 1) 4%, rgba(223, 158, 159, 1) 35%, rgba(255, 245, 249, 1) 51%, rgba(179, 172, 175, 1) 64%, rgba(0, 0, 0, 1) 94%);
+    text-align: center;
+    text-shadow: 0 0 0;
+    padding-top: 0.5em;
+    font-size: 2rem;
+    font-weight: bold;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    
+}
+
+
+
+header h3{
+   
+    font-weight: bold;
+    font-style: italic;
+    color: #502525fa;
+
+}
+
+
+
+header .aj_fond{
+   
+    color: rgb(219, 90, 90);
+    background-color: rgb(49, 47, 47);
+    box-shadow: 0 4px 8px rgba(14, 13, 13, 0.779);
+    transition: all 0.5s ease;
+}
+header .aj_fond:hover{
+    background-color: rgb(234, 101, 101);
+    color: rgb(42, 35, 35);
+    box-shadow: 0 4px 8px rgba(14, 13, 13, 0.779);
+}
+
+header .aj_emplye{
+    
+    color: rgb(219, 90, 90);
+    background-color: rgb(49, 47, 47);
+    box-shadow: 0 4px 8px rgba(14, 13, 13, 0.779);
+    transition: all 0.5s ease;
+}
+header .aj_emplye:hover{
+    background-color: rgb(234, 101, 101);
+    color: rgb(42, 35, 35);
+    box-shadow: 0 4px 8px rgba(14, 13, 13, 0.779);
+}
+
+
+header .deconnexion{
+    background-color: rgb(211, 120, 120);
+    transition: all 0.5s ease;
+}
+header .deconnexion:hover{
+    background-color: red;
+    color: white;
+    box-shadow: 0 4px 8px rgba(203, 27, 27, 0.779);
+}
+
+
+header .ch_identifiant{
+    bottom: 1.5rem;
+    background-color: rgb(160, 158, 158);
+    transition: all 0.5s ease;
+}
+header .ch_identifiant:hover{
+    background-color: rgb(71, 69, 69);
+    color: white;
+    box-shadow: 0 4px 8px rgba(233, 232, 232, 0.779);
+}
+
+header .action{
+    width: 100%;
+    display: flex;
+    justify-content: space-around;
+
+}
+
+main{
+    min-height: 110vh;
+   min-width: 100%;
+   display: flex;
+   justify-content: center;
+   flex-direction: column;
+   padding-top: 18rem;
+}
+
+
+main .section_container{
+    display: flex;
+    flex-direction: column;
+    margin-top: 2rem;
+
+}
+
+main .section_container h2{
+    text-align: center;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    color: rgb(2, 2, 2);
+    text-shadow: 1px 1px 2px rgb(242, 242, 242);
+    margin-top: 2rem;
+    font-weight: bold;
+}
+
+main .demande_section{
+    min-width: 30%;
+    border: 1px solid black;
+    border-radius: 1rem;
+    background-color: rgba(255, 255, 255, 0);
+    backdrop-filter: blur(1.8rem);
+    box-shadow: 7px 5px 14px 6px rgb(42 18 18 / 71%);
+    margin: 1.5rem 1rem;
+    display: flex;
+    justify-content: space-evenly;
+    flex-wrap: wrap;
+    animation: slide_dmd_section 2s ease-in-out;
+
+
+}
+
+@keyframes slide_dmd_section{
+    0%{
+        transform: translateY(100px);
+    }
+    50%{
+        transform: translateY(-100px);
+    }
+    100%{
+        transform: translate(0px);
+    }
+}
+
+
+
+.div_all_btn{
+    display: flex;
+    text-align: center;;
+    justify-content: center;
+}
+
+.div_all_btn .btn{
+    margin-left: 2rem;
+    margin-bottom: 1rem;
+    backdrop-filter: blur(5rem);
+     background-color: rgba(255, 250, 250, 0);
+   
+    color: rgb(0, 0, 0);
+    box-shadow: 0 4px 8px rgba(14, 13, 13, 0.779);
+    transition: all 0.5s ease;
+    animation: slide_all_btn 2s  ease-in-out;
+}
+
+@keyframes slide_all_btn{
+    0%{
+        transform: translateY(-50vh) ;
+    }
+    50%{
+        transform: translateY(30vh);
+    }
+    100%{
+        transform: translateY(0px);
+    }
+}
+
+.div_all_btn .btn:hover{
+    background: linear-gradient(-45deg, 
+            rgba(201, 26, 26, 1) 0%, 
+            rgba(235, 230, 231, 1) 50%, 
+            rgba(0, 0, 0, 1) 99%);
+    color: rgb(0, 0, 0);
+    box-shadow: 0 4px 8px rgba(255, 255, 255, 0.779);
+}
+
+main .demande_section{
+    z-index: 1000;
+     overflow-y: scroll;
+    -webkit-overflow-scrolling: touch;
+}
+
+main .demande_card h4{
+    display: inline-block;
+    margin: 0.5rem 0;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+
+main .demande_card{
+    border: 1px solid black;
+    border-radius: 1rem;
+    padding: 1rem;
+    margin: 1rem;
+    background-color:rgba(6, 1, 1, 0.793);
+    color: white;
+    box-shadow: 7px 5px 14px 6px rgb(42 18 18 / 71%);
+    display: flex;
+    flex-direction: column;
+    width: 35%;
+    transition: all 0.3s ease;
+   
+}
+
+main .demande_card:hover{
+ box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+ transform: translateY(-2px);
+}
+           
+
+/*################################################################ Modal Style #################################################################*/
+.modal-box{
+    backdrop-filter: blur(1.5rem);
+    background-color: rgba(255, 255, 255, 0);
+    box-shadow: 0 4px 8px rgba(14, 13, 13, 0.779);
+    border-radius: 1rem;
+    padding: 1rem;
+    color: rgb(3, 3, 3);}
+
+.modal-box .input, .select, .textarea{
+    backdrop-filter: blur(0.5rem);
+    background:rgba(255, 255, 255, 0) ;
+}
+
+
+
+.modal-box .join-item{
+    backdrop-filter: blur(0.5rem);
+    background:rgba(255, 255, 255, 0) ;
+    box-shadow: 0 4px 8px rgba(14, 13, 13, 0.779);
+    border: 1px solid black;
+}
+.modal-box .join-item:checked{
+     background: linear-gradient(144deg,rgba(255, 0, 0, 1) 2%, rgba(222, 211, 211, 1) 50%, rgba(13, 12, 13, 1) 100%);
+}
+
+.modal-box .btn-depot{
+    backdrop-filter: blur(0.5rem);
+    background-color: rgba(255, 255, 255, 0);
+    box-shadow: 0 4px 8px rgba(14, 13, 13, 0.779);
+    color: rgb(0, 0, 0);
+    transition: all 0.5s ease;
+}
+
+.modal-box .btn-depot:hover{
+    background: linear-gradient(144deg,rgba(255, 0, 0, 1) 2%, rgba(222, 211, 211, 1) 50%, rgba(13, 12, 13, 1) 100%);
+    color: rgb(0, 0, 0);
+    box-shadow: 0 4px 8px rgba(87, 85, 85, 0.779);
+}
+
+.modal-box .btn-enregistrer{
+    backdrop-filter: blur(0.5rem);
+    background-color: rgba(255, 255, 255, 0);
+    box-shadow: 0 4px 8px rgba(14, 13, 13, 0.779);
+    color: rgb(0, 0, 0);
+    transition: all 0.5s ease;
+}
+
+.modal-box .btn-enregistrer:hover{
+    background:linear-gradient(144deg,rgba(255, 0, 0, 1) 2%, rgba(222, 211, 211, 1) 50%, rgba(13, 12, 13, 1) 100%);
+    color: rgb(45, 41, 41);
+    box-shadow: 0 4px 8px rgba(255, 255, 255, 0.779);
+}
+
+.modal-box .btn-maj{
+    backdrop-filter: blur(0.5rem);
+     background-color: rgba(255, 255, 255, 0);
+    box-shadow: 0 4px 8px rgba(14, 13, 13, 0.779);
+    color: rgb(0, 0, 0);
+    transition: all 0.5s ease;
+}
+.modal-box .btn-maj:hover{
+    background:linear-gradient(144deg,rgba(255, 0, 0, 1) 2%, rgba(222, 211, 211, 1) 50%, rgba(13, 12, 13, 1) 100%);
+    color: rgb(0, 0, 0);
+    box-shadow: 0 4px 8px rgba(255, 255, 255, 0.779);
+
+}
+
+.status-badge {
+            display: inline-block;
+            padding: 0.25rem 0.75rem;
+            border-radius: 9999px;
+            font-size: 0.875rem;
+            font-weight: 500;
+            margin-top: 0.5rem;
+        }
+        
+.status-en-attente {
+        background-color: #fffbeb;
+        color: #f59e0b;
+        border: 1px solid #fbbf24;
+        }
+        
+        .status-approuvee {
+            background-color: #d1fae5;
+            color: #059669;
+            border: 1px solid #10b981;
+        }
+        
+        .status-refusee {
+            background-color: #fee2e2;
+            color: #dc2626;
+            border: 1px solid #f87171;
+        }
+        
+        .status-decaisse {
+            background-color: #dbeafe;
+            color: #2563eb;
+            border: 1px solid #60a5fa;
+        }
+
+
+select option{
+    backdrop-filter: blur(0.5rem);
+    background:rgba(205, 135, 135, 0.43) ;
+}
+
+footer{
+    background-color: #050505;
+    color: beige;
+}
+
+
+@media(max-width:680px){
+   .div_all_btn {
+    display: flex;
+    text-align: center;
+    margin-top: 2rem;
+    justify-content: center;
+    flex-direction: column;
+    align-items: center;
+    align-content: center;
+    padding-right: 1rem;
+}
+
+header h1, h3{
+    font-size: 1rem;
+}
+
+.action .left_actions, .right_actions{
+    display: flex;
+    width: 100%;
+    justify-content: space-around;
+}
+
+
+header .action{
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    align-content: center;
+    justify-content: center;
+    margin-bottom: 1rem;
+}
+
+.action .left_actions{
+    margin-top: 1rem;
+}
+
+main{
+    padding-top: 14rem;
+}
+main .demande_section{
+     overflow-y: scroll;
+    -webkit-overflow-scrolling: touch;
+        
+}
+
+main .demande_card{
+    width: 100%;
+    overflow-y: scroll;
+}
+
+}
+
+
+
+@media(max-width:380PX){
+
+  .div_all_btn {
+    display: flex;
+    text-align: center;
+    margin-top: 0rem;
+    padding-top: 0rem;
+    justify-content: center;
+    flex-direction: column;
+    align-items: center;
+    align-content: center;
+    padding-right: 1rem;
+}
+    header h1, h3{
+    font-size: 1rem;
+}
+main .demande_section{
+     overflow-y: scroll;
+    -webkit-overflow-scrolling: touch;
+}
+main .demande_card{
+    width: 100%;
+}
+
+header .action .btn{
+    font-size: 0.7rem;
+}
+
+.action .left_actions{
+    margin-top: 1rem;
+}
+
+.action .left_actions, .right_actions{
+    display: flex;
+    width: 100%;
+    justify-content: space-around;
+}
+
+main{
+    padding-top: 14rem;
+}
+
+}
+
+@media(max-width:310px){
+     header h1, h3{
+    font-size: 0.7rem;
+}
+main .demande_section{
+     overflow-y: scroll;
+    -webkit-overflow-scrolling: touch;
+}
+main .demande_card{
+    width: 100%;
+}
+main{
+    padding-top: 14rem;
+}
+
+header .action .btn{
+    font-size: 0.6rem;
+}
+
+.action .left_actions, .right_actions{
+    display: flex;
+    width: 100%;
+    justify-content: space-around;
+}
+
+}

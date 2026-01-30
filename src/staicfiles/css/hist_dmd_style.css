@@ -1,0 +1,217 @@
+nav{
+    background-color: black;
+    color: rgb(255, 255, 255);
+    text-align: center;
+    font-size: 1rem;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    position: fixed;
+    z-index: 1000;
+    width: 100%;
+}
+
+header{
+    display: flex;
+      background: linear-gradient(-45deg, 
+            rgba(201, 26, 26, 1) 0%, 
+            rgba(235, 230, 231, 1) 50%, 
+            rgba(0, 0, 0, 1) 99%);
+            
+    background-size: 400% 400%;
+    animation:  gradient-shift 25s ease infinite,
+                slide_header 2s ease-in-out;
+    height: 27vh;
+    width: 100%;
+    position: relative;
+    border: 1px solid black;
+    box-shadow: 7px 5px 14px 6px rgb(42 18 18 / 71%);
+    justify-content: space-around;
+    flex-direction: column;
+    align-items: center;
+    align-content: center;
+    position: fixed;
+    z-index: 1000;
+    margin-top: 1.5rem;
+}
+
+
+
+header .statistique .card{
+    margin-left: 1rem;
+}
+
+main .en_tete{
+   display: flex;
+    position: relative;
+    width: 100%;
+    justify-content: space-around;
+}
+
+main .filter-container {
+    backdrop-filter: blur(10px);
+    background-color: rgb(255 255 255 / 0%);
+} 
+
+main .filter{
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    flex-direction: row;
+    margin-top: 2rem;
+}
+ 
+
+main .stat_by_employe{
+    margin-top: 4rem;
+}
+ 
+.stats-card {
+            transition: all 0.3s ease;
+        }
+        
+.stats-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+        }
+        
+.status-badge {
+            padding: 0.25rem 0.75rem;
+            border-radius: 9999px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            display: inline-block;
+        }
+
+.status-en_attente { background-color: #fef3c7; color: #92400e; }
+.status-approuvee_directeur { background-color: #d1fae5; color: #065f46; }
+.status-approuvee_comptable { background-color: #d1fae5; color: #065f46; }
+.status-refusee_directeur { background-color: #fee2e2; color: #991b1b; }
+.status-refusee_comptable { background-color: #fee2e2; color: #991b1b; }
+.status-decaisse { background-color: #dbeafe; color: #1e40af; }
+        
+
+.filter-container {
+            backdrop-filter: blur(10px);
+            background-color: rgba(255, 255, 255, 0);
+        }
+        
+.total-amount {
+            font-weight: bold;
+            color: #10b981;
+        }
+        
+@media print {
+    .no-print {
+    display: none !important;
+            }
+            
+    .stats-grid {
+        break-inside: avoid;
+            }
+            
+    table {
+        font-size: 10pt;
+            }
+        }
+        
+.employee-stats {
+    border-left: 4px solid #3b82f6;
+    backdrop-filter: blur(10px);
+    background-color: rgb(255 255 255 / 0%);
+        }
+
+.table_container{
+    width: 100%;
+    overflow-x: auto; /* Défilement horizontal */
+    -webkit-overflow-scrolling: touch; /* Défilement fluide sur mobile */
+    
+    /* Optionnel: pour mieux voir la zone de défilement */
+    padding-bottom: 10px;
+    margin-bottom: 15px;
+}
+
+table .badge{
+    width: max-content;
+}
+
+
+@media(max-width:768px){
+    main .en_tete{
+        flex-direction: column;}}
+        
+@media(max-width:420px){
+
+main {
+    padding: 1rem;
+        padding-top: 15rem;
+}
+main .filtre_container, .filtre_container_child {
+    display: flex;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+}
+
+header{
+    box-shadow: 0 0 0px;
+}
+header h1{
+    font-weight: bold;
+    font-size: 1rem;
+}
+
+main .en_tete{
+    display: flex;
+    position: relative;
+    width: 100%;
+    justify-content: space-around;
+    flex-direction: column;
+}
+
+main .en_tete .btn-aj_client{
+    margin-top: 2rem;
+}
+
+.flex {
+    display: flex;
+    flex-direction: column;
+
+}
+.statistique{
+    display: flex;
+    flex-direction: row;
+    justify-content: space-evenly;
+    align-items: center;
+     width: 100%;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+}
+    }
+
+footer{
+    background: rgb(33, 33, 33);
+     color: beige;
+}
+
+.table_container{
+        width: 100%;
+    overflow-x: auto;
+    overflow-y: scroll;
+    -webkit-overflow-scrolling: touch;
+    padding-bottom: 10px;
+    margin-bottom: 2rem;
+    margin-top: 2rem;
+    box-shadow: 0px 1px 17px 4px;
+}
+
+
+
+.statistique{
+    display: flex;
+    flex-direction: row;
+    justify-content: space-evenly;
+    align-items: center;
+     width: 100%;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+}

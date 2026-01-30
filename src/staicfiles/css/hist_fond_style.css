@@ -1,0 +1,133 @@
+nav{
+    background-color: black;
+    color: rgb(255, 255, 255);
+    text-align: center;
+    font-size: 1rem;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+
+
+header{
+    display: flex;
+     background: linear-gradient(-45deg, 
+            rgba(201, 26, 26, 1) 0%, 
+            rgba(235, 230, 231, 1) 50%, 
+            rgba(0, 0, 0, 1) 99%);
+            
+    background-size: 400% 400%;
+    animation:  gradient-shift 25s ease infinite,
+                slide_header 2s ease-in-out;
+    height: 30vh;
+    position: relative;
+    border: 1px solid black;
+    box-shadow: 7px 5px 14px 6px rgb(42 18 18 / 71%);
+    justify-content: space-around;
+    flex-direction: column;
+    align-items: center;
+    align-content: center;
+   
+    
+
+}
+
+@keyframes slide_header{
+    0%{
+        transform: translateY(-70vh);
+    }
+    100%{
+        transform: translateY(0px);
+    }
+}
+
+/* ===== ANIMATION DU GRADIENT ===== */
+    @keyframes gradient-shift {
+        0% {
+            background-position: 0% 50%;
+        }
+        25% {
+            background-position: 50% 100%;
+        }
+        50% {
+            background-position: 100% 50%;
+        }
+        75% {
+            background-position: 50% 0%;
+        }
+        100% {
+            background-position: 0% 50%;
+        }
+    }
+
+
+header .statistique{
+    display: flex;
+    flex-direction: row;
+    justify-content: space-evenly;
+    align-items: center;
+    width: 100%;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+}
+
+header .statistique .card{
+    margin-left: 1rem;
+}
+
+main{
+    background: linear-gradient(-45deg, 
+            rgba(201, 26, 26, 1) 0%, 
+            rgba(235, 230, 231, 1) 50%, 
+            rgba(0, 0, 0, 1) 99%);
+            
+    background-size: 400% 400%;
+    animation:  gradient-shift 25s ease infinite;
+   min-height: 70vh;
+   min-width: 100%;
+   display: flex;
+   justify-content: center;
+   flex-direction: column;
+  padding:0.8rem;
+}
+
+.avatar-sm {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: bold;
+}
+.table tbody tr:hover {
+    background-color: rgba(52, 152, 219, 0.05);
+    transition: background-color 0.2s;
+}
+.badge.fs-6 {
+    font-size: 0.9em;
+    padding: 0.4em 0.8em;
+}
+
+.table_container{
+    width: 100%;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    padding-bottom: 10px;
+    margin-bottom: 15px;
+    margin-top: 1rem;
+    box-shadow: 0px 2px 18px 2px;
+}
+
+table .badge{
+    width: max-content;
+}
+
+
+
+@media(max-width:360px){
+canvas {
+    height: 250px;
+ }
+
+}
+
+footer{
+    background: rgb(33, 33, 33);
+     color: beige;
+}

@@ -1,0 +1,135 @@
+nav{
+    background-color: black;
+    color: rgb(255, 255, 255);
+    text-align: center;
+    font-size: 1rem;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    position: fixed;
+    z-index: 1000;
+    width: 100%;
+}
+
+header{
+    display: flex;
+    background:linear-gradient(144deg,rgba(255, 0, 0, 1) 2%, rgba(222, 211, 211, 1) 50%, rgba(13, 12, 13, 1) 100%);
+    height: 27vh;
+    width: 100%;
+    position: relative;
+    border: 1px solid black;
+    box-shadow: 7px 5px 14px 6px rgb(42 18 18 / 71%);
+    justify-content: space-around;
+    flex-direction: column;
+    align-items: center;
+    align-content: center;
+    position: fixed;
+    z-index: 1000;
+    margin-top: 1.5rem;
+}
+
+header h1{
+    font-weight: bold;
+    font-size: 2rem;
+}
+
+main{
+   background:linear-gradient(144deg,rgba(255, 0, 0, 1) 2%, rgba(222, 211, 211, 1) 50%, rgba(13, 12, 13, 1) 100%);
+   min-height: 70vh;
+   min-width: 100%;
+   display: flex;
+   justify-content: center;
+   flex-direction: column;
+   align-items: center;
+   padding: 5rem;
+   padding-top: 15rem;
+}
+
+main .en_tete{
+    justify-content: space-around;
+    display: flex;
+    align-items: center;
+    
+}
+main  .badge{
+        background: linear-gradient(144deg, rgba(255, 0, 0, 1) 2%, rgba(222, 211, 211, 1) 50%, rgba(13, 12, 13, 1) 100%);
+    color: white;
+    box-shadow: 0 4px 8px rgba(255, 255, 255, 0.779);
+    min-width: max-content;
+    min-height: max-content;
+}
+
+
+main .card-body {
+    display: flex;
+    flex: auto;
+    flex-direction: column;
+    gap: calc(0.25rem * 2);
+    padding: var(--card-p, 1.5rem);
+    font-size: var(--card-fs, 0.875rem);
+    box-shadow: -5px 6px 20px 3px;
+    margin-top: 1rem;
+}
+
+
+main .btn-add_chantier, .btn-add_contrat, .btn-modif_client{
+    backdrop-filter: blur(0.5rem);
+    background:linear-gradient(144deg,rgba(255, 0, 0, 1) 2%, rgba(222, 211, 211, 1) 50%, rgba(13, 12, 13, 1) 100%);
+    box-shadow: 0 4px 8px rgba(14, 13, 13, 0.779);
+    color: rgb(0, 0, 0);
+    transition: all 0.5s ease;
+}
+
+.btn-supp_client{
+    background-color: rgb(211, 120, 120);
+    transition: all 0.5s ease;
+}
+
+.btn-supp_client:hover{
+    background-color: red;
+    color: white;
+    box-shadow: 0 4px 8px rgba(203, 27, 27, 0.779);
+}
+
+main .btn-add_chantier:hover, .btn-add_contrat:hover,.btn-modif_client:hover{
+    background: linear-gradient(270deg,rgba(71, 56, 59, 1) 19%, rgba(181, 152, 166, 1) 33%, rgb(183, 89, 103) 51%, rgba(189, 155, 158, 1) 69%, rgba(41, 30, 30, 1) 87%);
+    color: white;
+    box-shadow: 0 4px 8px rgba(255, 255, 255, 0.779);
+}
+
+.modal-box{
+    backdrop-filter: blur(0.5rem);
+    background: linear-gradient(144deg,rgba(255, 0, 0, 1) 2%, rgba(222, 211, 211, 1) 50%, rgba(13, 12, 13, 1) 100%);
+    box-shadow: 0 4px 8px rgba(14, 13, 13, 0.779);
+    border-radius: 1rem;
+    padding: 1rem;
+    color: rgb(3, 3, 3);}
+
+.modal-box .input, .select, .textarea{
+    backdrop-filter: blur(0.5rem);
+    background:rgba(255, 255, 255, 0) ;
+}
+
+.modal-box .btn-modifclient{
+    backdrop-filter: blur(0.5rem);
+    background:linear-gradient(144deg,rgba(255, 0, 0, 1) 2%, rgba(222, 211, 211, 1) 50%, rgba(13, 12, 13, 1) 100%);
+    box-shadow: 0 4px 8px rgba(14, 13, 13, 0.779);
+    color: rgb(0, 0, 0);
+    transition: all 0.5s ease;
+}
+
+.modal-box .btn-modifclient:hover{
+    background: linear-gradient(270deg,rgba(71, 56, 59, 1) 19%, rgba(181, 152, 166, 1) 33%, rgb(183, 89, 103) 51%, rgba(189, 155, 158, 1) 69%, rgba(41, 30, 30, 1) 87%);
+    color: white;
+    box-shadow: 0 4px 8px rgba(255, 255, 255, 0.779);
+}
+
+@media(max-width:420px){
+    main{
+        padding: 1rem;
+        padding-top: 15rem;
+    }
+}
+
+footer{
+    background: rgb(33, 33, 33);
+     color: beige;
+}

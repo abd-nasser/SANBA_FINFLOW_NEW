@@ -1,0 +1,202 @@
+nav{
+    background-color: black;
+    color: rgb(255, 255, 255);
+    text-align: center;
+    font-size: 1rem;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    position: fixed;
+    z-index: 1000;
+    width: 100%;
+}
+
+header{
+    display: flex;
+    background:linear-gradient(144deg,rgba(255, 0, 0, 1) 2%, rgba(222, 211, 211, 1) 50%, rgba(13, 12, 13, 1) 100%);
+    height: 27vh;
+    width: 100%;
+    position: relative;
+    border: 1px solid black;
+    box-shadow: 7px 5px 14px 6px rgb(42 18 18 / 71%);
+    justify-content: space-around;
+    flex-direction: column;
+    align-items: center;
+    align-content: center;
+    position: fixed;
+    z-index: 1000;
+    margin-top: 1.5rem;
+}
+
+.input_search{
+        backdrop-filter: blur(5rem);
+        background-color: rgba(255, 255, 255, 0);
+        margin-top: 2rem;
+}
+
+header h1{
+    font-weight: bold;
+    font-size: 2rem;
+}
+
+select option{
+    backdrop-filter: blur(0.5rem);
+    background:rgba(255, 255, 255, 0) ;
+}
+main{
+   background:linear-gradient(144deg,rgba(255, 0, 0, 1) 2%, rgba(222, 211, 211, 1) 50%, rgba(13, 12, 13, 1) 100%);
+   min-height: 100vh;
+   min-width: 100%;
+   display: flex;
+   justify-content: center;
+   flex-direction: column;
+   align-items: center;
+   padding: 4rem;
+   padding-top: 18rem;
+}
+
+main .en_tete{
+   display: flex;
+    position: relative;
+    width: 100%;
+    justify-content: space-around;
+}
+
+
+
+main table .badge{
+    background:linear-gradient(144deg,rgba(255, 0, 0, 1) 2%, rgba(222, 211, 211, 1) 50%, rgba(13, 12, 13, 1) 100%);
+    color: white;
+    box-shadow: 0 4px 8px rgba(255, 255, 255, 0.779);
+}
+
+main .btn-aj_client{
+    backdrop-filter: blur(0.5rem);
+    background:linear-gradient(144deg,rgba(255, 0, 0, 1) 2%, rgba(222, 211, 211, 1) 50%, rgba(13, 12, 13, 1) 100%);
+    box-shadow: 0 4px 8px rgba(14, 13, 13, 0.779);
+    color: rgb(0, 0, 0);
+    transition: all 0.5s ease;
+}
+
+main .btn-aj_client:hover{
+    background: linear-gradient(270deg,rgba(71, 56, 59, 1) 19%, rgba(181, 152, 166, 1) 33%, rgb(183, 89, 103) 51%, rgba(189, 155, 158, 1) 69%, rgba(41, 30, 30, 1) 87%);
+    color: white;
+    box-shadow: 0 4px 8px rgba(255, 255, 255, 0.779);
+}
+
+
+
+main .filter_container{
+    padding-bottom: 2rem;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+main .filter{
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    flex-direction: row;
+    margin-top: 2rem;
+}
+
+main .table_container{
+    margin-left:5%;
+    margin-right: 5%;
+    margin-top: 5rem;
+}
+
+main .table_container .badge {
+    margin-top: 1rem;
+}
+
+
+.table_container{
+    width: 100%;
+    overflow-x: auto; /* Défilement horizontal */
+    -webkit-overflow-scrolling: touch; /* Défilement fluide sur mobile */
+    
+    /* Optionnel: pour mieux voir la zone de défilement */
+    padding-bottom: 10px;
+    margin-bottom: 15px;
+}
+
+
+
+@media(max-width:420px){
+
+main {
+    padding: 1rem;
+        padding-top: 15rem;
+}
+main .filtre_container, .filtre_container_child {
+    display: flex;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+}
+
+header{
+    box-shadow: 0 0 0px;
+}
+header h1{
+    font-weight: bold;
+    font-size: 1rem;
+}
+
+main .en_tete{
+    display: flex;
+    position: relative;
+    width: 100%;
+    justify-content: space-around;
+    flex-direction: column;
+}
+
+main .en_tete .btn-aj_client{
+    margin-top: 2rem;
+}
+}
+
+
+
+
+
+
+
+/*################################################################ Modal Style #################################################################*/
+.modal-box{
+    backdrop-filter: blur(0.5rem);
+    background:linear-gradient(144deg,rgba(255, 0, 0, 1) 2%, rgba(222, 211, 211, 1) 50%, rgba(13, 12, 13, 1) 100%);
+    box-shadow: 0 4px 8px rgba(14, 13, 13, 0.779);
+    border-radius: 1rem;
+    padding: 1rem;
+    color: rgb(3, 3, 3);}
+
+.modal-box .input, .select, .textarea{
+    backdrop-filter: blur(0.5rem);
+    background:rgba(255, 255, 255, 0);
+}
+
+.modal-box .btn-creatclient{
+    backdrop-filter: blur(0.5rem);
+    background:linear-gradient(144deg,rgba(255, 0, 0, 1) 2%, rgba(222, 211, 211, 1) 50%, rgba(13, 12, 13, 1) 100%);
+    box-shadow: 0 4px 8px rgba(14, 13, 13, 0.779);
+    color: rgb(0, 0, 0);
+    transition: all 0.5s ease;
+}
+
+.modal-box .btn-creatclient:hover{
+    background: linear-gradient(270deg,rgba(71, 56, 59, 1) 19%, rgba(181, 152, 166, 1) 33%, rgb(183, 89, 103) 51%, rgba(189, 155, 158, 1) 69%, rgba(41, 30, 30, 1) 87%);
+    color: white;
+    box-shadow: 0 4px 8px rgba(255, 255, 255, 0.779);
+}
+
+select option{
+    backdrop-filter: blur(0.5rem);
+    background:rgba(234, 211, 211, 0.314) ;
+}
+
+footer{
+    background: rgb(33, 33, 33);
+     color: beige;
+}
