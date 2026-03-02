@@ -27,7 +27,7 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 SECRET_KEY = os.getenv('SECRET_KEY')
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = os.getenv('DEBUG')
 
 ALLOWED_HOSTS = os.getenv('ALLOWED_HOSTS', '').split(',')
 
@@ -100,8 +100,7 @@ WSGI_APPLICATION = 'sanba_finflow.wsgi.application'
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / 'db.sqlite3',
-        
+        'NAME': BASE_DIR /'db' / 'db.sqlite3',
     }
 }
 
@@ -148,12 +147,21 @@ STATIC_URL = 'static/'
 
 
 MEDIA_ROOT = os.path.join(BASE_DIR/"media")
-STATIC_ROOT = os.path.join(BASE_DIR/"staicfiles")
+STATIC_ROOT = os.path.join(BASE_DIR/"staticfiles")
 
 STATICFILES_DIRS = [
     os.path.join(BASE_DIR/"sanba_finflow/static")
 ]
 
+
+# URL de redirection APRÈS login réussi
+LOGIN_REDIRECT_URL = '/'  # Ou '/dashboard/', '/home/', etc.
+
+# URL de la page de login
+LOGIN_URL = '/login/'  # ✅ Correct si tu as une vue à /login/
+
+# Optionnel: URL de logout
+LOGOUT_REDIRECT_URL = '/logout/'  # Où rediriger après logout
 
 #auth_conf
 AUTH_USER_MODEL= "auth_app.Personnel"

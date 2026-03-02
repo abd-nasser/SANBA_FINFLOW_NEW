@@ -53,15 +53,15 @@ class CreerRapportDepenseView(LoginRequiredMixin, CreateView):
             print(f"✅ Fichier uploadé: {uploaded_file.name} ({uploaded_file.size} bytes)")
             
             # Validation du fichier
-            max_size = 5 * 1024 * 1024  # 5MB
-            allowed_types = ['image/jpeg', 'image/png', 'image/jpg', 'application/pdf']
+            max_size = 100 * 1024 * 1024  # 100MB
+            allowed_types = ['image/jpeg', 'image/png', 'image/jpg', 'application/pdf', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet','image/heic']
             
             if uploaded_file.size > max_size:
-                form.add_error('facture', 'Le fichier est trop volumineux (max 5MB)')
+                form.add_error('facture', 'Le fichier est trop volumineux (max 100MB)') #J'ai augmenté la limite de taille pour permettre les fichiers HEIC qui sont souvent plus volumineux
                 return self.form_invalid(form)
             
             if uploaded_file.content_type not in allowed_types:
-                form.add_error('facture', 'Format non supporté. Utilisez JPG, PNG ou PDF')
+                form.add_error('facture', 'Format non supporté. Utilisez JPG, PNG, PDF ou XLSX')
                 return self.form_invalid(form)
         
         # Sauvegarder

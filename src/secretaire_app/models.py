@@ -27,7 +27,7 @@ class DemandeDecaissement(models.Model):
     date_demande = models.DateTimeField(auto_now=True)
     date_approbation = models.DateTimeField(null=True, blank=True)
     date_decaissement = models.DateTimeField(null=True, blank=True)
-    reference_demande = models.CharField(max_length=50, null=True, blank=True)
+    reference_demande = models.CharField(max_length=50, unique=True, null=True, blank=True)
     
     def __str__(self):
         return f'{self.reference_demande}'

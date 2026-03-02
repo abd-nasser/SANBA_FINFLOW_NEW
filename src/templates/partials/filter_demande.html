@@ -98,6 +98,20 @@
                                         </a>
                                         {% endif %}
                                 {% endif %}
+
+                                
+                                {% if user.is_authenticated and user.post.nom == "Directeur" or user.post.nom == "Comptable" %}
+                                    {% if hist.status == 'en_attente' %}
+                                        <a href="{% url 'comptable_app:comptable-approuver-demande' hist.id %}"
+                                        class="btn btn-xs btn-primary">
+                                            ✅ Approuver
+                                        </a>
+                                        <a href="{% url 'comptable_app:comptable-refuser-demande' hist.id %}"
+                                        class="btn btn-xs btn-error">
+                                            ❌ Refuser
+                                        </a>
+                                    {% endif %}
+                                {% endif %}
                                     
                               
                             </div>

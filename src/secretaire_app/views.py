@@ -46,7 +46,7 @@ def demande_decaissement_view(request):
                     \n plus d'information : https//sanba/finflow/gestion.org
                     """ ,
                     from_email=settings.EMAIL_HOST_USER,
-                    recipient_list=['directeur@gmail.com', "adaneoued@gmail.com","nasserdevtest@gmail.com"]
+                    recipient_list=["nasserdevtest@gmail.com"]
                     )
                 except Exception as e:
                     logger.error(f"Erreur envoi mail demande décaissement {e}")
@@ -59,7 +59,8 @@ def demande_decaissement_view(request):
                 ctx = {"dmd_form":form,
                        "fond": fond.montant,
                        "ch_form":ChangeCredentialsForm(request.user),
-                       "form": ClientForm()
+                       "form": ClientForm(),
+                       "list_demande":list_demande
                        }
                 return render(request, "secretaire_templates/secretaire.html",ctx)
             
@@ -110,7 +111,7 @@ def valider_decaissement_view(request, decaissement_id):
                     subject=f"💰 Décaissement {decaissement.montant} FCFA",
                     message=f"Décaissement pour {decaissement.demandeur.username}, a été effectué.",
                     from_email=settings.EMAIL_HOST_USER,
-                    recipient_list=[decaissement.demandeur.email, request.user.email,"adaneoued@gmail.com","nasserdevtest@gmail.com"]
+                    recipient_list=[decaissement.demandeur.email, request.user.email, "nasserdevtest@gmail.com"]
                 )
             except Exception as e:
                 logger.error(f"Erreur envoi mail décaissement {e}")
@@ -124,7 +125,7 @@ def valider_decaissement_view(request, decaissement_id):
                         subject="⚠️ Rapport de Dépense en Retard",
                         message=f"Bonjour {decaissement.demandeur.username}, n'a pas encore soumis son rapport de dépense pour le décaissement fait il y a plus de 48 heures.",
                         from_email=settings.EMAIL_HOST_USER,    
-                        recipient_list=[request.user.email, "nasserdevtest@gmail.com", "adaneoued@gmail.com"]
+                        recipient_list=[request.user.email, "nasserdevtest@gmail.com"]
                     )   
                 except Exception as e:
                     logger.error(f"Erreur envoi mail rapport retard {e}")

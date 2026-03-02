@@ -149,17 +149,34 @@ class Chantier(models.Model):
     
     def est_payer_partiellement(self):
         """Vérifie si le chantier est partiellement payé"""
-        if self.contrats.montant_encaisse >= self.contrats.montant_total:
-            return False
-        elif self.contrats.montant_encaisse > 0:
-            return True
-        return False
+        try:
+            contrat = self.contrats
+            # Gère les None
+            if contrat.montant_encaisse is None or contrat.montant_total is None:
+                return False
+            if  contrat.montant_encaisse >= contrat.montant_total:
+                return False
+            elif contrat.montant_encaisse > 0:
+                return True
+        except Chantier.contrats.RelatedObjectDoesNotExist:
+            
+             return False
 
     def est_payer_entierement(self):
         """Vérifie si le chantier est entièrement payé"""
-        if self.contrats.montant_encaisse >= self.contrats.montant_total:
-            return True
-        return False
+        try:
+            
+            contrat = self.contrats
+            
+            # Gère les None
+            if contrat.montant_encaisse is None or contrat.montant_total is None:
+                return False
+            elif contrat.montant_encaisse >= contrat.montant_total:
+                return True
+            return False
+        except Chantier.contrats.RelatedObjectDoesNotExist:
+            
+            return False
 
     @property
     def est_en_retard(self):

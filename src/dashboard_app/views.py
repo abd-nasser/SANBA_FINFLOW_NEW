@@ -437,7 +437,7 @@ class DashboardView(LoginRequiredMixin, TemplateView):
             alerts.append({
                 'type':'warning',
                 'message':f'🚨{chantiers_retard.count()} chantier(s) en retard',
-                'lien': "/chantier/?status_chantier=en_cours",
+                'lien': "https://sanba-finflow.pro/chantier/chantier/",
             })
             
         #contrats non signés 
@@ -448,7 +448,7 @@ class DashboardView(LoginRequiredMixin, TemplateView):
             alerts.append({
                 "type":'info',
                 'message':f'{contrats_non_signes} contrats(s) en attente de signature',
-                'lien':'/contrats/' 
+                'lien':'https://sanba-finflow.pro/contrat/contrats/' 
             })
         
         #client sans chantiers (opportunités manquées)
@@ -457,7 +457,7 @@ class DashboardView(LoginRequiredMixin, TemplateView):
             alerts.append({
                 'type':'info',
                 "message":f"{client_sans_chantiers} client(s) sans chantier",
-                'lien':'client/'
+                'lien':'https://sanba-finflow.pro/client/client/'
             })
         
         #Fonds bas
@@ -477,7 +477,7 @@ class DashboardView(LoginRequiredMixin, TemplateView):
             for nom_aniv in clients_anniversaire:
                 alerts.append({
                     "type":"info",
-                    'message':f"Anniversaire client{nom_aniv.nom}"
+                    'message':f" Souhaitons un joyeux anniversaire au client {nom_aniv.nom}"
                 })
                 
         # Rapports sans demande après 48h
@@ -491,8 +491,8 @@ class DashboardView(LoginRequiredMixin, TemplateView):
         if rapports_tardifs > 0:
             alerts.append({
                 'type': 'warning',
-                'message': f'🚨 {rapports_tardifs} rapport(s) sans lien à une demande (>48h)',
-                'lien': '/directeur/rapports-a-verifier/'
+                'message': f'🚨 {rapports_tardifs} rapport(s) sans lien à une demande (>48h)',  
+                'lien': ''
             })        
         
         return {

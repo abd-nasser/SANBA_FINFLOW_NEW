@@ -38,6 +38,7 @@ class ChantierListeView(LoginRequiredMixin, ListView):
         
     def get_queryset(self):
        """FILTRAGE INTELLIGENT AVEC OPTIMISATION DB"""
+       
        #OPTIMISATION CRITIQUE: select_related
        queryset = Chantier.objects.all().select_related(
            'client',
@@ -99,9 +100,6 @@ class ChantierListeView(LoginRequiredMixin, ListView):
             status_chantier="termine"
         ).count()
         
-        context['chantiers_paye'] = self.get_queryset().filter(
-            status_chantier="paye"
-        ).count()
         context['chantiers_en_retard']=self.get_queryset().filter(
             status_chantier='en_cours',
             date_fin_prevue__lt=timezone.now().date()
@@ -114,6 +112,11 @@ class ChantierListeView(LoginRequiredMixin, ListView):
         
         context['TYPE_TRAVAUX_CHOICES']=Chantier.TYPE_TRAVAUX_CHOICES
         
+        #logique python pour filtrer nombre de chantier payé
+        chantiers = self.get_queryset()
+        chantier_paye = [c for c in chantiers if c.est_payer_entierement()]
+        context['chantiers_payes'] = len(chantier_paye)
+     
         return context # Retourne tout au template
           
 class ChantierCreateView(LoginRequiredMixin, SessionWizardView):
