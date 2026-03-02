@@ -159,7 +159,7 @@ class HistoriqueDemandeView(LoginRequiredMixin, ListView):
             'demandeur',
             'chantier',
             "approuve_par"
-        )
+        ).order_by('-date_demande')
         #################__FILTRER LES DEMANDE PAR STATUS__################################
         status = self.request.GET.get('status')
         if status:
