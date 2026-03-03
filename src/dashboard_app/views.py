@@ -409,7 +409,7 @@ class DashboardView(LoginRequiredMixin, TemplateView):
         return {
             'depenses_par_categorie':list(depenses_par_categorie),
             'depense_par_mois':depense_par_mois_list,
-            'total_depenses_mois':total_depenses_mois,
+            'total_depenses_mois':total_general_depenses, # Correction ici pour afficher le total général des dépenses validées du mois courant
             'depense_par_type':depense_par_type,
             'top_employes_depense':top_employes_depense,
             'top_fournisseur':top_fournisseur,
