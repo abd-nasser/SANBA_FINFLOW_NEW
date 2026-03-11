@@ -6,8 +6,8 @@ find . -path "*/migrations/*.py" -not -name "__init__.py" -delete
 find . -path "*/migrations/*.pyc" -delete
 
 # 3. Recrée tout depuis zéro
-python manage.py makemigrations
 python manage.py migrate
+
 
 # 4. Superuser
 python manage.py createsuperuser
@@ -173,3 +173,1093 @@ Pour build : npm run build:css
 
 C'est plus simple que django-tailwind et prêt pour la prod.
 
+############################################ ____les WIZARDS FORMS_____#####################""
+
+<div>
+    <!-- 🎯 TITRE DYNAMIQUE -->
+    <h2>Nouveau Chantier - Étape {{ wizard.steps.step1 }} sur {{ wizard.steps.count }}</h2>
+    <!-- wizard.steps.step1 = étape actuelle (1, 2, 3...) -->
+    <!-- wizard.steps.count = nombre total d'étapes (5) -->
+    
+    <!-- 🎯 BARRE DE PROGRESSION -->
+    <div>
+        <progress value="{{ wizard.steps.step1 }}" max="{{ wizard.steps.count }}">
+            {{ wizard.steps.step1 }}/{{ wizard.steps.count }}
+        </progress>
+    </div>
+    
+    <!-- 🎯 FORMULAIRE PRINCIPAL -->
+    <form method="post" novalidate>
+        {% csrf_token %}
+        
+        <!-- 🎯 FORMULAIRE DE GESTION (OBLIGATOIRE) -->
+        {{ wizard.management_form }}
+        <!-- Ce formulaire invisible garde la mémoire des étapes -->
+        
+        <!-- 🎯 BOUCLE SUR LES CHAMPS DU FORMULAIRE ACTUEL -->
+        {% for field in wizard.form %}
+        <div>
+            <label>{{ field.label }}</label>
+            {{ field }}  <!-- 🎯 Affiche le champ (input, select, etc.) -->
+            
+            <!-- 🎯 AFFICHE LES ERREURS -->
+            {% if field.errors %}
+            <div>
+                {% for error in field.errors %}
+                <p>{{ error }}</p>
+                {% endfor %}
+            </div>
+            {% endif %}
+        </div>
+        {% endfor %}
+        
+        <!-- 🎯 BOUTONS DE NAVIGATION INTELLIGENTS -->
+        <div>
+            <!-- 🎯 BOUTON "PRÉCÉDENT" (seulement si pas à la 1ère étape) -->
+            {% if wizard.steps.prev %}
+            <button name="wizard_goto_step" type="submit" value="{{ wizard.steps.prev }}">
+                ← Précédent
+            </button>
+            <!-- name="wizard_goto_step" = dit au wizard d'aller à une étape spécifique -->
+            <!-- value="{{ wizard.steps.prev }}" = l'étape précédente -->
+            {% endif %}
+            
+            <!-- 🎯 BOUTON PRINCIPAL -->
+            {% if wizard.steps.next %}
+            <!-- 🎯 Si ce n'est pas la dernière étape -->
+            <button type="submit">Suivant →</button>
+            {% else %}
+            <!-- 🎯 Si c'est la dernière étape -->
+            <button type="submit">✅ Créer le chantier</button>
+            {% endif %}
+        </div>
+    </form>
+</div>
+
+class FiltreRapportForm(forms.Form):
+    """Formulaire pour filtrer les rapports"""
+    date_debut = forms.DateField(
+                                    required=False,
+                                    widget=forms.DateInput(attrs={'type':'date','class':'form-control'}),
+                                    label='date début'
+                                )
+    
+    date_fin = forms.DateField(
+                                    required=False,
+                                    widget=forms.DateInput(attrs={'type':'date','class':'form-control'}),
+                                    label='Date-fin'
+    )
+    
+    status = forms.ChoiceField(
+                                    required=False,
+                                    choices=[('', "Tous")] + RapportDepense._meta.get_field('status').choices,
+                                    widget=forms.Select(attrs={'class':"form-select"}),
+                                    label='status'
+                                    
+    )
+    
+    type_depense = forms.ModelChoiceField(
+                                            required=False,
+                                            queryset=TypeDepense.objects.filter(est_actif=True),
+                                            widget=forms.Select(attrs={'class':"form-select"}),
+                                            label = 'Type de dépense'    
+    ) 
+    
+    chantier = forms.ModelChoiceField(
+                                        required=False,
+                                        queryset=Chantier.objects.all(),
+                                        widget=forms.Select(attrs={'class':'form-select'}),
+                                        label='Chantier'
+    
+    )    
+    
+    
+    <!-- directeur_templates/valider_rapport.html -->
+<h2>📋 Valider le rapport de {{ rapport.employee.username }}</h2>
+<p>Type : {{ rapport.type_depense.nom }}</p>
+<p>Montant : {{ rapport.total_affichage }}</p>
+
+<form method="post">
+    {% csrf_token %}
+    {{ form.as_p }}
+    <button type="submit">Valider</button>
+</form>
+
+
+{% comment %}
+Template: employee_du_mois.html
+Vue: BestEmployeeView (TemplateView)
+Contexte fourni:
+- total_depense_employee: Liste avec le top 1 employé par dépenses
+- most_rapport_by_employee: Liste avec le top 1 employé par nombre de rapports
+- top_commerciaux: Liste avec le top 1 commercial par CA généré
+{% endcomment %}
+
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <title>Employé du Mois</title>
+</head>
+<body>
+    <h1>🎯 Employés Performants du Mois</h1>
+    
+    {% comment %} Section 1: Meilleur commercial par CA {% endcomment %}
+    {% if top_commerciaux %}
+        {% for commercial in top_commerciaux %}
+        <section>
+            <h2>🏆 Meilleur Commercial</h2>
+            <p><strong>Nom:</strong> {{ commercial.username }}</p>
+            <p><strong>CA Généré:</strong> {{ commercial.ca_genere|default:"0" }} FCFA</p>
+            <p><strong>Clients Amenés:</strong> {{ commercial.clients_amenes }}</p>
+            <p><strong>Contrats Signés:</strong> {{ commercial.contrats_signes }}</p>
+            <p><strong>Chantiers en cours:</strong> {{ commercial.chantier_status_en_cours }}</p>
+            <p><strong>Chantiers terminés:</strong> {{ commercial.chantier_status_termine }}</p>
+        </section>
+        {% endfor %}
+    {% endif %}
+    
+    {% comment %} Section 2: Employé avec le plus de dépenses {% endcomment %}
+    {% if total_depense_employee %}
+        {% for emp in total_depense_employee %}
+        <section>
+            <h2>💰 Dépenses Engagées</h2>
+            <p><strong>Nom:</strong> {{ emp.employee__username }}</p>
+            <p><strong>Total Dépensé:</strong> {{ emp.total_depense|default:"0" }} FCFA</p>
+        </section>
+        {% endfor %}
+    {% endif %}
+    
+    {% comment %} Section 3: Employé avec le plus de rapports {% endcomment %}
+    {% if rapports_employee %}
+        {% for emp in rapports_employee %}
+        <section>
+            <h2>📊 Productivité Rapports</h2>
+            <p><strong>Nom:</strong> {{ emp.employee__username }}</p>
+            <p><strong>Nombre de Rapports:</strong> {{ emp.total_rapports }}</p>
+        </section>
+        {% endfor %}
+    {% endif %}
+    
+    {% comment %} Message si aucune donnée {% endcomment %}
+    {% if not top_commerciaux and not total_depense_employee and not most_rapport_by_employee %}
+        <p>Aucune donnée disponible pour le mois en cours.</p>
+    {% endif %}
+</body>
+</html>
+
+    
+    
+    
+    
+    
+    
+    ##############################################################################"DASHBORD"
+    <div class="stat">
+            <h1> Dashbord Sanba structure Metallique</h1>
+            <p>Date: {{ "now"|date:"d/m/Y"}}</p>
+
+            
+            <!-- SECTION ALERTES-->
+            
+            {% if alerts %}
+                <div>
+                    <h2>Alertes</h2>
+                    
+                    {% for alert  in alerts %}
+                       <p> aletre : {{ alert.type }}</p>
+                       <strong> ring ring {{ alert.message}}</strong> 
+                       <a href="{{ alert.lien }}">Voir</a>
+                    {% endfor %}
+                        
+                </div>
+            {% endif %}
+
+            <!--  SECTION KPI CARDS (les chiffres importants)-->
+            <div>
+                <h2>Indicateur clé</h2>
+
+                <div class="kpi-and-dash-client">
+                    <div>
+                        <h3> Clients</h3>
+
+                        <p> Nombres de  clients au total:<strong>{{ total_client }}</strong></p>
+                        <p> Nombre de nouveaux clients de ce mois :<strong>{{ nouveaux_clients_mois }}</strong> </p>
+                        <p> Nombre de client fidèle <strong>{{ clients_fideles }}</strong> N</p>
+                    </div>
+
+                <!--SECTION Tableau: top Clients par argent-->
+                <div class='top_Clients'>
+                    <h3> Top 5 Clients par Chiffre d'affaire</h3>
+                    <table border="1" style="width: 100%;">
+                        <thead>
+                            <tr>
+                                <th>Client</th>
+                                <th>Type</th>
+                                <th>Ville</th>
+                                <th>Chiffre d'affaire Total</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {%for client in top_clients_ca %}
+                            <tr>
+                                <td>
+                                    
+                                    {% if client.type_client == 'entreprise' %}
+                                        {{client.raison_sociale}}
+                                        {% else %}
+                                        {{client.nom}} {{client.prenom}}
+                                    {% endif %}
+                                        
+                                </td>
+                                <td>{{ client.get_type_client_display }}</td>
+                                <td>{{ client.ville }}</td>
+                                <td>{{ client.total_ca|default:0|floatformat:0 }} FCFA</td>
+                                </tr>
+                                {% empty %}
+                                <tr>
+                                    <td colspan="4">Aucun client avec Chantier</td>
+                                </tr>
+                            {% endfor %} 
+                        </tbody>
+
+                    </table>
+
+                </div>
+
+
+<br>
+                <div class="kpi and chart chantier">
+                    <div>
+                        <h3>Chantier</h3>
+
+                        <p> Nombre total de chantier:<strong>{{total_chantiers}}</strong></p>
+                        <p>Chantier actifs : <strong> {{chantiers_actifs}}</strong></p>
+                        <p>chantiers terminé de ce mois: <strong>{{ chantiers_termine_mois }}</strong></p>
+                        <p>nombre_chantier_en_retard: <strong>{{ nombre_chantier_en_retard }}</strong></p>
+                    </div>
+
+                    <!-- RADAR Chantier Chart-->
+                    <div style="margin-top: 40px; background: white; padding: 20px; border-radius: 10px; box-shadow: 0 2px 5px rgba(0,0,0,0.1);">
+                        <h3>Performance par type de travaux (Radar) </h3>
+                        <p class="text-muted">Comparaison multi-métriques des differents types de chantiers </p>
+                        
+                        <div style='height: 400px;'>
+                            <canvas id="performanceRadarChart"></canvas>
+                        </div>
+
+                        <div class="row mt-3 text-center">
+                                <div class="col-3">
+                                    <span style="display: inline-block; width: 12px; height: 12px; background: #FF6384; border-radius: 50%;"></span>
+                                    <small> Nombre de chantiers</small>
+                                </div>
+                                <div class="col-3">
+                                    <span style="display: inline-block; width: 12px; height: 12px; background: #36A2EB; border-radius: 50%;"></span>
+                                    <small> Budget moyen</small>
+                                </div>
+                                <div class="col-3">
+                                    <span style="display: inline-block; width: 12px; height: 12px; background: #FFCE56; border-radius: 50%;"></span>
+                                    <small> Durée moyenne</small>
+                                </div>
+                                <div class="col-3">
+                                    <span style="display: inline-block; width: 12px; height: 12px; background: #4BC0C0; border-radius: 50%;"></span>
+                                    <small> Efficacité (budget/jour)</small>
+                                </div>
+                            </div>
+                        </div>
+                    
+                    </div>
+                  
+                </div>
+
+
+<br>
+
+                <div class="kpi-and-graph-finance">
+                        <div>
+                            <h3>Finance</h3>
+                            <p><strong>{{ chiffre_affaire_total|floatformat:0 }}</strong>Chiffre d'affaire total</p>
+                            <p><strong>{{ montant_encaisse_total|floatformat:0 }}</strong>FCFA encaissé</p>
+                            <p><strong>{{ taux_encaisse_moyen }}%</strong> taux d'encaissement</p>
+                        </div>
+
+                        <!--SECTION GRAPH-->
+                        <div class='grah-ca_par_mois'>
+                            <h2> Evolution du chiffre d'affaire</h2>
+
+                            <div style="height:400px;">
+                                <canvas id="caChart"></canvas>
+                            </div>
+                        </div>
+
+                </div>
+                
+
+    </div>
+
+
+
+     <!--GRAPHIQUE DEPENSES -->
+    <div style="margin-top: 40px">
+            <h2> Analytices Dépenses</h2>
+
+            <!-- GRAPH-DONUT 6 Dépenses par catégories -->
+            <div >
+                <h3>Dépenses par catégorie</h3>
+                <div style="height: 400px;">
+                        <canvas id="depensesDonutChart"></canvas>
+                </div>
+                
+                <p>Total dépenses ce mois: <strong>{{total_depenses_mois|floatformat:0}}</strong> FCFA</p>
+            </div>
+
+            <!-- GRAPH-BARRES - Dépenses par mois -->
+            <div>
+                <h3>Dépenses pas Mois</h3>
+                <div style="height: 400px;">
+                    <canvas id="depensesBarChart"></canvas>
+                </div>
+            </div>
+
+     </div>
+
+       <!-- TABLEAU TOP 5 types de Dépenses-->
+       <div style='margin-top: 30px;'>
+        <h3>🏆 Top 5 Types de Dépenses</h3>
+        <table border="1", style="width: 100%;">
+            <thead>
+                <tr>
+                    <th>Type de Dépense</th>
+                    <th>Catégorie</th>
+                    <th>Montant Total</th>
+                    <th>Nombre d'utilisations</th>
+                    <th>poucentage</th>
+                </tr>
+            </thead>
+            <tbody>
+                
+                {% for depense in depense_par_type|slice:":5" %}
+                <tr>
+                    <td>{{depense.nom}}</td>
+                    <td>
+                        <!-- Affiche un point de couleur -->
+                        <span style="display: inline-block; width: 10px; height: 10px; background: {{ depense.couleur|default:'#ccc' }}; border-radius: 50%; margin-right: 5px;"></span>
+                        {{ depense.categorie }}
+                    </td>
+
+                    <td>{{ depense.total_depenses_sum|default:0|floatformat:0}} FCFA</td>
+                    <td>{{ depense.nombre_utilisation|default:0 }}</td>
+                    <td>{{ depense.total_pourcentage|floatformat:1}}%</td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="4" >Aucune dépense enregistrée</td>
+                </tr>
+                {% endfor %}
+                    
+            </tbody>
+        </table>
+       </div>
+     
+   
+
+
+
+    
+
+
+        <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+        <script>    
+            //Donnée CA(chiffre d'affaire) par mois
+            const chiffre_daff_data = {
+                labels:[{% for item in ca_par_mois%} "{{ item.mois }}" {% if not forloop.last %}, {%endif%}{% endfor %}],
+                // labels = les noms sous le graphique (les mois)
+            
+            
+                values:[{% for item in ca_par_mois%} "{{ item.ca }}" {% if not forloop.last %}, {%endif%}{%endfor%}]
+                // values = les chiffre (l'argent)
+            };
+            document.addEventListener("DOMContentLoaded", function(){
+                const caCtx = document.getElementById('caChart').getContext('2d');
+                new Chart(caCtx,{
+                    type: 'line', //type de graphique = ligne
+                    data:{
+                        labels: chiffre_daff_data.labels, // les mois
+                        datasets:[{ // une seule serie de données
+                            
+                            label:'Chiffre d\'affaire(FCFA)', //nom de la courbe
+                            data: chiffre_daff_data.values, // Les chiffres
+                            borderColor: 'rgb(75, 192, 192)',// Couleur de la ligne
+                            tension: 0.2,
+                            fill: true,
+                            backgroundColor: 'rgb(75, 192, 192, 0.2)' 
+                        }]
+                    },
+                    options:{
+                        responsive: true,
+                        scales: {
+                            y: {
+                                beginAtZero: true,
+                                ticks: {
+                                    callback: function(value){
+                                        // montre "1,000,000" au lieu de "1000000"
+                                        return value.toLocaleString() + 'FCFA'
+                                    }
+                                }
+                            }
+                        }
+
+                    }
+
+                }
+
+                )
+            });
+
+            //===================================== 2. GRAPHIQUE DONUT - DEPENSES PAR CATEGORIE =======================================
+            // Récupère le canvas pour le graphique DONUT
+            const donutCtx = document.getElementById("depensesDonutChart").getContext('2d');
+
+            //Donnée pour le donut : catégories et pourcentages et couleur
+            //1-data_depense-Categorie
+            const categoriesDonut = [{% for cat in depenses_par_categorie %} '{{ cat.categorie }}'
+            {% if not forloop.last %}, {% endif %}{% endfor %}];
+
+            //2-data-depense_Pourcentage
+            const pourcentageDonut = [{% for cat in depenses_par_categorie %} {{ cat.total_pourcentage|floatformat:1 }}
+            {% if not forloop.last %}, {% endif %}{% endfor %}];
+
+            //3-data_depense-categorir-couleur
+            const couleurDonut = [{% for cat in depenses_par_categorie %}'{{ cat.couleur }}'
+            {% if not forloop.last %}, {% endif %}{% endfor %}];
+
+            //Créations du graphique donut
+            new Chart(donutCtx, {
+                type: 'doughnut', // type: donut (cercle avec trou)
+                data: {
+                    labels: categoriesDonut, // nons des catégories (ex: "Materiaux, Transport")
+                    datasets: [{
+                        data: pourcentageDonut, // Pourcentages de chaque catégories
+                        backgroundColor: couleurDonut, // les Couleur de chaque catégorie
+                        borderWidth: 1  // Epaisseur de la bordure des parts
+                    }]
+
+                },
+
+
+                options: {
+                    responsive: true,
+                    plugins: {
+                        legend: {
+                            position: 'right'    // Légende à droite du graphique
+                        },
+                        tooltip: {               // Info-bulle au survol
+                            callbacks: {
+                                // Personnalise l'affichage de l'info-bulle
+                                label: function(context) {
+                                    return context.label + ': ' + context.raw.toFixed(1) + '%';
+                                }
+                            }
+                        }
+                    }
+                }
+
+            });
+
+
+            //===================================== 3. GRAPHIQUE BARRES - DEPENSES PAR MOIS =======================================
+            // récupère le canvas pour le graphique BARRES
+            const barCtx = document.getElementById("depensesBarChart").getContext('2d');
+
+            // Données pour les barres: mois et montants 
+            const moisBarres = [{% for item in depense_par_mois %} '{{ item.mois|date:"M Y" }}'
+            {% if not forloop.last %}, {% endif %}{%  endfor %}];
+
+            const montantsBarres = [{% for item in depense_par_mois %} {{ item.total }}
+            {% if not forloop.last %}, {% endif %} {% endfor %}];
+
+            //Créations du graphique barres
+            new Chart(barCtx, {
+                type: 'bar',
+                data: {
+                    labels: moisBarres,
+                    datasets: [{
+                        label: 'Dépenses (FCFA)',
+                        data: montantsBarres,
+                        backgroundColor: 'rgba(54, 162, 235, 0.7)',  // Bleu transparent
+                        borderColor: 'rgba(54, 162, 235, 1)',        // Bleu solide
+                        borderWidth: 1           // Épaisseur de la bordure des barres
+
+                    }]
+                },
+                
+            })
+
+            //===================================== 4. GRAPHIQUE RADAR - PERFORMANCE CHANTIER =======================================
+            const radarCtx = document.getElementById('performanceRadarChart').getContext('2d');
+
+            // Données depuis Django
+            const radarLabels = [{% for item in radar_performance_data %}'{{ item.label }}'
+            {% if not forloop.last %}, {% endif %}{% endfor %}];
+            
+            const radarDatasets = [
+                {
+                    label: 'Nombre de chantiers',
+                    data: [{% for item in radar_performance_data %}{{ item.nombre_norm|floatformat:1 }}
+                    {% if not forloop.last %}, {% endif %}{% endfor %}],
+                    borderColor: '#FF6384',
+                    backgroundColor: 'rgba(255, 99, 132, 0.2)',
+                    pointBackgroundColor: '#FF6384',
+                },
+                {
+                    label: 'Budget moyen (normalisé)',
+                    data: [{% for item in radar_performance_data %}{{ item.budget_norm|floatformat:1 }}
+                    {% if not forloop.last %}, {% endif %}{% endfor %}],
+                    borderColor: '#36A2EB',
+                    backgroundColor: 'rgba(54, 162, 235, 0.2)',
+                    pointBackgroundColor: '#36A2EB',
+                },
+                {
+                    label: 'Durée moyenne (normalisée)',
+                    data: [{% for item in radar_performance_data %}{{ item.duree_norm|floatformat:1 }}
+                    {% if not forloop.last %}, {% endif %}{% endfor %}],
+                    borderColor: '#FFCE56',
+                    backgroundColor: 'rgba(255, 206, 86, 0.2)',
+                    pointBackgroundColor: '#FFCE56',
+                },
+                {
+                    label: 'Efficacité (normalisée)',
+                    data: [{% for item in radar_performance_data %}{{ item.efficacite_norm|floatformat:1 }}
+                    {% if not forloop.last %}, {% endif %}{% endfor %}],
+                    borderColor: '#4BC0C0',
+                    backgroundColor: 'rgba(75, 192, 192, 0.2)',
+                    pointBackgroundColor: '#4BC0C0',
+                }
+            ];
+            
+            new Chart(radarCtx, {
+                type: 'radar',
+                data: {
+                    labels: radarLabels,
+                    datasets: radarDatasets
+                },
+                options: {
+                    responsive: true,
+                    scales: {
+                        r: {
+                            angleLines: {
+                                display: true,
+                                color: 'rgba(0, 0, 0, 0.1)'
+                            },
+                            suggestedMin: 0,
+                            suggestedMax: 100,
+                            ticks: {
+                                display: false
+                            },
+                            pointLabels: {
+                                font: {
+                                    size: 11
+                                }
+                            }
+                        }
+                    },
+                    plugins: {
+                        legend: {
+                            position: 'bottom',
+                            labels: {
+                                boxWidth: 12,
+                                padding: 15
+                            }
+                        },
+                        tooltip: {
+                            callbacks: {
+                                label: function(context) {
+                                    const label = context.dataset.label || '';
+                                    const index = context.dataIndex;
+                                    const item = radar_performance_data_json[index]; // Besoin de passer en JSON
+                                    
+                                    let value = context.raw;
+                                    let realValue = '';
+                                    
+                                    if (label.includes('Nombre')) {
+                                        realValue = ` (${item.nombre} chantiers)`;
+                                    } else if (label.includes('Budget')) {
+                                        realValue = ` (${item.budget_moyen.toLocaleString()} FCFA)`;
+                                    } else if (label.includes('Durée')) {
+                                        realValue = ` (${item.duree_moyenne} jours)`;
+                                    } else if (label.includes('Efficacité')) {
+                                        realValue = ` (${item.efficacite.toFixed(0)} FCFA/jour)`;
+                                    }
+                                    
+                                    return `${label}: ${value}%${realValue}`;
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+            
+            // Passe les données en JSON pour le tooltip
+            window.radar_performance_data_json = {{ radar_performance_data|safe }};
+       
+                    
+        </script>
+
+
+
+        <!--Bouton D'ACTION-->
+        <div style="margin-top: 40px; padding: 20px; border-top: 2px solid #ccc">
+            <h3> Actions rapides</h3>
+            <div>
+                <a href="{% url 'client_app:ajouter-client' %}">➕ Ajouter un client</a>
+                <a href="{% url 'chantier_app:ajouter-chantier' %}">🏗️ Nouveau chantier</a>
+                <a href="/admin/">⚙️ Administration</a>
+
+                <button onclick="window.print()"> 🖨️ Imprimer le dashboard</button>
+            </div>
+        </div>
+
+    
+
+#####################################################################################""deepsekk
+
+ <!-- LES SCRIPTS CHART.JS RESTENT IDENTIQUES -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script>
+        // Ton code JavaScript reste EXACTEMENT le même
+        // Je ne le modifie pas comme demandé
+      const chiffre_daff_data = {
+    labels: [{% for item in ca_par_mois%} "{{ item.mois }}" {% if not forloop.last %}, {% endif %}{% endfor %}],
+    values: [{% for item in ca_par_mois%} {{ item.ca }} {% if not forloop.last %}, {% endif %}{% endfor %}]
+    // ↑ ENLÈVE LES GUILLEMETS AUTOUR DE {{ item.ca }} ↑
+};
+
+document.addEventListener("DOMContentLoaded", function(){
+    const caCtx = document.getElementById('caChart').getContext('2d');
+    
+    // Convertir les valeurs en nombres si nécessaire
+    const numericValues = chiffre_daff_data.values.map(value => 
+        typeof value === 'string' ? parseFloat(value) : value
+    );
+    
+    new Chart(caCtx, {
+        type: 'line',
+        data: {
+            labels: chiffre_daff_data.labels,
+            datasets: [{
+                label: 'Chiffre d\'affaire (FCFA)',
+                data: numericValues,  // Utilise les valeurs converties
+                borderColor: 'rgb(75, 192, 192)',
+                tension: 0.2,
+                fill: true,
+                backgroundColor: 'rgba(75, 192, 192, 0.2)'
+            }]
+        },
+        options: {
+            responsive: true,
+            plugins: {
+                tooltip: {
+                    callbacks: {
+                        label: function(context) {
+                            return 'CA: ' + context.parsed.y.toLocaleString() + ' FCFA';
+                        }
+                    }
+                }
+            },
+            scales: {
+                y: {
+                    beginAtZero: true,
+                    ticks: {
+                        callback: function(value) {
+                            return value.toLocaleString() + ' FCFA';
+                        }
+                    }
+                }
+            }
+        }
+    });
+});
+
+            // DONUT CHART
+            const donutCtx = document.getElementById("depensesDonutChart").getContext('2d');
+            const categoriesDonut = [{% for cat in depenses_par_categorie %} '{{ cat.categorie }}' {% if not forloop.last %}, {% endif %}{% endfor %}];
+            const pourcentageDonut = [{% for cat in depenses_par_categorie %} {{ cat.total_pourcentage|floatformat:1 }} {% if not forloop.last %}, {% endif %}{% endfor %}];
+            const couleurDonut = [{% for cat in depenses_par_categorie %}'{{ cat.couleur }}' {% if not forloop.last %}, {% endif %}{% endfor %}];
+
+            new Chart(donutCtx, {
+                type: 'doughnut',
+                data: {
+                    labels: categoriesDonut,
+                    datasets: [{
+                        data: pourcentageDonut,
+                        backgroundColor: couleurDonut,
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    plugins: {
+                        legend: { position: 'right' },
+                        tooltip: {
+                            callbacks: {
+                                label: function(context) {
+                                    return context.label + ': ' + context.raw.toFixed(1) + '%';
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+
+            // BAR CHART
+            const barCtx = document.getElementById("depensesBarChart").getContext('2d');
+            const moisBarres = [{% for item in depense_par_mois %} '{{ item.mois|date:"M Y" }}' {% if not forloop.last %}, {% endif %}{% endfor %}];
+            const montantsBarres = [{% for item in depense_par_mois %} {{ item.total }} {% if not forloop.last %}, {% endif %} {% endfor %}];
+
+            new Chart(barCtx, {
+                type: 'bar',
+                data: {
+                    labels: moisBarres,
+                    datasets: [{
+                        label: 'Dépenses (FCFA)',
+                        data: montantsBarres,
+                        backgroundColor: 'rgba(54, 162, 235, 0.7)',
+                        borderColor: 'rgba(54, 162, 235, 1)',
+                        borderWidth: 1
+                    }]
+                }
+            });
+
+            // RADAR CHART
+            const radarCtx = document.getElementById('performanceRadarChart').getContext('2d');
+            const radarLabels = [{% for item in radar_performance_data %}'{{ item.label }}' {% if not forloop.last %}, {% endif %}{% endfor %}];
+            const radarDatasets = [
+                {
+                    label: 'Nombre de chantiers',
+                    data: [{% for item in radar_performance_data %}{{ item.nombre_norm|floatformat:1 }} {% if not forloop.last %}, {% endif %}{% endfor %}],
+                    borderColor: '#FF6384',
+                    backgroundColor: 'rgba(255, 99, 132, 0.2)',
+                    pointBackgroundColor: '#FF6384',
+                },
+                {
+                    label: 'Budget moyen (normalisé)',
+                    data: [{% for item in radar_performance_data %}{{ item.budget_norm|floatformat:1 }} {% if not forloop.last %}, {% endif %}{% endfor %}],
+                    borderColor: '#36A2EB',
+                    backgroundColor: 'rgba(54, 162, 235, 0.2)',
+                    pointBackgroundColor: '#36A2EB',
+                },
+                {
+                    label: 'Durée moyenne (normalisée)',
+                    data: [{% for item in radar_performance_data %}{{ item.duree_norm|floatformat:1 }} {% if not forloop.last %}, {% endif %}{% endfor %}],
+                    borderColor: '#FFCE56',
+                    backgroundColor: 'rgba(255, 206, 86, 0.2)',
+                    pointBackgroundColor: '#FFCE56',
+                },
+                {
+                    label: 'Efficacité (normalisée)',
+                    data: [{% for item in radar_performance_data %}{{ item.efficacite_norm|floatformat:1 }} {% if not forloop.last %}, {% endif %}{% endfor %}],
+                    borderColor: '#4BC0C0',
+                    backgroundColor: 'rgba(75, 192, 192, 0.2)',
+                    pointBackgroundColor: '#4BC0C0',
+                }
+            ];
+            
+            new Chart(radarCtx, {
+                type: 'radar',
+                data: {
+                    labels: radarLabels,
+                    datasets: radarDatasets
+                },
+                options: {
+                    responsive: true,
+                    scales: {
+                        r: {
+                            angleLines: { display: true, color: 'rgba(0, 0, 0, 0.1)' },
+                            suggestedMin: 0,
+                            suggestedMax: 100,
+                            ticks: { display: false },
+                            pointLabels: { font: { size: 11 } }
+                        }
+                    },
+                    plugins: {
+                        legend: {
+                            position: 'bottom',
+                            labels: { boxWidth: 12, padding: 15 }
+                        },
+                        tooltip: {
+                            callbacks: {
+                                label: function(context) {
+                                    const label = context.dataset.label || '';
+                                    const index = context.dataIndex;
+                                    const item = radar_performance_data_json[index];
+                                    
+                                    let value = context.raw;
+                                    let realValue = '';
+                                    
+                                    if (label.includes('Nombre')) {
+                                        realValue = ` (${item.nombre} chantiers)`;
+                                    } else if (label.includes('Budget')) {
+                                        realValue = ` (${item.budget_moyen.toLocaleString()} FCFA)`;
+                                    } else if (label.includes('Durée')) {
+                                        realValue = ` (${item.duree_moyenne} jours)`;
+                                    } else if (label.includes('Efficacité')) {
+                                        realValue = ` (${item.efficacite.toFixed(0)} FCFA/jour)`;
+                                    }
+                                    
+                                    return `${label}: ${value}%${realValue}`;
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+            
+            window.radar_performance_data_json = {{ radar_performance_data|safe }}
+            
+            
+            
+            
+            <header>
+    <h1>
+        Gestion des Rapports
+    </h1>
+
+          <div class="statistique grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
+            
+                <div class="card bg-white shadow">
+                    <div class="card-body p-4 text-center">
+                        <div class="text-2xl font-bold text-primary">{{ list_rapport_depense|length }}</div>
+                        <div class="text-sm text-gray-500">Total Rapports</div>
+                    </div>
+                </div>
+
+            
+                <div class="card bg-white shadow">
+                        <div class="card-body p-4 text-center">
+                                <div class="text-2xl font-bold ">
+                                    {% with total=0 %}
+                                        {% for rapport in list_rapport_depense %}
+                                            {% widthratio rapport.prix_unitaire 1 rapport.quantité as subtotal %}
+                                            {% with total=total|add:subtotal %}
+                                            {% endwith %}
+                                        {% endfor %}
+                                        {{ total|floatformat:0 }}
+                                    {% endwith %} FCFA
+                                </div>
+                                <div class="text-sm text-gray-500">Total Dépensé</div>
+                        </div>
+                </div>
+            
+                <div class="bg-white shadow">
+                        <div class="card-body p-4 text-center">
+                            <!-- À adapter selon votre logique de statut -->
+                                <div class="text-2xl font-bold">
+                                        {% with pending=list_rapport_depense|length %}
+                                    {{ pending }}
+                                    {% endwith %}
+                                </div>
+                                <div class="text-sm text-gray-500">En Attente</div>
+                        </div>
+                </div> <!-- DIV MANQUANTE AJOUTÉE ICI -->
+            
+                <div class="bg-white  shadow">
+                    <div class="card-body p-4 text-center">
+                        <div class="text-2xl font-bold">
+                            {% with unique_fournisseurs=list_rapport_depense|dictsortreversed:"fournisseur"|slice:":5" %}
+                            {{ unique_fournisseurs|length }}
+                        {% endwith %}
+                        </div>
+                        <div class="text-sm text-gray-500">Fournisseurs</div>
+                    </div>
+                </div>
+           </div>  
+    </header>
+    
+    
+    
+    
+    #######################home page
+    
+    {% load static %}
+{% load tailwind_tags %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"> 
+    <title>  {% block title %} {% endblock title %}</title>
+    <link rel="stylesheet" href="{% static 'css/base_style.css' %}">
+    <link rel="stylesheet" href="{% static 'css/home_style.css' %}">
+    <script src="{% static 'js/htmx.min.js' %}"></script>
+    {% tailwind_css %}
+</head>
+    <body>
+       <header>
+<h1 class="text-4xl md:text-5xl font-bold bg-gradient-to-r from-white to-gray-500 to-black bg-clip-text text-transparent">
+                    SANBA FINFLOW GESTION
+                </h1>
+       </header>
+
+       <main>
+             {% include 'auth_templates/login.html' %}
+            <button class="btn cent" onclick="openLoginModal()">Ouvrir le modal de connexion</button>
+
+       </main>
+
+       <footer class="bg-gray-900 text-white mt-12">
+        <div class="container mx-auto px-4 py-8">
+            <div class="flex flex-col md:flex-row justify-between items-center">
+                <div class="mb-4 md:mb-0">
+                    <p class="font-bold text-lg">SANBA GESTION FINFLOW</p>
+                    <p class="text-gray-400 text-sm"> Connexion </p>
+                </div>
+                
+                <div class="text-center md:text-right">
+                    <p class="text-gray-400">© {% now "Y" %} - Tous droits réservés</p>
+                    <p class="text-gray-500 text-sm mt-1">
+                        Généré le {% now "d/m/Y à H:i" %}
+                    </p>
+                </div>
+            </div>
+        </div>
+</footer>
+   
+    <script>
+
+    function openLoginModal() {
+        document.getElementById('loginModal').showModal();
+    };
+    </script>
+
+    {% if open_login_modal %}
+    <script>
+    document.addEventListener('DOMContentLoaded', function(){
+        // ouvrir le modal automatiquement quand le serveur signale une erreur de login
+        openLoginModal();
+    });
+    </script>
+    {% endif %}
+
+
+    </body>
+
+    <style>
+    body{
+        height: 100vh;
+        background: linear-gradient(-900deg,rgba(201, 26, 26, 1) 0%, rgba(235, 230, 231, 1) 50%, rgba(0, 0, 0, 1) 99%);
+    }
+
+    
+    </style>
+</html>
+
+
+
+
+
+
+
+
+
+
+
+ if len(radar_data) < 3:
+                radar_data.extend([
+                    {
+                        'type_travaux': 'charpente_metallique',
+                'label': 'Charpente Metallique',
+                'nombre': 8,
+                'budget_moyen': 4500000,
+                'duree_moyenne': 45,
+                'efficacite': 100000,
+                'nombre_norm': 75,
+                'budget_norm': 90,
+                'duree_norm': 60,
+                'efficacite_norm': 85
+            },
+            {
+                'type_travaux': 'menuiserie_metal',
+                'label': 'Menuiserie Metal',
+                'nombre': 5,
+                'budget_moyen': 2800000,
+                'duree_moyenne': 30,
+                'efficacite': 93333,
+                'nombre_norm': 50,
+                'budget_norm': 70,
+                'duree_norm': 40,
+                'efficacite_norm': 70
+            },
+            {
+                'type_travaux': 'serrurerie',
+                'label': 'Serrurerie',
+                'nombre': 12,
+                'budget_moyen': 1200000,
+                'duree_moyenne': 15,
+                'efficacite': 80000,
+                'nombre_norm': 100,
+                'budget_norm': 40,
+                'duree_norm': 20,
+                'efficacite_norm': 60
+            }
+        ])    
+                
+                
+                
+                
+                 send_mail(
+                    subject="Identifiant Temporaire",
+                    message=f"""Bonjour, Mr/Mme {form.cleaned_data.get('first_name')},
+                    \n Vos identifiant sont pour SANBA GESTION FINFLOW: 
+                    \n nom d'utilisateur = {username}
+                    \n mot de passe = {password}
+                    """ ,
+                    from_email=settings.EMAIL_HOST_USER, #sender email defini at setting.py 
+                    fail_silently=False,
+                    recipient_list=[email]
+                )
+                
+
+
+
+
+
+
+
+                //===================================== 3. GRAPHIQUE BARRES - DEPENSES PAR MOIS =======================================
+            // récupère le canvas pour le graphique BARRES
+            const barCtx = document.getElementById("depensesBarChart").getContext('2d');
+
+            // Version PROPRE - sans risques de virgules en trop
+            const moisBarres = [
+                {% for item in depense_par_mois_list %}
+                    '{{ item.mois|date:"M Y" }}'{% if not forloop.last %},{% endif %}
+                {% endfor %}
+            ];
+
+            const montantsBarres = [
+                {% for item in depense_par_mois_list %}
+                    {{ item.total }}{% if not forloop.last %},{% endif %}
+                {% endfor %}
+            ];
+            
+            // DEBUG - Vérifie ce qui arrive vraiment
+            console.log("✅ Mois reçus:", moisBarres);
+            console.log("✅ Montants reçus:", montantsBarres);
+
+
+            //Créations du graphique barres
+            new Chart(barCtx, {
+                type: 'bar',
+                data: {
+                    labels: moisBarres,
+                    datasets: [{
+                        label: 'Dépenses (FCFA)',
+                        data: montantsBarres,
+                        backgroundColor: 'rgba(54, 162, 235, 0.7)',  // Bleu transparent
+                        borderColor: 'rgba(54, 162, 235, 1)',        // Bleu solide
+                        borderWidth: 1           // Épaisseur de la bordure des barres
+
+                    }]
+                },
+                
+            })

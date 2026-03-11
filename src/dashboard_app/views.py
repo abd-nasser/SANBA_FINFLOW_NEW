@@ -1,4 +1,5 @@
 
+from PIL.Image import item
 from django.shortcuts import render, get_object_or_404
 from django.views.generic import TemplateView #pour les vues basées sur template
 from django.contrib.auth.mixins import LoginRequiredMixin #Sécurité : Oblige la connexion
@@ -374,13 +375,17 @@ class DashboardView(LoginRequiredMixin, TemplateView):
             )
         ).order_by('mois')
         
-        #convertir pour le template
+        print(f"=== NOMBRE DE MOIS DANS LA REQUÊTE: {depense_par_mois.count()} ===")
         depense_par_mois_list = []
         for item in depense_par_mois:
-            depense_par_mois_list.append({
-                'mois':item['mois'],
-                'total':float(item['total']) #convertit decimal en float pour chart.js
-            })
+            print(f"🔍 Mois SQL: {item['mois']}, Total: {item['total']}")
+            total_float = float(item['total'])
+            # FILTRE les totaux > 0
+            if total_float > 0:
+                depense_par_mois_list.append({
+                    'mois': item['mois'],
+                    'total': total_float
+                })
         
         # 5-################__TOP EMPLOYES DEPENSIERS__##############
         top_employes_depense = Personnel.objects.values("username").annotate(
@@ -408,7 +413,7 @@ class DashboardView(LoginRequiredMixin, TemplateView):
         
         return {
             'depenses_par_categorie':list(depenses_par_categorie),
-            'depense_par_mois':depense_par_mois_list,
+            'depenses_mensuelles_list':depense_par_mois_list,
             'total_depenses_mois':total_general_depenses, # Correction ici pour afficher le total général des dépenses validées du mois courant
             'depense_par_type':depense_par_type,
             'top_employes_depense':top_employes_depense,

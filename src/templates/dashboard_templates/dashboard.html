@@ -439,7 +439,7 @@
                 // labels = les noms sous le graphique (les mois)
             
             
-                values:[{% for item in ca_par_mois %} '{{ item.ca|floatformat:0 }}' {% if not forloop.last %}, {%endif%}{%endfor%}]
+                values:[{% for item in ca_par_mois %} {{ item.ca|floatformat:0 }} {% if not forloop.last %}, {%endif%}{%endfor%}]
                 // values = les chiffre (l'argent)
             };
             document.addEventListener("DOMContentLoaded", function(){
@@ -530,33 +530,51 @@
             });
 
 
-            //===================================== 3. GRAPHIQUE BARRES - DEPENSES PAR MOIS =======================================
-            // récupère le canvas pour le graphique BARRES
-            const barCtx = document.getElementById("depensesBarChart").getContext('2d');
+            //===================================== 3. GRAPHIQUE BARRES =======================================
+const barCtx = document.getElementById("depensesBarChart").getContext('2d');
 
-            // Données pour les barres: mois et montants 
-            const moisBarres = [{% for item in depense_par_mois %} '{{ item.mois|date:"M Y" }}'
-            {% if not forloop.last %}, {% endif %}{%  endfor %}];
+// Version PROPRE - sans risques de virgules en trop
+const moisBarres = [
+    {% for item in depenses_mensuelles_list %}
+        '{{ item.mois|date:"M Y" }}'{% if not forloop.last %},{% endif %}
+    {% endfor %}
+];
 
-            const montantsBarres = [{% for item in depense_par_mois %} {{ item.total }}
-            {% if not forloop.last %}, {% endif %} {% endfor %}];
+const montantsBarres = [
+    {% for item in depenses_mensuelles_list %}
+        {{ item.total|floatformat:0 }}{% if not forloop.last %},{% endif %}
+    {% endfor %}
+];
 
-            //Créations du graphique barres
-            new Chart(barCtx, {
-                type: 'bar',
-                data: {
-                    labels: moisBarres,
-                    datasets: [{
-                        label: 'Dépenses (FCFA)',
-                        data: montantsBarres,
-                        backgroundColor: 'rgba(54, 162, 235, 0.7)',  // Bleu transparent
-                        borderColor: 'rgba(54, 162, 235, 1)',        // Bleu solide
-                        borderWidth: 1           // Épaisseur de la bordure des barres
+// DEBUG - Vérification
+console.log("✅ Mois reçus:", moisBarres);
+console.log("✅ Montants reçus:", montantsBarres);
+console.log("✅ Longueur mois:", moisBarres.length);
+console.log("✅ Longueur montants:", montantsBarres.length);
 
-                    }]
-                },
-                
-            })
+
+new Chart(barCtx, {
+    type: 'bar',
+    data: {
+        labels: moisBarres,
+        datasets: [{
+            label: 'Dépenses (FCFA)',
+            data: montantsBarres, // Utilise les montants corrigés
+            backgroundColor: 'rgba(54, 162, 235, 0.7)',
+            borderColor: 'rgba(54, 162, 235, 1)',
+            borderWidth: 1
+        }]
+    },
+    options: {
+        responsive: true,
+        scales: {
+            y: {
+                beginAtZero: true
+            }
+        }
+    }
+});
+
 
             //===================================== 4. GRAPHIQUE RADAR - PERFORMANCE CHANTIER =======================================
            // VERSION SIMPLE - Ça marche direct!
